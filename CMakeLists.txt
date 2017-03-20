@@ -11,7 +11,7 @@ set(${CMAKE_PROJECT_NAME}_SKETCH poweroid_fan_2x1_1x1.ino)
 #        )
 #
 
-link_directories(C:\\Users\\SHL\\Documents\\Arduino\\libraries)
+link_directories(lib)
 
 #### Uncomment below additional settings as needed.
 set(${CMAKE_PROJECT_NAME}_BOARD pro)
