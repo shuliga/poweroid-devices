@@ -6,7 +6,7 @@
 #define HISPEED 115200
 #define VER "hc01.comV2."
 
-struct Bt {
+typedef struct Bt {
 
   char *name;
   String result;

@@ -22,7 +22,7 @@
 #include "gfxfont.h"
 #include <I2C.h>
 
-#define FONT_PULL_UP 7
+#define FONT_PULL_UP 10
 #define FONT_SIZE 30
 
 bool connected = false;
@@ -72,7 +72,7 @@ bool ACROBOTIC_SSD1306::checkAndInit() {
     Serial.println("I2C display scan");
     if (!connected && isConnected()) {
         Serial.println("I2C display init");
-        oled.setGfxFont(&FreeSans18pt7b);
+        oled.setGfxFont(&FreeSans12pt7b);
         init();
         return true;
     } else {
@@ -162,20 +162,20 @@ void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col,const 
         int8_t yOffset = pgm_read_byte(&glyph->yOffset);
         uint8_t *bitmap = (uint8_t *) pgm_read_ptr(&gfxfont->bitmap);
 
-        int8_t c_width = width + xOffset;
+        int8_t c_width = xAdvance;
         int8_t c_height = pgh * 8 + yOffset - FONT_PULL_UP;
 
         sendCommand(0x21);                       //set column start addr
-        sendCommand(col + (centered ? -(newWidth + 1) / 2 : newWidth) + cursor);                 //
-        sendCommand(col + (centered ? -(newWidth + 1) / 2  : newWidth) + cursor + c_width - 1);      //set column end addr
+        sendCommand(col + (centered ? -(newWidth + 1) / 2 : 0) + cursor);                 //
+        sendCommand(col + (centered ? -(newWidth + 1) / 2  : 0) + cursor + c_width - 1);      //set column end addr
 
-        cursor += (c_width);
+        cursor += xAdvance;
         for (uint8_t pg = 0; pg < pgh; pg++) {
             for (uint8_t c = 0; c < c_width; c++) {
                 uint8_t cl = 0;
                 for (uint8_t r = 0; r < 8; r++) {
                     uint8_t abs_r = (pg * 8 + r);
-                    if (c < xOffset || abs_r < c_height || c > c_width || abs_r >= (c_height + height)) {
+                    if (c < xOffset || abs_r < c_height || c >= width + xOffset || abs_r >= (c_height + height)) {
                         cl &= ~(1 << r);
                     } else {
                         uint8_t c_g = c - xOffset;
@@ -205,8 +205,9 @@ uint8_t ACROBOTIC_SSD1306::getTextWidth(const char *_text) {
         GFXglyph *glyph = &(((GFXglyph *) pgm_read_ptr(&gfxfont->glyph))[cr]);
         int8_t width = pgm_read_byte(&glyph->width);
         int8_t xOffset = pgm_read_byte(&glyph->xOffset);
+        int8_t xAdvance = pgm_read_byte(&glyph->xAdvance);
         i++;
-        result += (uint8_t) (width + xOffset);
+        result += (uint8_t) (xAdvance);
     }
     return result;
 }
@@ -238,9 +239,9 @@ void ACROBOTIC_SSD1306::cleanPages(const uint8_t rows,const uint8_t col,const ui
                 sendData(0);
             }
             sendCommand(0x21);
-            sendCommand(col + (_n_width + 1) / 2);
+            sendCommand(col + _n_width / 2);
             sendCommand(col + (_l_width + 1) / 2);
-            for (uint16_t k = 0; k < rows * (delta + 1)/ 2; k++) {
+            for (uint16_t k = 0; k < rows * (delta + 2)/ 2; k++) {
                 sendData(0);
             }
 

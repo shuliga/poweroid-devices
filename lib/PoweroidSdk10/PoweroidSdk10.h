@@ -2,26 +2,16 @@
 #define POWEROID_SDK_10_H
 
 #define VERSION "POWEROID SDK 1.0"
+#define PWR21
 
 #include "timings.h"
 #include "commons.h"
 #include "pin_io.h"
+#include "sensors.h"
 
 static char SIGNATURE[] = "PWR";
 
 const long INST_DELAY = 1000L;
-
-const uint8_t IN1_PIN = 2;
-const uint8_t IN2_PIN = 4;
-const uint8_t IN3_PIN = 6;
-
-const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
-
-const uint8_t INA1_PIN = 14;
-const uint8_t INA2_PIN = 15;
-const uint8_t INA3_PIN = 16;
-
-const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
 const uint8_t LED_PIN = 13;
 const uint8_t LED3_PIN = 7;
@@ -38,8 +28,6 @@ const uint8_t LED_PINS[] = {LED1_PIN, LED2_PIN, LED3_PIN};
 const uint8_t OUT_PINS[] = {LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN, LED5_PIN, PWR1_PIN, PWR2_PIN};
 
 const int del = 333;
-
-static bool installed[3];
 
 static String states[] = {"OFF", "OFF"};
 

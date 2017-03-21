@@ -1,13 +1,24 @@
 
+#include <Arduino.h>
+#include "commands.h"
+#include "bluetooth.h"
+#include "controller.h"
+#include "PoweroidSdk10.h"
 #include "poweroid_fan_2x1_1x1_prop.h"
-#include <PoweroidSdk10.h>
-#include <commands.h>
 
-char ID[] = "PWR-FAN-21-11";
+#define ENC_BTN_PIN 7
+// #define BT
+
+char ID[] = "PWR-FAN-21-11\0";
 
 Timings timings[2];
 
-Commands CMD;
+Bt *bt;
+Commands *CMD;
+Controller *CTRL;
+
+static Context CTX = {FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, states, ARRAY_SIZE(states),
+                      (char *) &ID};
 
 void init_timing(int index){
     timings[index].countdown_power.interval = (unsigned long) FAN_PROPS._RUNTIME[index][0];
@@ -57,7 +68,11 @@ void setup() {
     Serial.begin(9600);
     printVersion();
 
-    CMD = Commands(FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.size_t, states, ARRAY_SIZE(states), ID);
+#ifdef  BT
+    bt = new Bt(ID);
+#endif
+    CMD = new Commands(&CTX);
+    CTRL = new Controller(CMD, &CTX);
 }
 
 void loop() {
@@ -74,6 +89,8 @@ void loop() {
     run_relay(light1, PWR1_PIN, 0, &timings[0]);
     run_relay(light2 || light3, PWR2_PIN, 1, &timings[1]);
 
-    CMD.listen();
+    CMD->listen();
+    CTRL->process();
+
 }
 

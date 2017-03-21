@@ -23,12 +23,6 @@ struct Persistence{
   void loadValue(int i);
   void loadProperties(long* prop);
 
-private:
-
-  int addrs(int index){
-    return HEADER_OFFSET + sizeof(long);
-  }
-
 };
 
 

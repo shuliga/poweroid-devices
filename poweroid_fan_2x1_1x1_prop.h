@@ -10,9 +10,9 @@ struct Timings {
 };
 
 
-static struct Properties {
+static struct Properties{
 
-    Property FACTORY[8] = {
+     Property FACTORY[8] = {
 
             //desc  value   minV    maxV        scale
             {NULL, 600000L, 60000L, 36000000L, 60000L},
@@ -27,13 +27,13 @@ static struct Properties {
 
     };
 
-    long RUNTIME[ARRAY_SIZE(FACTORY)];
+     long RUNTIME[ARRAY_SIZE(FACTORY)];
 
 // Declaring alternate array Property*[2][4] that represents 2 sets (per each state) of 4 properties
 // This makes possible state - related iterations
     long (*_RUNTIME)[4] = (long (*)[4]) &RUNTIME;
 
-    int size_t = ARRAY_SIZE(FACTORY);
+    int props_size = ARRAY_SIZE(FACTORY);
 
 // Property strings should be stored in FlashRAM
 // to save program RAM space

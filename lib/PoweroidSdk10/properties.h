@@ -65,6 +65,16 @@ private:
         return val;
     }
 
-} Prop;
+} ;
+
+typedef struct {
+        Property *FACTORY;
+        long *RUNTIME;
+        int props_size;
+        String *states;
+        int states_size;
+        char *id;
+} Context;
+
 
 #endif
