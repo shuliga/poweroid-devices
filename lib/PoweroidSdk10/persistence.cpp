@@ -6,7 +6,7 @@ unsigned long hashProp(long *props, int size) {
       return hash((byte *)props, size);
 }
 
-Persistence::Persistence(String s, long *props_runtime, int sz){
+Persistence::Persistence(const String s, long *props_runtime, int sz){
   size = sz;
   EEPROM.get(0, signature);
   String sign = String(signature);

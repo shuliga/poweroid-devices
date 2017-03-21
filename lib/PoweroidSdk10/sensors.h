@@ -16,12 +16,21 @@ static bool installed[3];
 class Sensors {
 public:
     Sensors();
+
     void updateTnH();
-    float getTemperature();
-    float getHumidity();
+    float getTemperature()const;
+    float getHumidity()const;
+
+    bool checkInstalled(int pin, bool inst);
+    bool checkInstalledWithDelay(int pin, bool inst, TimingState *hold_on);
+    void init_sensors()const;
+    void check_installed();
+    bool is_sensor_on(int index);
+    int get_sensor_val(int index);
+    bool is_sensor_val(int index, int val);
 
 private:
-    TimingState timing = {0, 5000L, 0, 0, 0, 0};
+    TimingState pollTiming = TimingState(5000L);
     float temp;
     float humid;
 

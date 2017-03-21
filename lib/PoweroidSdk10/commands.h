@@ -12,29 +12,23 @@
 #define CMD_RESET_PROPS "reset_props"
 #define CMD_GET_SENSOR_ALL "get_sensor_all"
 
-// #define BT // ENABLE BLUETOOTH
-
+#include "commons.h"
 #include "properties.h"
 #include "persistence.h"
-#include "bluetooth.h"
 
-
-struct Commands {
-
-    Context *ctx;
-    Persistence persist;
-
-    Commands() {}
-
+class Commands {
+public:
     Commands(Context *_ctx);
-
-    void printProperty(int i);
 
     void listen();
 
     void storeProps();
 
 private:
+    Context *ctx;
+    Persistence persist;
+
+    void printProperty(int i);
 };
 
 #endif

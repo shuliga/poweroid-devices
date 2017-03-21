@@ -5,10 +5,12 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
-#define PWR21
-
-
 #include <Arduino.h>
+#include "properties.h"
+#include "sensors.h"
+
+#define PWR21
+#define LED_PIN 13;
 
 #ifdef PWR21
 
@@ -40,6 +42,18 @@
 
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
+
+typedef struct Context{
+    const char *SIGNATURE;
+    const char *version;
+    Sensors *SENS;
+    Property *FACTORY;
+    long *RUNTIME;
+    const int props_size;
+    const String *states;
+    const int states_size;
+    const char *id;
+} Context;
 
 
 String printState(String states[], int idx);

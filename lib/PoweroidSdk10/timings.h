@@ -3,20 +3,26 @@
 
 const unsigned long MAX_LONG = 4294967295L;
 
-typedef struct {
-  unsigned long mils;
-  unsigned long interval;
-  long delta;
-  long fact;
-  bool state;
-  bool dirty;
+typedef struct TimingState{
+    unsigned long mils;
+    unsigned long interval;
+    long delta;
+    long fact;
+    bool state;
+    bool dirty;
+    TimingState(unsigned long _int) : interval(_int) {};
 } TimingState;
 
-unsigned long getCurrent(TimingState* ts);
-bool testInterval(TimingState* ts, unsigned long current);
-bool countdown(TimingState* ts, bool on, bool cancel);
-bool isTimeAfter(TimingState* ts, bool trigger);
-void flash(TimingState* ts, int pin, bool on);
-bool ping(TimingState* ts);
+unsigned long getCurrent(TimingState *ts);
+
+bool testInterval(TimingState *ts, unsigned long current);
+
+bool countdown(TimingState *ts, bool on, bool cancel);
+
+bool isTimeAfter(TimingState *ts, bool trigger);
+
+void flash(TimingState *ts, int pin, bool on);
+
+bool ping(TimingState *ts);
 
 #endif

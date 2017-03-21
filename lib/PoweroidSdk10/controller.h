@@ -5,19 +5,17 @@
 #ifndef _CONTROLLER_H
 #define _CONTROLLER_H
 
+#include "commons.h"
 #include "commands.h"
 #include "sensors.h"
 
 static volatile int props_idx_max = 0;
 
 class Controller {
-
 public:
-    Controller(){};
-    Controller(Commands *_cmd, Context * _ctx);
+    Controller(Commands * _cmd, Context * _ctx);
     void process();
 private:
-    Sensors SENS;
     Context *ctx;
     Commands *cmd;
 

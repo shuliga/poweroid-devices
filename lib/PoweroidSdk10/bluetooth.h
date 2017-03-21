@@ -12,15 +12,11 @@ typedef struct Bt {
   String result;
   bool on = false;
 
-  Bt();
-  
   Bt(char * n);
 
   void getResult();
 
   void setPin(char * pin);
-
-  bool isOn();
 
 };
 

@@ -1,7 +1,5 @@
 #include "bluetooth.h"
 
-Bt::Bt(){}
-
 Bt::Bt(char * n): name(n){
     if (Serial && !on){
         Serial.println(F("Looking for Bluetooth HC-06"));
@@ -37,8 +35,4 @@ void Bt::setPin(char * pin){
         Serial.print(pin);
         delay(600);
     }
-}
-
-bool Bt::isOn(){
-    return on;
 }

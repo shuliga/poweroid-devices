@@ -1,12 +1,12 @@
-#include "PoweroidSdk10.h"
 #include "bluetooth.h"
 #include "commands.h"
 #include "properties.h"
+#include "PoweroidSdk10.h"
 
 #define PREFIX(cmd) cmd + F(" -> ")
 
 Commands::Commands(Context *_ctx): ctx(_ctx){
-    persist = Persistence(SIGNATURE, ctx->RUNTIME, ctx->props_size);
+    persist = Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
 }
 
 void Commands::printProperty(int i) {

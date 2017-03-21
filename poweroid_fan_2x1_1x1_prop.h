@@ -5,10 +5,9 @@
 #include "commons.h"
 #include "timings.h"
 
-struct Timings {
+typedef struct Timings{
     TimingState countdown_power, countdown_light, timeAfter_lightOff;
 };
-
 
 static struct Properties{
 

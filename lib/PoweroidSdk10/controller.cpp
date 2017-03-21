@@ -5,8 +5,6 @@
 #include <Rotary.h>
 #include <MultiClick.h>
 #include <ACROBOTIC_SSD1306.h>
-#include <lib/ACROBOTIC_SSD1306/ACROBOTIC_SSD1306.h>
-#include <lib/MultiClick/MultiClick.h>
 
 #define INCR(val, max) val < max ? val++ : val
 #define DECR(val, min) val > min ? val-- : val
@@ -14,10 +12,6 @@
 #include "commons.h"
 #include "commands.h"
 #include "controller.h"
-#include "sensors.h"
-#include "MultiClick.h"
-#include "properties.h"
-#include "PoweroidSdk10.h"
 
 static enum State {
     EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS
@@ -35,7 +29,7 @@ static volatile long prop_max;
 
 Rotary encoder = Rotary();
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
-TimingState displayTiming = {0, 1000L, 0, 0, 0, 0};
+TimingState displayTiming = TimingState(1000L);
 
 
 Controller::Controller(Commands *_cmd, Context *_ctx) : cmd(_cmd), ctx(_ctx) {
@@ -66,7 +60,7 @@ void Controller::outputTitle() const {
 
 void Controller::process() {
 
-    SENS.updateTnH();
+    ctx->SENS->updateTnH();
 
     McEvent event = encoderClick.checkButton();
 
@@ -170,8 +164,8 @@ void Controller::process() {
 
 void Controller::outputSleepScreen() {
     if (ping(&displayTiming)) {
-        float temp = SENS.getTemperature();
-        float humid = SENS.getHumidity();
+        float temp = ctx->SENS->getTemperature();
+        float humid = ctx->SENS->getHumidity();
         char out[12];
         char spc[] = "C, ";
         strcpy(out, String(temp, 0).c_str());

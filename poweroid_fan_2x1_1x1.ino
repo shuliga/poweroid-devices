@@ -1,8 +1,7 @@
 
 #include <Arduino.h>
+#include "pin_io.h"
 #include "commands.h"
-#include "bluetooth.h"
-#include "controller.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_2x1_1x1_prop.h"
 
@@ -11,14 +10,12 @@
 
 char ID[] = "PWR-FAN-21-11\0";
 
-Timings timings[2];
-
-Bt *bt;
-Commands *CMD;
-Controller *CTRL;
-
-static Context CTX = {FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, states, ARRAY_SIZE(states),
+static Context CTX = {SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, states, ARRAY_SIZE(states),
                       (char *) &ID};
+
+Pwr PWR(&CTX);
+
+Timings timings[2] = {{0, 0, 0}, {0, 0, 0}};
 
 void init_timing(int index){
     timings[index].countdown_power.interval = (unsigned long) FAN_PROPS._RUNTIME[index][0];
@@ -61,18 +58,9 @@ void run_relay(bool light, int power_pin, int state_id, Timings *timings){
 }
 
 void setup() {
-
-    init_system();
-    init_sensors();
-
     Serial.begin(9600);
-    printVersion();
-
-#ifdef  BT
-    bt = new Bt(ID);
-#endif
-    CMD = new Commands(&CTX);
-    CTRL = new Controller(CMD, &CTX);
+    PWR.printVersion();
+    PWR.begin();
 }
 
 void loop() {
@@ -80,17 +68,16 @@ void loop() {
     init_timing(0);
     init_timing(1);
 
-    check_installed();
+    CTX.SENS->check_installed();
 
-    bool light1 = is_sensor_on(0);
-    bool light2 = is_sensor_on(1);
-    bool light3 = is_sensor_on(2);
+    bool light1 = CTX.SENS->is_sensor_on(0);
+    bool light2 = CTX.SENS->is_sensor_on(1);
+    bool light3 = CTX.SENS->is_sensor_on(2);
 
     run_relay(light1, PWR1_PIN, 0, &timings[0]);
     run_relay(light2 || light3, PWR2_PIN, 1, &timings[1]);
 
-    CMD->listen();
-    CTRL->process();
+    PWR.run();
 
 }
 
