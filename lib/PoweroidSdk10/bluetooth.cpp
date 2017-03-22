@@ -8,13 +8,13 @@ Bt::Bt(char * n): name(n){
         delay(600);
         if (Serial.available() > 0){
             String ver = Serial.readString();
-            result = "BT version: " + ver;
+            sprintf(result, "BT version: %s", ver.c_str());
             if (ver.startsWith(VER) ){
                 delay(600);
                 Serial.print(F("AT+NAME"));
                 Serial.print(name);
                 on = true;
-                result = "BT name set to: " + String(name);
+                sprintf(result, "BT name set to: %s", name);
                 delay(600);
             }
         } else {

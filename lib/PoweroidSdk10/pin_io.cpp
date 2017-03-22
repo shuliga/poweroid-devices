@@ -1,18 +1,18 @@
 #include "Arduino.h"
 
-bool readPinLow(int pin){
+bool readPinLow(uint8_t pin){
   return digitalRead(pin) == LOW;
 }
 
-bool readPinHigh(int pin){
+bool readPinHigh(uint8_t pin){
   return digitalRead(pin) == HIGH;
 }
 
-int readPinVal(int pin){
+int readPinVal(uint8_t pin){
   return analogRead(pin);
 }
 
-void led(int no, bool on){
+void led(uint8_t no, bool on){
   if(on) {
     digitalWrite(no, HIGH);
   } else {
@@ -20,7 +20,7 @@ void led(int no, bool on){
   }
 }
 
-void pin_inv(int no, bool on){
+void pin_inv(uint8_t no, bool on){
   if(on) {
     digitalWrite(no, LOW);
   } else {

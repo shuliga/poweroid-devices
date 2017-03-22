@@ -126,7 +126,7 @@ void ACROBOTIC_SSD1306::setTextXY(unsigned char row, unsigned char col) {
     sendCommand(0x10 + ((m_font_width * col >> 4) & 0x0F)); //set column higher addr
 }
 
-void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col,const char *_text, const bool centered) {
+void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col, const char *_text, const bool centered) {
 
     const uint8_t first = pgm_read_byte(&gfxfont->first);
     int8_t yAdvance = pgm_read_byte(&gfxfont->yAdvance);
@@ -167,7 +167,7 @@ void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col,const 
 
         sendCommand(0x21);                       //set column start addr
         sendCommand(col + (centered ? -(newWidth + 1) / 2 : 0) + cursor);                 //
-        sendCommand(col + (centered ? -(newWidth + 1) / 2  : 0) + cursor + c_width - 1);      //set column end addr
+        sendCommand(col + (centered ? -(newWidth + 1) / 2 : 0) + cursor + c_width - 1);      //set column end addr
 
         cursor += xAdvance;
         for (uint8_t pg = 0; pg < pgh; pg++) {
@@ -221,33 +221,27 @@ void ACROBOTIC_SSD1306::restorePaging() {
     sendCommand(127);
 }
 
-void ACROBOTIC_SSD1306::cleanPages(const uint8_t rows,const uint8_t col,const uint8_t _l_width, uint8_t _n_width, const bool centered) {
-    if (_l_width > _n_width){
+void ACROBOTIC_SSD1306::cleanPages(const uint8_t rows, const uint8_t col, const uint8_t _l_width, uint8_t _n_width,
+                                   const bool centered) {
+    if (_l_width > _n_width) {
         int8_t delta = _l_width - _n_width;
-        if (!centered){
-            sendCommand(0x21);
-            sendCommand(col + _n_width);
-            sendCommand(col + _l_width - 1);
-            for (uint16_t k = 0; k < rows * delta; k++) {
-                sendData(0);
-            }
+        if (!centered) {
+            cleanPage(rows, col + _n_width, col + _l_width - 1, delta);
         } else {
-            sendCommand(0x21);
-            sendCommand(col - (_l_width + 1)/ 2 );
-            sendCommand(col - (_n_width + 1) / 2 - 1);
-            for (uint16_t k = 0; k < rows * (delta + 1)/ 2; k++) {
-                sendData(0);
-            }
-            sendCommand(0x21);
-            sendCommand(col + _n_width / 2);
-            sendCommand(col + (_l_width + 1) / 2);
-            for (uint16_t k = 0; k < rows * (delta + 2)/ 2; k++) {
-                sendData(0);
-            }
-
+            cleanPage(rows, col - (_l_width + 1) / 2, col - (_n_width + 1) / 2 - 1, (delta + 1) / 2);
+            cleanPage(rows, col + _n_width / 2, col + (_l_width + 1) / 2 - 1, (delta + 2) / 2);
         }
     }
 
+}
+
+void ACROBOTIC_SSD1306::cleanPage(const uint8_t rows, const uint8_t s_width, uint8_t e_width, int8_t delta) {
+    sendCommand(0x21);
+    sendCommand((unsigned char) s_width);
+    sendCommand((unsigned char) e_width);
+    for (uint16_t k = 0; k < rows * delta; k++) {
+        sendData(0);
+    }
 }
 
 
@@ -417,7 +411,7 @@ void ACROBOTIC_SSD1306::setHorizontalScrollProperties(bool direction, unsigned c
         //Scroll right
         sendCommand(0x26);
     } else {
-        //Scroll left  
+        //Scroll left
         sendCommand(0x27);
 
     }

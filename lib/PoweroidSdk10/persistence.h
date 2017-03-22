@@ -18,9 +18,9 @@ struct Persistence{
   
   void storeProperties(long* props);
   void storeValue(long* prop);
-  void storeValue(int i, long val);
+  void storeValue(uint8_t i, long val);
   void loadValue(long* prop);
-  void loadValue(int i);
+  void loadValue(uint8_t i);
   void loadProperties(long* prop);
 
 };

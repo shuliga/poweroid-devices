@@ -64,7 +64,7 @@ bool isTimeAfter(TimingState *ts, bool trigger) {
     return ts->state;
 }
 
-void flash(TimingState *ts, int pin, boolean on) {
+void flash(TimingState *ts, uint8_t pin, boolean on) {
     unsigned long current = getCurrent(ts);
     if (testInterval(ts, current)) {
         ts->state = !ts->state;

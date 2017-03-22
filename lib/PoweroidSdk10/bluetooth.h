@@ -9,7 +9,7 @@
 typedef struct Bt {
 
   char *name;
-  String result;
+  char *result;
   bool on = false;
 
   Bt(char * n);

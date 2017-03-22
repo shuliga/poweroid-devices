@@ -1,3 +1,4 @@
+#include <poweroid_fan_2x1_1x1_prop.h>
 #include "bluetooth.h"
 #include "commands.h"
 #include "properties.h"
@@ -9,7 +10,7 @@ Commands::Commands(Context *_ctx): ctx(_ctx){
     persist = Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
 }
 
-void Commands::printProperty(int i) {
+void Commands::printProperty(uint8_t i) {
     Serial.print("[");
     Serial.print(i);
     Serial.print("] ");
@@ -25,20 +26,20 @@ void Commands::listen() {
 
         if (cmd.startsWith(F("get_ver"))) {
             Serial.print(PREFIX(cmd));
-            Serial.println(VERSION);
+            Serial.println(ctx->version);
             return;
         }
 
         if (cmd.startsWith(CMD_GET_SENSOR_ALL)) {
-            for (int i = 0; i < ARRAY_SIZE(installed); i++) {
+            for (uint8_t i = 0; i < ARRAY_SIZE(installed); i++) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(printSensor(installed, i));
+                Serial.println(ctx->SENS->printSensor(installed, i));
             }
             return;
         }
 
         if (cmd.startsWith(CMD_RESET_PROPS)) {
-            for (int i = 0; i < ctx->props_size; i++) {
+            for (uint8_t i = 0; i < ctx->props_size; i++) {
                 ctx->RUNTIME[i] = ctx->FACTORY[i].val;
             }
             Serial.print(PREFIX(cmd));
@@ -52,7 +53,7 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_GET_PROP_ALL)) {
-            for (int i = 0; i < ctx->props_size; i++) {
+            for (uint8_t i = 0; i < ctx->props_size; i++) {
                 Serial.print(PREFIX(cmd));
                 printProperty(i);
             }
@@ -69,7 +70,7 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_PREF_GET_PROP)) {
-            int i = (int) cmd.substring(sizeof(CMD_PREF_GET_PROP)).toInt();
+            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_PROP)).toInt();
             if (i < ctx->props_size) {
                 Serial.print(PREFIX(cmd));
                 printProperty(i);
@@ -77,8 +78,8 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_PREF_SET_PROP)) {
-            int i = (int) cmd.substring(sizeof(CMD_PREF_SET_PROP)).toInt();
-            int idx = cmd.lastIndexOf(':') + 1;
+            uint8_t i = (uint8_t ) cmd.substring(sizeof(CMD_PREF_SET_PROP)).toInt();
+            uint8_t idx = cmd.lastIndexOf(':') + 1;
             if (i < ctx->props_size && idx > 0) {
                 long v = cmd.substring(idx).toInt();
                 ctx->RUNTIME[i] = v * ctx->FACTORY[i].scale;
@@ -88,17 +89,17 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_GET_STATE_ALL)) {
-            for (int i = 0; i < ctx->states_size; i++) {
+            for (uint8_t i = 0; i < ARRAY_SIZE(states); i++) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(printState(states, i));
+                Serial.println(printState(states[i], i));
             }
             return;
         }
         if (cmd.startsWith(CMD_PREF_GET_STATE)) {
-            int i = (int) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
+            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
             if (i < ctx->props_size) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(printState(states, i));
+                Serial.println(printState(states[i], i));
             }
             return;
         }

@@ -21,13 +21,14 @@ public:
     float getTemperature()const;
     float getHumidity()const;
 
-    bool checkInstalled(int pin, bool inst);
-    bool checkInstalledWithDelay(int pin, bool inst, TimingState *hold_on);
+    bool checkInstalled(uint8_t pin, bool inst);
+    bool checkInstalledWithDelay(uint8_t pin, bool inst, TimingState *hold_on);
     void init_sensors()const;
     void check_installed();
-    bool is_sensor_on(int index);
-    int get_sensor_val(int index);
-    bool is_sensor_val(int index, int val);
+    bool is_sensor_on(uint8_t index);
+    int get_sensor_val(uint8_t index);
+    bool is_sensor_val(uint8_t index, uint8_t val);
+    char * printSensor(boolean sensors[], uint8_t idx);
 
 private:
     TimingState pollTiming = TimingState(5000L);

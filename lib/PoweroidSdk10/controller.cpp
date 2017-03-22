@@ -18,8 +18,8 @@ static enum State {
 } oldState = STORE, state = BROWSE;
 
 
-static volatile int prop_idx = 0;
-static int c_prop_idx = -1;
+static volatile uint8_t prop_idx = 0;
+static uint8_t c_prop_idx = -1;
 
 static volatile long prop_value;
 static long c_prop_value = -1;
@@ -192,7 +192,7 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.putString("  ");
 }
 
-void Controller::outputPropVal(Property *_prop, int16_t _prop_val, bool brackets, bool measure) {
+void Controller::outputPropVal(Property *_prop, int32_t _prop_val, bool brackets, bool measure) {
     char str_text[12];
     String fmt = brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s" : "%i"));
     String measure_s = String(_prop->desc);

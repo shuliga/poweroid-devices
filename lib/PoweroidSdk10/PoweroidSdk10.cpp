@@ -2,7 +2,7 @@
 
 Pwr::Pwr(Context *ctx): CTX(ctx), CMD(Commands(CTX)), CTRL(Controller(&CMD, CTX)) {
 #ifdef  BT
-    bt = new Bt(ID);
+    bt = new Bt((char *) CTX->id);
 #endif
 }
 
@@ -22,13 +22,13 @@ void Pwr::printVersion() {
 }
 
 void Pwr::init_outputs() {
-    for (int i = 0; i < sizeof(OUT_PINS) / sizeof(OUT_PINS[i]); i++) {
+    for (uint8_t i = 0; i < sizeof(OUT_PINS) / sizeof(OUT_PINS[i]); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
 }
 
 void Pwr::init_inputs() {
-    for (int i = 0; i < sizeof(IN_PINS) / sizeof(IN_PINS[i]); i++) {
+    for (uint8_t i = 0; i < sizeof(IN_PINS) / sizeof(IN_PINS[i]); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
 }

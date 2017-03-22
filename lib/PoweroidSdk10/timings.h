@@ -1,5 +1,6 @@
 #ifndef TIMINGS_H
 #define TIMINGS_H
+#include <Arduino.h>
 
 const unsigned long MAX_LONG = 4294967295L;
 
@@ -21,7 +22,7 @@ bool countdown(TimingState *ts, bool on, bool cancel);
 
 bool isTimeAfter(TimingState *ts, bool trigger);
 
-void flash(TimingState *ts, int pin, bool on);
+void flash(TimingState *ts, uint8_t pin, bool on);
 
 bool ping(TimingState *ts);
 

@@ -49,15 +49,10 @@ typedef struct Context{
     Sensors *SENS;
     Property *FACTORY;
     long *RUNTIME;
-    const int props_size;
-    const String *states;
-    const int states_size;
+    const uint8_t props_size;
     const char *id;
 } Context;
 
-
-String printState(String states[], int idx);
-String printSensor(boolean states[], int idx);
 unsigned long hash(byte* data, unsigned long size);
 
 #endif

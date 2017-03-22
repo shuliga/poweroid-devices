@@ -103,8 +103,8 @@ class ACROBOTIC_SSD1306 {
 
     void setHorizontalScrollProperties(
         bool direction,
-        unsigned char startPage, 
-        unsigned char endPage, 
+        unsigned char startPage,
+        unsigned char endPage,
         unsigned char scrollSpeed);
     void activateScroll();
     void deactivateScroll();
@@ -129,6 +129,8 @@ class ACROBOTIC_SSD1306 {
     void cleanPages(uint8_t rows, uint8_t col, uint8_t _l_width, uint8_t _n_width, const bool centered);
     void restorePaging();
     uint8_t getTextWidth(const char *_text);
+
+    void cleanPage(const uint8_t rows, const uint8_t s_width, uint8_t e_width, int8_t delta);
 };
 
 extern ACROBOTIC_SSD1306 oled;  // ACROBOTIC_SSD1306 object 

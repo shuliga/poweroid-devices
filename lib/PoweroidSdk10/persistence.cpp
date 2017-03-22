@@ -33,7 +33,7 @@ Persistence::Persistence(const String s, long *props_runtime, int sz){
 
 
 void Persistence::storeProperties(long* props){
-  for(int i=0; i < size; i++){
+  for(uint8_t i=0; i < size; i++){
     storeValue(i, props[i]);
   }
   unsigned long hash = hashProp(props, size);
@@ -49,7 +49,7 @@ void Persistence::storeProperties(long* props){
 void Persistence::storeValue(long* prop){
 }
 
-void Persistence::storeValue(int i, long val){
+void Persistence::storeValue(uint8_t i, long val){
   if(i <= size){
     EEPROM.put(ADDR(i), val);
   }
@@ -58,11 +58,11 @@ void Persistence::storeValue(int i, long val){
 void Persistence::loadValue(long* prop){
 }
 
-void Persistence::loadValue(int i){
+void Persistence::loadValue(uint8_t i){
 }
 
 void Persistence::loadProperties(long* props){
-  for(int i = 0; i < size; i++){
+  for(uint8_t i = 0; i < size; i++){
      EEPROM.get(ADDR(i), props[i]);
   }
 }

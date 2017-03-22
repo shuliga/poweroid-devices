@@ -23,8 +23,8 @@ typedef struct Property {
     }
 
     Property(const __FlashStringHelper *a, long v, long n, long m, long s) : desc(a), minv(n), maxv(m), val(v),
-                                                                            scale(s) {}
+                                                                             scale(s) {}
 
-} ;
+};
 
 #endif

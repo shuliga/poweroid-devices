@@ -9,6 +9,12 @@ typedef struct Timings{
     TimingState countdown_power, countdown_light, timeAfter_lightOff;
 };
 
+enum State{
+    OFF, AL, AD, POWER, POWER_SBY
+};
+
+static State states[2] = {OFF, OFF};
+
 static struct Properties{
 
      Property FACTORY[8] = {
@@ -57,5 +63,24 @@ static struct Properties{
     }
 
 } FAN_PROPS;
+
+static char* printState(State state, int8_t i){
+    char* ch = new char;
+    char* result = new char;
+    switch (state){
+        case OFF: ch = "OFF";
+            break;
+        case AL: ch = "AL";
+            break;
+        case AD: ch = "AD";
+            break;
+        case POWER: ch = "POWER";
+            break;
+        case POWER_SBY: ch = "POWER-SBY";
+            break;
+    }
+    sprintf(result, "State[%i]: %s", i, ch);
+    return result;
+}
 
 #endif
