@@ -23,7 +23,7 @@ private:
     void initDisplay();
     void printPropDescr(uint8_t _idx);
     void outputStatus(const __FlashStringHelper *txt, const long val);
-    void outputPropVal(Property *_prop, int32_t _prop_val, bool brackets, bool measure);
+    void outputPropVal(Property *_prop, int16_t _prop_val, bool brackets, bool _measure);
 
     void outputSleepScreen();
 

@@ -151,6 +151,7 @@ void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col, const
     uint8_t i = 0;
 
     while (_text[i] != '\0') {
+        bool dither = false;
         unsigned char cr = (unsigned char) _text[i];
         cr -= first;
         GFXglyph *glyph = &(((GFXglyph *) pgm_read_ptr(&gfxfont->glyph))[cr]);
@@ -187,7 +188,7 @@ void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col, const
                         cl |= (set << r);
                     }
                 }
-                sendData(cl);
+                sendData(cl & (!dither ? 0xFF : (c % 2 == 0 ? 0xAA: 0x55)));
             }
         }
         i++;

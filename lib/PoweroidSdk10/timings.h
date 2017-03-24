@@ -8,7 +8,7 @@ typedef struct TimingState{
     unsigned long mils;
     unsigned long interval;
     long delta;
-    long fact;
+    long suspended;
     bool state;
     bool dirty;
     TimingState(unsigned long _int) : interval(_int) {};
@@ -19,6 +19,8 @@ unsigned long getCurrent(TimingState *ts);
 bool testInterval(TimingState *ts, unsigned long current);
 
 bool countdown(TimingState *ts, bool on, bool cancel);
+
+bool countdown(TimingState *ts, bool on, bool suspend, bool cancel);
 
 bool isTimeAfter(TimingState *ts, bool trigger);
 

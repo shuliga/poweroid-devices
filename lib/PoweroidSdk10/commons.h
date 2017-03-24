@@ -1,5 +1,5 @@
 #if !defined(ARRAY_SIZE)
-    #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
+#define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
 #ifndef COMMONS_H
@@ -43,7 +43,7 @@
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
-typedef struct Context{
+typedef struct Context {
     const char *SIGNATURE;
     const char *version;
     Sensors *SENS;
@@ -53,7 +53,7 @@ typedef struct Context{
     const char *id;
 } Context;
 
-unsigned long hash(byte* data, unsigned long size);
+unsigned long hash(byte *data, unsigned long size);
 
 #endif
 

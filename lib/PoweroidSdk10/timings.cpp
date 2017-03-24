@@ -14,7 +14,7 @@ unsigned long getCurrent(TimingState *ts) {
 }
 
 bool testInterval(TimingState *ts, unsigned long current) {
-    return (current - ts->mils - ts->delta) >= ts->interval;
+    return (current - ts->mils - ts->delta) >= ts->interval + (ts->suspended == 0 ? 0 : current - ts->suspended);
 }
 
 bool countdown(TimingState *ts, bool on, bool cancel) {
@@ -43,10 +43,17 @@ bool countdown(TimingState *ts, bool on, bool suspend, bool cancel) {
     if (ts->dirty && !on) {
         ts->dirty = false;
     }
-    if (ts->state && (testInterval(ts, current) || cancel)) {
-        ts->mils = 0;
-        ts->state = false;
-        ts->dirty = on;
+    if (ts->state){
+        if(suspend){
+            ts->suspended = getCurrent(ts);
+        } else {
+            ts->suspended = 0;
+        }
+        if ((testInterval(ts, current) || cancel)) {
+            ts->mils = 0;
+            ts->state = false;
+            ts->dirty = on;
+        }
     }
     return ts->state;
 }

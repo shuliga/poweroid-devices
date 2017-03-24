@@ -167,11 +167,7 @@ void Controller::outputSleepScreen() {
         float temp = ctx->SENS->getTemperature();
         float humid = ctx->SENS->getHumidity();
         char out[12];
-        char spc[] = "C, ";
-        strcpy(out, String(temp, 0).c_str());
-        strcat(out, spc);
-        strcat(out, String(humid, 0).c_str());
-        strcat(out, "%");
+        sprintf(out, "%iC, %i%%", (int) temp, (int) humid);
         oled.outputTextXY(3, 64, out, true);
     }
 }
@@ -180,7 +176,7 @@ void Controller::printPropDescr(uint8_t _idx) {
     if (oled.isConnected()) {
         oled.setTextXY(1, 0);
         oled.putString(ctx->FACTORY[_idx].desc);
-        oled.putString("      ");
+        oled.putString(F("      "));
     }
 }
 
@@ -192,11 +188,26 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.putString("  ");
 }
 
-void Controller::outputPropVal(Property *_prop, int32_t _prop_val, bool brackets, bool measure) {
+void Controller::outputPropVal(Property *_prop, int16_t _prop_val, bool brackets, bool _measure) {
     char str_text[12];
-    String fmt = brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s" : "%i"));
-    String measure_s = String(_prop->desc);
-    sprintf(str_text, fmt.c_str(), _prop_val, measure_s.substring(measure_s.lastIndexOf('(') + 1, measure_s.lastIndexOf(')')).c_str());
+    char measure_c[6];
+    const char *fmt =
+            brackets && _measure ? "[%i]%s" : (brackets & !_measure ? "[%i]" : (!brackets && _measure ? "%i%s"
+                                                                                                     : "%i"));
+    PGM_P p = reinterpret_cast<PGM_P>(_prop->desc);
+    size_t n = 0;
+    uint8_t i = 0;
+    bool start = false;
+    while (i < 11) {
+        unsigned char c = pgm_read_byte(p++);
+        if (c == ')') break;
+        if (start) {measure_c[i] = c;
+            i++;
+        }
+        if(c=='(') start = true;
+    }
+    measure_c[i] = 0;
+    sprintf(str_text, fmt, _prop_val, measure_c);
     oled.outputTextXY(3, 64, str_text, true);
 }
 
