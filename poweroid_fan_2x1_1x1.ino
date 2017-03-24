@@ -16,7 +16,7 @@ Pwr *PWR;
 Timings timings[2] = {{0, 0, 0},
                       {0, 0, 0}};
 
-State prev_state = OFF;
+State prev_state = POWER_SBY;
 
 void init_timing(uint8_t index) {
     timings[index].countdown_power.interval = (unsigned long) FAN_PROPS._RUNTIME[index][0];
@@ -50,7 +50,7 @@ void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings
         case POWER: {
             bool firstRun = prev_state != POWER;
             prev_state = POWER;
-            if (countdown(&timings->countdown_power, firstRun, false, true)) {
+            if (countdown(&timings->countdown_power, firstRun, false, false)) {
                 if (light) {
                     states[state_id] = POWER_SBY;
                 }
@@ -61,13 +61,16 @@ void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings
             break;
         }
         case POWER_SBY: {
-            if (countdown(&timings->countdown_power, false, true, true)) {
+            bool firstRun = prev_state != POWER_SBY;
+            prev_state = POWER_SBY;
+            if (countdown(&timings->countdown_power, false, true, false)) {
                 if (!light) {
-                    prev_state = POWER_SBY;
                     states[state_id] = POWER;
                 }
+                if (firstRun){
+                    isTimeAfter(&timings->countdown_light, false); //reset timer
+                }
                 if (isTimeAfter(&timings->countdown_light, light)) {
-                    prev_state = POWER_SBY;
                     states[state_id] = AL;
                 }
             }
