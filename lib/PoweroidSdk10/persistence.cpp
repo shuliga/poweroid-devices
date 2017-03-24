@@ -3,15 +3,18 @@
 #include "commons.h"
 
 unsigned long hashProp(long *props, int size) {
-      return hash((byte *)props, size);
+      return hash((byte *)props, size * sizeof(long));
 }
 
 Persistence::Persistence(const String s, long *props_runtime, int sz){
   size = sz;
   EEPROM.get(0, signature);
   String sign = String(signature);
+  unsigned long eeprom_hash;
+  EEPROM.get(SIGNATURE_SIZE, eeprom_hash);
   Serial.print(F("EEPROM signature '"));
-  Serial.println(sign + "'");
+  Serial.print(sign + "', hash:");
+  Serial.println(eeprom_hash);
   if (sign != s){
     s.toCharArray(signature, SIGNATURE_SIZE);
     EEPROM.put(0, signature);
@@ -20,13 +23,10 @@ Persistence::Persistence(const String s, long *props_runtime, int sz){
     storeProperties(props_runtime);
     return;
   }
-  unsigned long eeprom_hash;
   unsigned long hash = hashProp(props_runtime, size);
-  EEPROM.get(SIGNATURE_SIZE, eeprom_hash);
   if (eeprom_hash != hash){
     Serial.println(F("EEPROM hash differs from factory"));
     loadProperties(props_runtime);
-    Serial.println(F("Properties loaded from EEPROM"));
   }
   
 }
@@ -41,7 +41,7 @@ void Persistence::storeProperties(long* props){
   c_hash[10] = 0;
   ultoa(hash, c_hash, 10);
   Serial.print(size);
-  Serial.print(F(" properties stored in EEPROM. Hash:"));
+  Serial.print(F(" properties stored in EEPROM. Hash: "));
   Serial.println(c_hash);
   EEPROM.put(SIGNATURE_SIZE, hash);
 }
@@ -65,5 +65,7 @@ void Persistence::loadProperties(long* props){
   for(uint8_t i = 0; i < size; i++){
      EEPROM.get(ADDR(i), props[i]);
   }
+  Serial.print(size);
+  Serial.println(F(" properties loaded form EEPROM"));
 }
 
