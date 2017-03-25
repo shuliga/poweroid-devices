@@ -1,14 +1,11 @@
 
 #include <Arduino.h>
 #include "pin_io.h"
-#include "commands.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_2x1_1x1_prop.h"
 
-#define ENC_BTN_PIN 7
-// #define BT
 
-char ID[] = "PWR-FAN-21-11\0";
+char ID[] = "PWR-FAN-21-11";
 
 Context *CTX;
 Pwr *PWR;
@@ -101,11 +98,11 @@ void loop() {
     init_timing(0);
     init_timing(1);
 
-    CTX->SENS->check_installed();
+    PWR->processSensors();
 
-    bool light1 = CTX->SENS->is_sensor_on(0);
-    bool light2 = CTX->SENS->is_sensor_on(1);
-    bool light3 = CTX->SENS->is_sensor_on(2);
+    bool light1 = PWR->SENS->is_sensor_on(0);
+    bool light2 = PWR->SENS->is_sensor_on(1);
+    bool light3 = PWR->SENS->is_sensor_on(2);
 
     run_state(light1, PWR1_PIN, 0, &timings[0]);
     run_state(light2 || light3, PWR2_PIN, 1, &timings[1]);

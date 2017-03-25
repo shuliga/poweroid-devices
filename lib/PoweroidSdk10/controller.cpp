@@ -19,7 +19,7 @@ static enum State {
 
 
 static volatile uint8_t prop_idx = 0;
-static uint8_t c_prop_idx = -1;
+static int8_t c_prop_idx = -1;
 
 static volatile long prop_value;
 static long c_prop_value = -1;
@@ -59,8 +59,6 @@ void Controller::outputTitle() const {
 
 
 void Controller::process() {
-
-    ctx->SENS->updateTnH();
 
     McEvent event = encoderClick.checkButton();
 
@@ -167,7 +165,7 @@ void Controller::outputSleepScreen() {
         float temp = ctx->SENS->getTemperature();
         float humid = ctx->SENS->getHumidity();
         char out[12];
-        sprintf(out, "%iC, %i%%", (int) temp, (int) humid);
+        sprintf(out, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
         oled.outputTextXY(3, 64, out, true);
     }
 }
@@ -188,7 +186,7 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.putString("  ");
 }
 
-void Controller::outputPropVal(Property *_prop, int16_t _prop_val, bool brackets, bool _measure) {
+void Controller::outputPropVal(Property *_prop, uint16_t _prop_val, bool brackets, bool _measure) {
     char str_text[12];
     char measure_c[6];
     const char *fmt =
@@ -199,7 +197,7 @@ void Controller::outputPropVal(Property *_prop, int16_t _prop_val, bool brackets
     uint8_t i = 0;
     bool start = false;
     while (i < 11) {
-        unsigned char c = pgm_read_byte(p++);
+        unsigned char c = (unsigned char) pgm_read_byte(p++);
         if (c == ')') break;
         if (start) {measure_c[i] = c;
             i++;

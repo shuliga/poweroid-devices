@@ -1,4 +1,3 @@
-#include <poweroid_fan_2x1_1x1_prop.h>
 #include "bluetooth.h"
 #include "commands.h"
 #include "properties.h"
@@ -7,7 +6,7 @@
 #define PREFIX(cmd) cmd + F(" -> ")
 
 Commands::Commands(Context *_ctx): ctx(_ctx){
-    persist = Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
+    persist = new Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
 }
 
 void Commands::printProperty(uint8_t i) {
@@ -60,7 +59,7 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_LOAD_PROPS)) {
-            persist.loadProperties(ctx->RUNTIME);
+            persist->loadProperties(ctx->RUNTIME);
             Serial.print(PREFIX(cmd));
             Serial.println(F("Properties loaded from EEPROM"));
             return;
@@ -88,26 +87,26 @@ void Commands::listen() {
             }
             return;
         }
-        if (cmd.startsWith(CMD_GET_STATE_ALL)) {
-            for (uint8_t i = 0; i < ARRAY_SIZE(states); i++) {
-                Serial.print(PREFIX(cmd));
-                Serial.println(printState(states[i], i));
-            }
-            return;
-        }
-        if (cmd.startsWith(CMD_PREF_GET_STATE)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
-            if (i < ctx->props_size) {
-                Serial.print(PREFIX(cmd));
-                Serial.println(printState(states[i], i));
-            }
-            return;
-        }
+//        if (cmd.startsWith(CMD_GET_STATE_ALL)) {
+//            for (uint8_t i = 0; i < ARRAY_SIZE(states); i++) {
+//                Serial.print(PREFIX(cmd));
+//                Serial.println(printState(states[i], i));
+//            }
+//            return;
+//        }
+//        if (cmd.startsWith(CMD_PREF_GET_STATE)) {
+//            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
+//            if (i < ctx->props_size) {
+//                Serial.print(PREFIX(cmd));
+//                Serial.println(printState(states[i], i));
+//            }
+//            return;
+//        }
     }
 }
 
 void Commands::storeProps() {
-    persist.storeProperties(ctx->RUNTIME);
+    persist->storeProperties(ctx->RUNTIME);
     Serial.print(PREFIX(String(CMD_STORE_PROPS)));
     Serial.println(F("Properties stored to EEPROM"));
     return;

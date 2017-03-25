@@ -14,7 +14,7 @@ DHT::DHT(uint8_t pin, uint8_t type) {
 
 void DHT::begin(void) {
   // set up the pins!
-  pinMode(_pin, INPUT);
+  pinMode(_pin, INPUT_PULLUP);
   digitalWrite(_pin, HIGH);
   _lastreadtime = 0;
 }
@@ -39,7 +39,6 @@ float DHT::readTemperature(void) {
       return f;
     }
   }
-  Serial.print("Read fail");
   return NAN;
 }
 
@@ -59,7 +58,6 @@ float DHT::readHumidity(void) {
       return f;
     }
   }
-  Serial.print("Read fail");
   return NAN;
 }
 

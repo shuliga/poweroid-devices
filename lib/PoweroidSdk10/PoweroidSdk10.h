@@ -2,9 +2,15 @@
 #define POWEROID_SDK_10_H
 
 #define VERSION "POWEROID SDK 1.0"
-#define PWR21
 
 #define BT
+#ifndef DHTPIN
+    #define DHTPIN 5
+#endif
+#ifndef ENC_BTN_PIN
+    #define ENC_BTN_PIN 7
+#endif
+
 
 #include "commons.h"
 #include "properties.h"
@@ -25,12 +31,15 @@ class Pwr {
 public:
     Context *CTX;
     Bt *bt;
+    Sensors *SENS;
     Commands CMD;
     Controller CTRL;
 
     Pwr(Context *ctx);
 
     void begin();
+
+    void processSensors();
 
     void run();
 

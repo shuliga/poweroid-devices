@@ -1,12 +1,15 @@
-#include "persistence.h"
+
 #include <EEPROM.h>
+#include "pin_io.h"
 #include "commons.h"
+#include "persistence.h"
 
 unsigned long hashProp(long *props, int size) {
       return hash((byte *)props, size * sizeof(long));
 }
 
 Persistence::Persistence(const String s, long *props_runtime, int sz){
+  checkFactoryReset(props_runtime);
   size = sz;
   EEPROM.get(0, signature);
   String sign = String(signature);
@@ -67,5 +70,13 @@ void Persistence::loadProperties(long* props){
   }
   Serial.print(size);
   Serial.println(F(" properties loaded form EEPROM"));
+}
+
+void Persistence::checkFactoryReset(long *props_runtime) {
+  if(readPinLow(FACTORY_RESET_PIN)){
+    storeProperties(props_runtime);
+    Serial.println("Factory reset EEPROM");
+  }
+
 }
 

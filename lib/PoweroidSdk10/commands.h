@@ -26,7 +26,7 @@ public:
 
 private:
     Context *ctx;
-    Persistence persist;
+    Persistence *persist;
 
     void printProperty(uint8_t i);
 };

@@ -1,6 +1,8 @@
 #include "PoweroidSdk10.h"
+#include "pin_io.h"
 
-Pwr::Pwr(Context *ctx): CTX(ctx), CMD(Commands(CTX)), CTRL(Controller(&CMD, CTX)) {
+Pwr::Pwr(Context *ctx) : CTX(ctx), CMD(Commands(CTX)), CTRL(Controller(&CMD, CTX)) {
+    SENS = ctx->SENS;
 #ifdef  BT
     bt = new Bt((char *) CTX->id);
 #endif
@@ -9,12 +11,16 @@ Pwr::Pwr(Context *ctx): CTX(ctx), CMD(Commands(CTX)), CTRL(Controller(&CMD, CTX)
 void Pwr::begin() {
     init_outputs();
     init_inputs();
-    CTX->SENS->init_sensors();
+    SENS->init_sensors();
 }
 
 void Pwr::run() {
     CMD.listen();
     CTRL.process();
+}
+
+void Pwr::processSensors() {
+    SENS->process();
 }
 
 void Pwr::printVersion() {

@@ -5,12 +5,14 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
+#define DHTPIN 5
+#define PWR21
+#define LED_PIN 13
+#define FACTORY_RESET_PIN 9
+
 #include <Arduino.h>
 #include "properties.h"
 #include "sensors.h"
-
-#define PWR21
-#define LED_PIN 13;
 
 #ifdef PWR21
 

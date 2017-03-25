@@ -8,23 +8,23 @@
 #include <DHT.h>
 #include "timings.h"
 
-#define DHTPIN 5
 #define DHTTYPE DHT22
 
 static bool installed[3];
 
 class Sensors {
 public:
-    Sensors();
 
     void updateTnH();
     float getTemperature()const;
     float getHumidity()const;
 
+    void process();
     bool checkInstalled(uint8_t pin, bool inst);
     bool checkInstalledWithDelay(uint8_t pin, bool inst, TimingState *hold_on);
-    void init_sensors()const;
+    void init_sensors();
     void check_installed();
+    bool is_dht_installed();
     bool is_sensor_on(uint8_t index);
     int get_sensor_val(uint8_t index);
     bool is_sensor_val(uint8_t index, uint8_t val);
@@ -36,6 +36,8 @@ private:
     float humid;
 
     DHT *dht;
+
+    DHT *searchDht();
 };
 
 
