@@ -7,7 +7,7 @@
 #include "timings.h"
 #include "sensors.h"
 
-const long INST_DELAY = 1000L;
+const long INST_DELAY = 500L;
 
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
@@ -95,7 +95,7 @@ bool Sensors::is_dht_installed() {
 
 
 bool Sensors::is_sensor_on(uint8_t index) {
-    return readPinLow(IN_PINS[index]) && installed[index];
+    return isTimeAfter(hold_on[index], readPinLow(IN_PINS[index]) && installed[index]);
 }
 
 int Sensors::get_sensor_val(uint8_t index) {
@@ -118,5 +118,9 @@ char *Sensors::printSensor(uint8_t idx) {
 
 uint8_t Sensors::size() {
     return ARRAY_SIZE(IN_PINS);
+}
+
+void Sensors::printDht(char *buffer) {
+    sprintf(buffer, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
 }
 

@@ -24,9 +24,17 @@ void Commands::listen() {
         String cmd = Serial.readString();
         cmd.replace("\n", "");
 
-        if (cmd.startsWith(F("get_ver"))) {
+        if (cmd.startsWith(CMD_GET_VER)) {
             Serial.print(PREFIX(cmd));
             Serial.println(ctx->version);
+            return;
+        }
+
+        if (cmd.startsWith(F(CMD_GET_DHT))) {
+            char dht[12];
+            ctx->SENS->printDht(dht);
+            Serial.print(PREFIX(cmd));
+            Serial.println(dht);
             return;
         }
 

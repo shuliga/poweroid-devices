@@ -45,6 +45,8 @@ public:
 
     uint8_t size();
 
+    void printDht(char *buffer);
+
 private:
     TimingState pollTiming = TimingState(5000L);
     float temp;

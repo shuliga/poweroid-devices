@@ -41,6 +41,9 @@ void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, T
             if (isTimeAfter(timings.delay_power, !light)) {
                 states[state_id] = AD;
             }
+            if (humidity && !light) {
+                states[state_id] = POWER;
+            }
             break;
         }
         case AD: {
@@ -92,7 +95,7 @@ void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, T
 }
 
 void setup() {
-    delay(3000);
+    delay(600);
     Serial.begin(9600);
     BT = new Bt(c_ID);
     CTX = new Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size,

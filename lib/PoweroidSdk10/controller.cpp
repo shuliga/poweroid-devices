@@ -165,7 +165,7 @@ void Controller::outputSleepScreen() {
         float temp = ctx->SENS->getTemperature();
         float humid = ctx->SENS->getHumidity();
         char out[12];
-        sprintf(out, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
+        ctx->SENS->printDht(out);
         oled.outputTextXY(3, 64, out, true);
     }
 }

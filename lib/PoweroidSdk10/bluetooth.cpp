@@ -2,8 +2,9 @@
 
 Bt::Bt(char *n): name(n){
     if (Serial && !on){
+        delay(2000);
         Serial.print(F("AT+VERSION"));
-        delay(500);
+        delay(600);
         if (Serial.available() > 0){
             String ver = Serial.readString();
             sprintf(result, "BT version: %s", ver.c_str());
@@ -12,11 +13,11 @@ Bt::Bt(char *n): name(n){
                 Serial.print(name);
                 on = true;
                 sprintf(result, "BT name set to: %s", name);
-                delay(200);
+                delay(600);
             }
         } else {
             Serial.println("");
-            result = "No BT version data.";
+            sprintf(result, "No BT version data.");
         }
     }
 }

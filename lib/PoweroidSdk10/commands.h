@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#define CMD_GET_VER "get_ver"
+#define CMD_GET_DHT "get_dht"
 #define CMD_PREF_GET_STATE "get_state_"
 #define CMD_GET_STATE_ALL "get_state_all"
 #define CMD_PREF_GET_PROP "get_prop_"

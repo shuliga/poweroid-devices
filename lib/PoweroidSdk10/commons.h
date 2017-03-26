@@ -5,8 +5,9 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
+#define PWR20
+
 #define DHTPIN 5
-#define PWR21
 #define LED_PIN 13
 #define FACTORY_RESET_PIN 9
 
@@ -32,7 +33,9 @@
 #define PWR1_PIN 8
 #define PWR2_PIN 9
 
-#else // PWR20
+#endif // PWR21
+
+#ifdef PWR20
 
 #define BOARD_VERSION "PWR20"
 
