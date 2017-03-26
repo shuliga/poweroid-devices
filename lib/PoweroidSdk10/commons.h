@@ -12,9 +12,10 @@
 
 #include <Arduino.h>
 #include "properties.h"
-#include "sensors.h"
 
 #ifdef PWR21
+
+#define BOARD_VERSION "PWR21"
 
 #define ENC1_PIN 2
 #define ENC2_PIN 3
@@ -28,7 +29,12 @@
 #define INA2_PIN 15
 #define INA3_PIN 16
 
-#else
+#define PWR1_PIN 8
+#define PWR2_PIN 9
+
+#else // PWR20
+
+#define BOARD_VERSION "PWR20"
 
 #define ENC_BTN_PIN 7
 
@@ -40,20 +46,14 @@
 #define INA2_PIN 15
 #define INA3_PIN 16
 
-#endif // PWR20/PWR21
+#define PWR1_PIN 10
+#define PWR2_PIN 11
 
-const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
-const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
+#endif // PWR20
 
-typedef struct Context {
-    const char *SIGNATURE;
-    const char *version;
-    Sensors *SENS;
-    Property *FACTORY;
-    long *RUNTIME;
-    const uint8_t props_size;
-    const char *id;
-} Context;
+//extern const uint8_t IN_PINS[];
+//extern const uint8_t INA_PINS[];
+//extern const uint8_t OUT_PINS[];
 
 unsigned long hash(byte *data, unsigned long size);
 

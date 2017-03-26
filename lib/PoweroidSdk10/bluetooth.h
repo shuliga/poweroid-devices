@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 #define HISPEED 115200
-#define VER "hc01.comV2."
+#define BT_VER "hc01.comV2."
 
 typedef struct Bt {
 

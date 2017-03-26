@@ -9,12 +9,16 @@
 
 const long INST_DELAY = 1000L;
 
-static TimingState flash_333 = TimingState(333);
-static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
+const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
+const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
-DHT *Sensors::searchDht(){
+static TimingState flash_333 = TimingState(333);
+static TimingState hold_on[3] = {INST_DELAY,INST_DELAY,INST_DELAY};
+static bool installed[ARRAY_SIZE(IN_PINS)];
+
+DHT *Sensors::searchDht() {
     DHT *result = NULL;
-    for(uint8_t i = 0 ; i < ARRAY_SIZE(IN_PINS); i++){
+    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
         result = new DHT(IN_PINS[i], DHTTYPE);
         result->begin();
         float val = result->readHumidity();
@@ -23,6 +27,8 @@ DHT *Sensors::searchDht(){
             Serial.println(IN_PINS[i]);
             return result;
         } else {
+            pinMode(IN_PINS[i], INPUT_PULLUP);
+            digitalWrite(IN_PINS[i], HIGH);
             delete result;
         }
     }
@@ -30,7 +36,7 @@ DHT *Sensors::searchDht(){
 }
 
 void Sensors::updateTnH() {
-    if (dht != NULL && ping(&pollTiming)) {
+    if (dht != NULL && ping(pollTiming)) {
         temp = dht->readTemperature();
         humid = dht->readHumidity();
     }
@@ -53,11 +59,14 @@ bool Sensors::checkInstalled(uint8_t pin, bool inst) {
     return inst || sign;
 }
 
-bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState *hold_on) {
-    bool sign = isTimeAfter(hold_on, readPinLow(pin));
-    if (!inst && sign) {
-        Serial.print(F("Sensor installed on pin "));
-        Serial.println(pin);
+bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on) {
+    bool sign = false;
+    if (!inst) {
+        sign = isTimeAfter(hold_on, readPinLow(pin));
+        if (sign) {
+            Serial.print(F("Sensor installed on pin "));
+            Serial.println(pin);
+        }
     }
     return inst || sign;
 }
@@ -69,14 +78,14 @@ void Sensors::init_sensors() {
     }
 }
 
-void Sensors::process(){
+void Sensors::process() {
     check_installed();
     updateTnH();
 }
 
 void Sensors::check_installed() {
     for (uint8_t i = 0; i < 3; i++) {
-        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], &hold_on[i]);
+        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], hold_on[i]);
     }
 }
 
@@ -101,9 +110,13 @@ bool Sensors::is_sensor_val(uint8_t index, uint8_t val) {
     return get_sensor_val(index) == val;
 }
 
-char *Sensors::printSensor(boolean sensors[], uint8_t idx) {
+char *Sensors::printSensor(uint8_t idx) {
     char *result = new char;
-    sprintf(result, "Sensor[%i]: %s", idx, sensors[idx] ? "installed" : "not installed");
+    sprintf(result, "Sensor[%i]: %s", idx, installed[idx] ? "installed" : "not installed");
     return result;
+}
+
+uint8_t Sensors::size() {
+    return ARRAY_SIZE(IN_PINS);
 }
 

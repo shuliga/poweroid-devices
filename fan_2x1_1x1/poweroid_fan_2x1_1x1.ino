@@ -1,5 +1,4 @@
 
-#include <Arduino.h>
 #include "pin_io.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_2x1_1x1_prop.h"
@@ -22,32 +21,32 @@ void init_timing(uint8_t index) {
 }
 
 
-void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings) {
+void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings &timings) {
     switch (states[state_id]) {
         case OFF: {
             prev_state = OFF;
-            if (isTimeAfter(&timings->countdown_light, light)) {
+            if (isTimeAfter(timings.countdown_light, light)) {
                 states[state_id] = AL;
             }
             break;
         }
         case AL: {
             prev_state = AL;
-            if (isTimeAfter(&timings->timeAfter_lightOff, !light)) {
+            if (isTimeAfter(timings.timeAfter_lightOff, !light)) {
                 states[state_id] = AD;
             }
             break;
         }
         case AD: {
             prev_state = AD;
-            timings->countdown_power.suspended = 0;
+            timings.countdown_power.suspended = 0;
             states[state_id] = POWER;
             break;
         }
         case POWER: {
             bool firstRun = prev_state != POWER;
             prev_state = POWER;
-            if (countdown(&timings->countdown_power, firstRun, false, false)) {
+            if (countdown(timings.countdown_power, firstRun, false, false)) {
                 if (light) {
                     states[state_id] = POWER_SBY;
                 }
@@ -60,14 +59,14 @@ void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings
         case POWER_SBY: {
             bool firstRun = prev_state != POWER_SBY;
             prev_state = POWER_SBY;
-            if (countdown(&timings->countdown_power, false, true, false)) {
+            if (countdown(timings.countdown_power, false, true, false)) {
                 if (!light) {
                     states[state_id] = POWER;
                 }
                 if (firstRun){
-                    isTimeAfter(&timings->countdown_light, false); //reset timer
+                    isTimeAfter(timings.countdown_light, false); //reset timer
                 }
-                if (isTimeAfter(&timings->countdown_light, light)) {
+                if (isTimeAfter(timings.countdown_light, light)) {
                     states[state_id] = AL;
                 }
             }
@@ -76,7 +75,7 @@ void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings
 
     }
     if (prev_state != states[state_id]) {
-        Serial.println(printState(states[state_id], state_id));
+        Serial.println(printState(state_id));
     }
     led(13, states[state_id] == POWER);
 
@@ -87,7 +86,7 @@ void run_state(bool light, uint8_t power_pin, uint8_t state_id, Timings *timings
 void setup() {
     Serial.begin(9600);
     CTX = new Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size,
-                      (char *) &ID};
+                      (char *) &ID, ARRAY_SIZE(states), printState};
     PWR = new Pwr(CTX);
     PWR->printVersion();
     PWR->begin();
@@ -104,10 +103,9 @@ void loop() {
     bool light2 = PWR->SENS->is_sensor_on(1);
     bool light3 = PWR->SENS->is_sensor_on(2);
 
-    run_state(light1, PWR1_PIN, 0, &timings[0]);
-    run_state(light2 || light3, PWR2_PIN, 1, &timings[1]);
+    run_state(light1, PWR1_PIN, 0, timings[0]);
+    run_state(light2 || light3, PWR2_PIN, 1, timings[1]);
 
     PWR->run();
-
 }
 

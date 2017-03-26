@@ -32,7 +32,7 @@ MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
 
 
-Controller::Controller(Commands *_cmd, Context *_ctx) : cmd(_cmd), ctx(_ctx) {
+Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {
     initDisplay();
     initEncoderInterrupts();
 }
@@ -70,7 +70,7 @@ void Controller::process() {
                 c_prop_value = prop_value;
                 sei();
                 printPropDescr((uint8_t) prop_idx);
-                outputPropVal(&ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
+                outputPropVal(ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
             }
             if (event == CLICK) {
                 c_prop_idx = -1; // invalidate cache;
@@ -94,7 +94,7 @@ void Controller::process() {
                 sei();
 
                 printPropDescr(prop_idx);
-                outputPropVal(&ctx->FACTORY[prop_idx], prop_value, false, true);
+                outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
             }
             if (event == CLICK) {
                 c_prop_value = -1; // invalidate cache;
@@ -161,7 +161,7 @@ void Controller::process() {
 }
 
 void Controller::outputSleepScreen() {
-    if (ping(&displayTiming)) {
+    if (ping(displayTiming)) {
         float temp = ctx->SENS->getTemperature();
         float humid = ctx->SENS->getHumidity();
         char out[12];
@@ -171,7 +171,7 @@ void Controller::outputSleepScreen() {
 }
 
 void Controller::printPropDescr(uint8_t _idx) {
-    if (oled.isConnected()) {
+    if (oled.getConnected()) {
         oled.setTextXY(1, 0);
         oled.putString(ctx->FACTORY[_idx].desc);
         oled.putString(F("      "));
@@ -186,13 +186,13 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.putString("  ");
 }
 
-void Controller::outputPropVal(Property *_prop, uint16_t _prop_val, bool brackets, bool _measure) {
+void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool brackets, bool _measure) {
     char str_text[12];
     char measure_c[6];
     const char *fmt =
             brackets && _measure ? "[%i]%s" : (brackets & !_measure ? "[%i]" : (!brackets && _measure ? "%i%s"
                                                                                                      : "%i"));
-    PGM_P p = reinterpret_cast<PGM_P>(_prop->desc);
+    PGM_P p = reinterpret_cast<PGM_P>(_prop.desc);
     size_t n = 0;
     uint8_t i = 0;
     bool start = false;

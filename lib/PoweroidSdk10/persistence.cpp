@@ -35,7 +35,7 @@ Persistence::Persistence(const String s, long *props_runtime, int sz){
 }
 
 
-void Persistence::storeProperties(long* props){
+void Persistence::storeProperties(long *props){
   for(uint8_t i=0; i < size; i++){
     storeValue(i, props[i]);
   }
@@ -49,7 +49,7 @@ void Persistence::storeProperties(long* props){
   EEPROM.put(SIGNATURE_SIZE, hash);
 }
 
-void Persistence::storeValue(long* prop){
+void Persistence::storeValue(long *prop){
 }
 
 void Persistence::storeValue(uint8_t i, long val){
@@ -58,13 +58,13 @@ void Persistence::storeValue(uint8_t i, long val){
   }
 }
 
-void Persistence::loadValue(long* prop){
+void Persistence::loadValue(long *prop){
 }
 
 void Persistence::loadValue(uint8_t i){
 }
 
-void Persistence::loadProperties(long* props){
+void Persistence::loadProperties(long *props){
   for(uint8_t i = 0; i < size; i++){
      EEPROM.get(ADDR(i), props[i]);
   }
@@ -73,10 +73,9 @@ void Persistence::loadProperties(long* props){
 }
 
 void Persistence::checkFactoryReset(long *props_runtime) {
+  pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
   if(readPinLow(FACTORY_RESET_PIN)){
     storeProperties(props_runtime);
     Serial.println("Factory reset EEPROM");
   }
-
 }
-

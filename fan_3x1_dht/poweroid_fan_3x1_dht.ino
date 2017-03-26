@@ -1,11 +1,12 @@
 
-#include <Arduino.h>
+#define ID "PWR-FAN-31-DHT"
+
 #include "pin_io.h"
+#include "bluetooth.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_3x1_dht_prop.h"
 
-
-char ID[] = "PWR-FAN-31-DHT";
+char c_ID[] = ID;
 
 Context *CTX;
 Pwr *PWR;
@@ -23,35 +24,36 @@ void init_timing() {
 }
 
 
-void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, Timings *timings) {
+void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, Timings &timings) {
     switch (states[state_id]) {
         case OFF: {
             prev_state = OFF;
-            if (isTimeAfter(&timings->light1_standby, light)) {
+            if (isTimeAfter(timings.light1_standby, light)) {
                 states[state_id] = AL;
             }
-            if(humidity && !light){
+            if (humidity && !light) {
                 states[state_id] = POWER;
             }
             break;
         }
         case AL: {
             prev_state = AL;
-            if (isTimeAfter(&timings->delay_power, !light)) {
+            if (isTimeAfter(timings.delay_power, !light)) {
                 states[state_id] = AD;
             }
             break;
         }
         case AD: {
             prev_state = AD;
-            timings->countdown_power.suspended = 0;
+            timings.countdown_power.suspended = 0;
             states[state_id] = POWER;
             break;
         }
         case POWER: {
             bool firstRun = prev_state != POWER;
             prev_state = POWER;
-            if (countdown(&timings->countdown_power, firstRun, false, false) || countdown(&timings->humidity_timeout, firstRun, false, !humidity)) {
+            if (countdown(timings.countdown_power, firstRun, false, false) ||
+                countdown(timings.humidity_timeout, firstRun, false, !humidity)) {
                 if (light) {
                     states[state_id] = POWER_SBY;
                 }
@@ -64,14 +66,15 @@ void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, T
         case POWER_SBY: {
             bool firstRun = prev_state != POWER_SBY;
             prev_state = POWER_SBY;
-            if (countdown(&timings->countdown_power, false, true, false) || countdown(&timings->humidity_timeout, false, true, false)) {
+            if (countdown(timings.countdown_power, false, true, false) ||
+                countdown(timings.humidity_timeout, false, true, false)) {
                 if (!light) {
                     states[state_id] = POWER;
                 }
-                if (firstRun){
-                    isTimeAfter(&timings->light1_standby, false); //reset timer
+                if (firstRun) {
+                    isTimeAfter(timings.light1_standby, false); //reset timer
                 }
-                if (isTimeAfter(&timings->light1_standby, light)) {
+                if (isTimeAfter(timings.light1_standby, light)) {
                     states[state_id] = AL;
                 }
             }
@@ -80,7 +83,7 @@ void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, T
 
     }
     if (prev_state != states[state_id]) {
-        Serial.println(printState(states[state_id], state_id));
+        Serial.println(printState(state_id));
     }
     led(13, states[state_id] == POWER);
 
@@ -89,9 +92,11 @@ void run_state(bool light, bool humidity, uint8_t power_pin, uint8_t state_id, T
 }
 
 void setup() {
+    delay(3000);
     Serial.begin(9600);
+    BT = new Bt(c_ID);
     CTX = new Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size,
-                      (char *) &ID};
+                      (char *) &c_ID, ARRAY_SIZE(states), printState};
     PWR = new Pwr(CTX);
     PWR->printVersion();
     PWR->begin();
@@ -107,7 +112,7 @@ void loop() {
     bool light2 = PWR->SENS->is_sensor_on(2);
     bool humidity = PWR->SENS->getHumidity() > FAN_PROPS.RUNTIME[5];
 
-    run_state(light1 || light2, humidity, PWR1_PIN, 0, &timings);
+    run_state(light1 || light2, humidity, PWR1_PIN, 0, timings);
 
     PWR->run();
 

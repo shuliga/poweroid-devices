@@ -13,12 +13,12 @@
 #define CMD_GET_SENSOR_ALL "get_sensor_all"
 
 #include "commons.h"
-#include "properties.h"
+#include "context.h"
 #include "persistence.h"
 
 class Commands {
 public:
-    Commands(Context *_ctx);
+    Commands(Context &_ctx);
 
     void listen();
 

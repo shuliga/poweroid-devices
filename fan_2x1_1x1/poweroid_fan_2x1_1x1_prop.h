@@ -3,13 +3,16 @@
 
 #define PWR21
 
-#include "properties.h"
 #include "commons.h"
+#include "context.h"
+#include "properties.h"
 #include "timings.h"
 
 typedef struct Timings{
     TimingState countdown_power, countdown_light, timeAfter_lightOff;
 };
+
+extern Bt BT;
 
 enum State{
     OFF, AL, AD, POWER, POWER_SBY

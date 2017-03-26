@@ -1,11 +1,12 @@
-#include "bluetooth.h"
-#include "commands.h"
+#include "context.h"
 #include "properties.h"
+#include "commands.h"
+#include "bluetooth.h"
 #include "PoweroidSdk10.h"
 
 #define PREFIX(cmd) cmd + F(" -> ")
 
-Commands::Commands(Context *_ctx): ctx(_ctx){
+Commands::Commands(Context &_ctx): ctx(&_ctx){
     persist = new Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
 }
 
@@ -30,9 +31,9 @@ void Commands::listen() {
         }
 
         if (cmd.startsWith(CMD_GET_SENSOR_ALL)) {
-            for (uint8_t i = 0; i < ARRAY_SIZE(installed); i++) {
+            for (uint8_t i = 0; i < ctx->SENS->size(); i++) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(ctx->SENS->printSensor(installed, i));
+                Serial.println(ctx->SENS->printSensor(i));
             }
             return;
         }
@@ -87,21 +88,21 @@ void Commands::listen() {
             }
             return;
         }
-//        if (cmd.startsWith(CMD_GET_STATE_ALL)) {
-//            for (uint8_t i = 0; i < ARRAY_SIZE(states); i++) {
-//                Serial.print(PREFIX(cmd));
-//                Serial.println(printState(states[i], i));
-//            }
-//            return;
-//        }
-//        if (cmd.startsWith(CMD_PREF_GET_STATE)) {
-//            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
-//            if (i < ctx->props_size) {
-//                Serial.print(PREFIX(cmd));
-//                Serial.println(printState(states[i], i));
-//            }
-//            return;
-//        }
+        if (cmd.startsWith(CMD_GET_STATE_ALL)) {
+            for (uint8_t i = 0; i < ctx->states_size; i++) {
+                Serial.print(PREFIX(cmd));
+                Serial.println(ctx->printState(i));
+            }
+            return;
+        }
+        if (cmd.startsWith(CMD_PREF_GET_STATE)) {
+            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
+            if (i < ctx->props_size) {
+                Serial.print(PREFIX(cmd));
+                Serial.println(ctx->printState(i));
+            }
+            return;
+        }
     }
 }
 

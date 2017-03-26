@@ -17,6 +17,8 @@ enum State{
 
 static State states[1] = {OFF};
 
+Bt *BT;
+
 static struct Properties{
 
      Property FACTORY[6] = {
@@ -60,10 +62,10 @@ static struct Properties{
 
 } FAN_PROPS;
 
-static char* printState(State state, int8_t i){
+static char* printState(uint8_t i){
     char* ch = new char;
     char* result = new char;
-    switch (state){
+    switch (states[i]){
         case OFF: ch = "OFF";
             break;
         case AL: ch = "AL";

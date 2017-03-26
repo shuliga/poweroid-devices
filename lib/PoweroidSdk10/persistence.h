@@ -13,14 +13,14 @@ struct Persistence{
   int size;
   char signature[SIGNATURE_SIZE];
 
-  Persistence(String s, long* props_runtime, int props_size);
+  Persistence(String s, long *props_runtime, int props_size);
   
-  void storeProperties(long* props);
-  void storeValue(long* prop);
+  void storeProperties(long *props);
+  void storeValue(long *prop);
   void storeValue(uint8_t i, long val);
-  void loadValue(long* prop);
+  void loadValue(long *prop);
   void loadValue(uint8_t i);
-  void loadProperties(long* prop);
+  void loadProperties(long *prop);
 
     void checkFactoryReset(long *props_runtime);
 };

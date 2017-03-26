@@ -1,6 +1,7 @@
 #include <Arduino.h>
+#include "commons.h"
 
-unsigned long hash(byte* data, unsigned long size) {
+unsigned long hash(byte *data, unsigned long size) {
   unsigned long hash = 19;
   for (unsigned long i = 0; i < size; i++) {
     byte c = *data++;
