@@ -29,7 +29,7 @@ DHT *Sensors::searchDht() {
             return result;
         } else {
             pinMode(IN_PINS[i], INPUT_PULLUP);
-            digitalWrite(IN_PINS[i], HIGH);
+//            digitalWrite(IN_PINS[i], HIGH);
             delete result;
         }
     }

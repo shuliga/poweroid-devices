@@ -11,11 +11,12 @@ const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
 
 class Relays {
 
+public:
+
     void powerOn(uint8_t i);
     void powerOff(uint8_t i);
     void power(uint8_t i, bool _power);
 
-public:
     uint8_t size();
 };
 

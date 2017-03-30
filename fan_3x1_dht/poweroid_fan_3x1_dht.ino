@@ -97,7 +97,7 @@ void run_state_humid(bool light, bool humidity, StateHumid &state, Timings &timi
             if (isTimeAfter(timings.humidity_delay, humidity)) {
                 state = SH_POWER;
             }
-            if (!humidity){
+            if (!humidity) {
                 state = SH_OFF;
             }
             break;
@@ -105,34 +105,12 @@ void run_state_humid(bool light, bool humidity, StateHumid &state, Timings &timi
         case SH_POWER: {
             bool firstRun = prev_state_humid != SH_POWER;
             prev_state_humid = SH_POWER;
-            if (countdown(timings.humidity_runtime, firstRun, false, !humidity)) {
-                if (light) {
-                    state = SH_POWER_SBY;
-                }
-
-            } else {
+            if (!countdown(timings.humidity_runtime, firstRun, false, !humidity)) {
                 timings.humidity_runtime.reset();
                 state = SH_OFF;
             }
             break;
         }
-        case SH_POWER_SBY: {
-            bool firstRun = prev_state_humid != SH_POWER_SBY;
-            prev_state_humid = SH_POWER_SBY;
-            if (countdown(timings.humidity_runtime, false, true, false)) {
-                if (!light) {
-                    state = SH_POWER;
-                }
-                if (firstRun) {
-                    timings.light1_standby.reset();
-                }
-                if (isTimeAfter(timings.light1_standby, light)) {
-                    state = AH;
-                }
-            }
-            break;
-        }
-
     }
     if (prev_state_humid != state) {
         printState(1);
@@ -143,7 +121,7 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
     switch (state) {
         case ST_OFF: {
             prev_state_temp = ST_OFF;
-            if (isTimeAfter(timings.temperature_delay, !temperature)) {
+            if (isTimeAfter(timings.temperature_delay, temperature)) {
                 state = ST_POWER;
             }
             break;
@@ -151,7 +129,7 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
         case ST_POWER: {
             bool firstRun = prev_state_temp != ST_POWER;
             prev_state_temp = ST_POWER;
-            if (isTimeAfter(timings.temperature_delay, temperature)) {
+            if (isTimeAfter(timings.temperature_delay, !temperature)) {
                 state = ST_OFF;
             }
             break;
@@ -183,16 +161,17 @@ void loop() {
     bool light2 = PWR->SENS->is_sensor_on(2);
     bool humidity = PWR->SENS->getHumidity() > GET_PROP_NORM(3);
     bool temperature = PWR->SENS->getTemperature() < GET_PROP_NORM(6);
+
     run_state_light(light1 || light2, state_light, timings);
     run_state_humid(light1 || light2, humidity, state_humid, timings);
     run_state_temp(temperature, state_temp, timings);
 
     bool fan_power = (state_light == SL_POWER || state_humid == SH_POWER) &&
-                     (state_light != SL_POWER_SBY || state_humid == SH_POWER_SBY);
+                     (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    pin_inv(PWR1_PIN, fan_power);
-    pin_inv(PWR2_PIN, floor_power);
+    PWR->REL.power(0, fan_power);
+    PWR->REL.power(1, floor_power);
 
     led(LED_PIN, fan_power || floor_power);
 

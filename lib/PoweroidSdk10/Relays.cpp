@@ -3,17 +3,18 @@
 //
 
 #include "Relays.h"
+#include "pin_io.h"
 
 void Relays::powerOn(uint8_t i) {
-
+    power(OUT_PINS[i], true);
 }
 
 void Relays::powerOff(uint8_t i) {
-
+    power(OUT_PINS[i], false);
 }
 
 void Relays::power(uint8_t i, bool _power) {
-
+    pin_inv(OUT_PINS[i], _power);
 }
 
 uint8_t Relays::size() {

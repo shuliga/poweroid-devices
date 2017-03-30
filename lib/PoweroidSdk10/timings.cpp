@@ -97,7 +97,7 @@ bool ping(TimingState &ts) {
 }
 
 void TimingState::reset() {
-    mils = 0;
+    mils = getCurrent(*this);
     delta = 0;
     suspended = 0;
     state = false;
