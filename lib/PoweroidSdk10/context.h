@@ -16,7 +16,7 @@ typedef struct Context {
     const uint8_t props_size;
     const char *id;
     const uint8_t states_size;
-    char* (*printState)(uint8_t i);
+    void (*printState)(uint8_t i);
 } Context;
 
 #endif //POWEROID_10_CONTEXT_H

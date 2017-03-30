@@ -27,7 +27,7 @@ static long old_prop_value;
 static volatile long prop_min;
 static volatile long prop_max;
 
-Rotary encoder = Rotary();
+Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
 
@@ -162,8 +162,6 @@ void Controller::process() {
 
 void Controller::outputSleepScreen() {
     if (ping(displayTiming)) {
-        float temp = ctx->SENS->getTemperature();
-        float humid = ctx->SENS->getHumidity();
         char out[12];
         ctx->SENS->printDht(out);
         oled.outputTextXY(3, 64, out, true);

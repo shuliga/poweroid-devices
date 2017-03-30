@@ -12,7 +12,8 @@ typedef struct TimingState{
     bool state;
     bool dirty;
     TimingState(unsigned long _int) : interval(_int) {};
-} TimingState;
+    void reset();
+};
 
 unsigned long getCurrent(TimingState &ts);
 

@@ -25,6 +25,7 @@ DHT *Sensors::searchDht() {
         if (!isnan(val)) {
             Serial.print(F("DHT installed on pin:"));
             Serial.println(IN_PINS[i]);
+            installed[i] = true;
             return result;
         } else {
             pinMode(IN_PINS[i], INPUT_PULLUP);

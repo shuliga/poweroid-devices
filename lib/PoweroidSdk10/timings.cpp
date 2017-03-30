@@ -95,3 +95,11 @@ bool ping(TimingState &ts) {
         return false;
     }
 }
+
+void TimingState::reset() {
+    mils = 0;
+    delta = 0;
+    suspended = 0;
+    state = false;
+    dirty = false;
+}

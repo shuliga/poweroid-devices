@@ -99,15 +99,15 @@ void Commands::listen() {
         if (cmd.startsWith(CMD_GET_STATE_ALL)) {
             for (uint8_t i = 0; i < ctx->states_size; i++) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(ctx->printState(i));
+                ctx->printState(i);
             }
             return;
         }
         if (cmd.startsWith(CMD_PREF_GET_STATE)) {
             uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
-            if (i < ctx->props_size) {
+            if (i < ctx->states_size) {
                 Serial.print(PREFIX(cmd));
-                Serial.println(ctx->printState(i));
+                ctx->printState(i);
             }
             return;
         }
