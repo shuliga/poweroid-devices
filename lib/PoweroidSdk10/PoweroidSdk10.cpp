@@ -2,10 +2,6 @@
 #include "pin_io.h"
 
 Pwr::Pwr(Context *ctx) : CTX(ctx), CMD(Commands(*CTX)), CTRL(Controller(CMD, *CTX)) {
-#ifdef BOARD_VERSION
-    Serial.print(F("Board version: "));
-    Serial.println(F(BOARD_VERSION));
-#endif
     REL = Relays();
     SENS = ctx->SENS;
 }
@@ -26,7 +22,9 @@ void Pwr::processSensors() {
 }
 
 void Pwr::printVersion() {
-    Serial.println(F(VERSION));
+    Serial.print(F(VERSION));
+    Serial.print(F("-"));
+    Serial.println(F(BOARD_VERSION));
 }
 
 void Pwr::init_outputs() {

@@ -8,7 +8,7 @@
 #include "sensors.h"
 
 typedef struct Context {
-    const char *SIGNATURE;
+    const char *signature;
     const char *version;
     Sensors *SENS;
     Property *FACTORY;

@@ -7,7 +7,7 @@
 #define PREFIX(cmd) cmd + F(" -> ")
 
 Commands::Commands(Context &_ctx): ctx(&_ctx){
-    persist = new Persistence(ctx->SIGNATURE, ctx->RUNTIME, ctx->props_size);
+    persist = new Persistence(ctx->signature, ctx->RUNTIME, ctx->props_size);
 }
 
 void Commands::printProperty(uint8_t i) {
@@ -78,7 +78,7 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_PREF_GET_PROP)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_PROP)).toInt();
+            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_PROP) - 1).toInt();
             if (i < ctx->props_size) {
                 Serial.print(PREFIX(cmd));
                 printProperty(i);
@@ -86,8 +86,8 @@ void Commands::listen() {
             return;
         }
         if (cmd.startsWith(CMD_PREF_SET_PROP)) {
-            uint8_t i = (uint8_t ) cmd.substring(sizeof(CMD_PREF_SET_PROP)).toInt();
-            uint8_t idx = cmd.lastIndexOf(':') + 1;
+            uint8_t i = (uint8_t ) cmd.substring(sizeof(CMD_PREF_SET_PROP) - 1).toInt();
+            int8_t idx = cmd.lastIndexOf(':') + 1;
             if (i < ctx->props_size && idx > 0) {
                 long v = cmd.substring(idx).toInt();
                 ctx->RUNTIME[i] = v * ctx->FACTORY[i].scale;

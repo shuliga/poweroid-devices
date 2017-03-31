@@ -69,9 +69,9 @@ void ACROBOTIC_SSD1306::init(void) {
 }
 
 bool ACROBOTIC_SSD1306::checkAndInit() {
-    Serial.println("I2C display scan");
+    Serial.println(F("I2C display scan"));
     if (!connected && isConnected()) {
-        Serial.println("I2C display init");
+        Serial.println(F("I2C display init"));
         oled.setGfxFont(&FreeSans12pt7b);
         init();
         return true;
@@ -126,49 +126,48 @@ void ACROBOTIC_SSD1306::setTextXY(unsigned char row, unsigned char col) {
     sendCommand(0x10 + ((m_font_width * col >> 4) & 0x0F)); //set column higher addr
 }
 
-void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col, const char *_text, const bool centered) {
+void ACROBOTIC_SSD1306::outputTextXY(uint8_t row, uint8_t col, const char *_text, const bool centered,
+                                     const bool _dither) {
 
     const uint8_t first = pgm_read_byte(&gfxfont->first);
-    int8_t yAdvance = pgm_read_byte(&gfxfont->yAdvance);
+    uint8_t yAdvance = pgm_read_byte(&gfxfont->yAdvance);
     yAdvance = FONT_SIZE;
 
-    int8_t pgh = (yAdvance + 7) / 8;
+    uint8_t pgh = (yAdvance + 7) / 8;
 
-    sendCommand(0x22);                       //set page address
-    sendCommand(row);
-    sendCommand(row + pgh - 1);
+    setPageMode(SSD1306_Set_PageRows_Cmd, row, row + pgh - 1);
 
     static uint8_t lastWidth = lastWidth == 0 ? getTextWidth(_text) : lastWidth;
     uint8_t newWidth = getTextWidth(_text);
     cleanPages(pgh, col, lastWidth, newWidth, centered);
     lastWidth = newWidth;
 
-    sendCommand(0x22);                       //set page address
-    sendCommand(row);
-    sendCommand(row + pgh - 1);
+    setPageMode(SSD1306_Set_PageRows_Cmd, row, row + pgh - 1);
 
-    int cursor = 0;
+    int8_t cursor = 0;
     uint8_t i = 0;
 
     while (_text[i] != '\0') {
-        bool dither = false;
         unsigned char cr = (unsigned char) _text[i];
         cr -= first;
+
         GFXglyph *glyph = &(((GFXglyph *) pgm_read_ptr(&gfxfont->glyph))[cr]);
         uint16_t bitmapOffset = pgm_read_word(&glyph->bitmapOffset);
+
         int8_t xAdvance = pgm_read_byte(&glyph->xAdvance);
+
         int8_t width = pgm_read_byte(&glyph->width);
         int8_t height = pgm_read_byte(&glyph->height);
+
         int8_t xOffset = pgm_read_byte(&glyph->xOffset);
         int8_t yOffset = pgm_read_byte(&glyph->yOffset);
+
         uint8_t *bitmap = (uint8_t *) pgm_read_ptr(&gfxfont->bitmap);
 
         int8_t c_width = xAdvance;
         int8_t c_height = pgh * 8 + yOffset - FONT_PULL_UP;
 
-        sendCommand(0x21);                       //set column start addr
-        sendCommand(col + (centered ? -(newWidth + 1) / 2 : 0) + cursor);                 //
-        sendCommand(col + (centered ? -(newWidth + 1) / 2 : 0) + cursor + c_width - 1);      //set column end addr
+        setPageMode(SSD1306_Set_PageCols_Cmd, col + (centered ? -(newWidth + 1) / 2 : 0) + cursor, col + (centered ? -(newWidth + 1) / 2 : 0) + cursor + c_width - 1);
 
         cursor += xAdvance;
         for (uint8_t pg = 0; pg < pgh; pg++) {
@@ -188,12 +187,18 @@ void ACROBOTIC_SSD1306::outputTextXY(unsigned char row, unsigned char col, const
                         cl |= (set << r);
                     }
                 }
-                sendData(cl & (!dither ? 0xFF : (c % 2 == 0 ? 0xAA: 0x55)));
+                sendData(cl & (!_dither ? 0xFF : (c % 2 == 0 ? 0xAA: 0x55)));
             }
         }
         i++;
     }
     restorePaging();
+}
+
+void ACROBOTIC_SSD1306::setPageMode(uint8_t command, uint8_t start, uint8_t end) {
+    sendCommand((unsigned char) command);                       //set page address
+    sendCommand((unsigned char) start);
+    sendCommand((unsigned char) end);
 }
 
 uint8_t ACROBOTIC_SSD1306::getTextWidth(const char *_text) {
@@ -214,12 +219,8 @@ uint8_t ACROBOTIC_SSD1306::getTextWidth(const char *_text) {
 }
 
 void ACROBOTIC_SSD1306::restorePaging() {
-    sendCommand(0x22);                       //set page address
-    sendCommand(0);
-    sendCommand(7);
-    sendCommand(0x21);                       //set page address
-    sendCommand(0);
-    sendCommand(127);
+    setPageMode(SSD1306_Set_PageRows_Cmd, 0, 7);
+    setPageMode(SSD1306_Set_PageCols_Cmd, 0, 127);
 }
 
 void ACROBOTIC_SSD1306::cleanPages(const uint8_t rows, const uint8_t col, const uint8_t _l_width, uint8_t _n_width,
@@ -237,9 +238,7 @@ void ACROBOTIC_SSD1306::cleanPages(const uint8_t rows, const uint8_t col, const 
 }
 
 void ACROBOTIC_SSD1306::cleanPage(const uint8_t rows, const uint8_t s_width, uint8_t e_width, int8_t delta) {
-    sendCommand(0x21);
-    sendCommand((unsigned char) s_width);
-    sendCommand((unsigned char) e_width);
+    setPageMode(SSD1306_Set_PageCols_Cmd, s_width, e_width);
     for (uint16_t k = 0; k < rows * delta; k++) {
         sendData(0);
     }

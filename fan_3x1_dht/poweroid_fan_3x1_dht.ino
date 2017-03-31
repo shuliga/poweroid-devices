@@ -32,14 +32,14 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
     switch (state) {
         case SL_OFF: {
             prev_state_light = SL_OFF;
-            if (isTimeAfter(timings.light1_standby, light)) {
+            if (timings.light1_standby.isTimeAfter(light)) {
                 state = AL;
             }
             break;
         }
         case AL: {
             prev_state_light = AL;
-            if (isTimeAfter(timings.delay_power, !light)) {
+            if (timings.delay_power.isTimeAfter(!light)) {
                 timings.countdown_power.reset();
                 state = SL_POWER;
             }
@@ -48,7 +48,7 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
         case SL_POWER: {
             bool firstRun = prev_state_light != SL_POWER;
             prev_state_light = SL_POWER;
-            if (countdown(timings.countdown_power, firstRun, false, false)) {
+            if (timings.countdown_power.countdown(firstRun, false, false)) {
                 if (light) {
                     state = SL_POWER_SBY;
                 }
@@ -62,14 +62,14 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
         case SL_POWER_SBY: {
             bool firstRun = prev_state_light != SL_POWER_SBY;
             prev_state_light = SL_POWER_SBY;
-            if (countdown(timings.countdown_power, false, true, false)) {
+            if (timings.countdown_power.countdown(false, true, false)) {
                 if (!light) {
                     state = SL_POWER;
                 }
                 if (firstRun) {
                     timings.light1_standby.reset();
                 }
-                if (isTimeAfter(timings.light1_standby, light)) {
+                if (timings.light1_standby.isTimeAfter(light)) {
                     state = AL;
                 }
             }
@@ -94,7 +94,7 @@ void run_state_humid(bool light, bool humidity, StateHumid &state, Timings &timi
         }
         case AH: {
             prev_state_humid = AH;
-            if (isTimeAfter(timings.humidity_delay, humidity)) {
+            if (timings.humidity_delay.isTimeAfter(humidity)) {
                 state = SH_POWER;
             }
             if (!humidity) {
@@ -105,7 +105,7 @@ void run_state_humid(bool light, bool humidity, StateHumid &state, Timings &timi
         case SH_POWER: {
             bool firstRun = prev_state_humid != SH_POWER;
             prev_state_humid = SH_POWER;
-            if (!countdown(timings.humidity_runtime, firstRun, false, !humidity)) {
+            if (!timings.humidity_runtime.countdown(firstRun, false, !humidity)) {
                 timings.humidity_runtime.reset();
                 state = SH_OFF;
             }
@@ -121,7 +121,7 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
     switch (state) {
         case ST_OFF: {
             prev_state_temp = ST_OFF;
-            if (isTimeAfter(timings.temperature_delay, temperature)) {
+            if (timings.temperature_delay.isTimeAfter(temperature)) {
                 state = ST_POWER;
             }
             break;
@@ -129,7 +129,7 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
         case ST_POWER: {
             bool firstRun = prev_state_temp != ST_POWER;
             prev_state_temp = ST_POWER;
-            if (isTimeAfter(timings.temperature_delay, !temperature)) {
+            if (timings.temperature_delay.isTimeAfter(!temperature)) {
                 state = ST_OFF;
             }
             break;
@@ -141,7 +141,7 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
 }
 
 void setup() {
-    delay(600);
+    delay(1000);
     Serial.begin(9600);
     BT = new Bt(c_ID);
     CTX = new Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size,
@@ -178,4 +178,3 @@ void loop() {
     PWR->run();
 
 }
-

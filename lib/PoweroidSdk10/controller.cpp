@@ -3,7 +3,6 @@
 //
 
 #include <Rotary.h>
-#include <MultiClick.h>
 #include <ACROBOTIC_SSD1306.h>
 
 #define INCR(val, max) val < max ? val++ : val
@@ -17,7 +16,9 @@ static enum State {
     EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS
 } oldState = STORE, state = BROWSE;
 
+static TimingState sleep_timer = TimingState(100000L);
 
+static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
 static int8_t c_prop_idx = -1;
 
@@ -27,14 +28,23 @@ static long old_prop_value;
 static volatile long prop_min;
 static volatile long prop_max;
 
+#ifdef ENC1_PIN
+#ifdef ENC2_PIN
 Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
+#endif
+#endif
+
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
 
 
 Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {
     initDisplay();
+#ifdef ENC1_PIN
+#ifdef ENC2_PIN
     initEncoderInterrupts();
+#endif
+#endif
 }
 
 void Controller::initEncoderInterrupts() {
@@ -64,6 +74,7 @@ void Controller::process() {
 
     switch (state) {
         case EDIT_PROP: {
+            oldState = state;
             if (c_prop_value != prop_value) {
                 cli();
                 ctx->RUNTIME[prop_idx] = prop_value * ctx->FACTORY[prop_idx].scale;
@@ -75,16 +86,22 @@ void Controller::process() {
             if (event == CLICK) {
                 c_prop_idx = -1; // invalidate cache;
                 c_prop_value = -1; // invalidate cache;
-                oldState = state;
                 state = BROWSE;
             };
             if (event == HOLD) {
-                oldState = state;
                 state = STORE;
             };
             break;
         }
         case BROWSE: {
+            bool firstRun = oldState != state;
+            oldState = state;
+
+            if (control_touched || firstRun){
+                sleep_timer.reset();
+                control_touched = false;
+            }
+
             if (c_prop_idx != prop_idx) {
                 cli();
                 prop_value = (ctx->RUNTIME[prop_idx] / ctx->FACTORY[prop_idx].scale);
@@ -96,54 +113,45 @@ void Controller::process() {
                 printPropDescr(prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
             }
+
             if (event == CLICK) {
                 c_prop_value = -1; // invalidate cache;
                 c_prop_idx = -1; // invalidate cache;
                 old_prop_value = prop_value; // for reminder in status
-                oldState = state;
                 state = EDIT_PROP;
             };
-            if (event == HOLD) {
-                oldState = state;
+
+            if (event == HOLD || sleep_timer.isTimeAfter(true)) {
                 state = SLEEP;
             };
+
             break;
         }
         case STORE: {
+            oldState = state;
             cmd->storeProps();
             c_prop_value = -1; // invalidate cache;
             c_prop_idx = -1; // invalidate cache;
-            oldState = state;
             state = BROWSE;
             break;
         }
         case SLEEP: {
-            if (oldState != state) {
-                oldState = state;
+            bool firstRun = oldState != state;
+            oldState = state;
 
-                oled.displayOff();
-                oled.setNormalDisplay();
-                oled.clearDisplay();
-                oled.displayOn();
+            if (firstRun) {
+                sleep_timer.reset();
+                switchDisplay(false);
             }
 
-            outputSleepScreen();
+            outputSleepScreen(sleep_timer.isTimeAfter(true));
 
-            if (event == CLICK) {
-                oled.displayOff();
-                oled.setInverseDisplay();
-                oled.clearDisplay();
-                oled.displayOn();
-                outputTitle();
-
-                c_prop_idx = -1; // invalidate cache;
-                state = BROWSE;
-            };
+            exitSleepOnClick(event);
             break;
         }
     }
 
-    if (oldState != state) {
+    if (oldState != state || state == BROWSE) {
         switch (state) {
             case EDIT_PROP:
                 outputStatus(F("edit value:"), old_prop_value);
@@ -160,11 +168,29 @@ void Controller::process() {
 
 }
 
-void Controller::outputSleepScreen() {
-    if (ping(displayTiming)) {
+void Controller::exitSleepOnClick(const McEvent &event) const {
+    if (event == CLICK || control_touched) {
+        control_touched = false;
+        switchDisplay(true);
+        outputTitle();
+        c_prop_idx = -1; // invalidate cache;
+        sleep_timer.reset();
+        state = BROWSE;
+    };
+}
+
+void Controller::switchDisplay(boolean inverse) const {
+    oled.displayOff();
+    inverse ? oled.setInverseDisplay() : oled.setNormalDisplay();
+    oled.clearDisplay();
+    oled.displayOn();
+}
+
+void Controller::outputSleepScreen(bool dither) {
+    if (displayTiming.ping()) {
         char out[12];
         ctx->SENS->printDht(out);
-        oled.outputTextXY(3, 64, out, true);
+        oled.outputTextXY(3, 64, out, true, dither);
     }
 }
 
@@ -189,7 +215,7 @@ void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool bracket
     char measure_c[6];
     const char *fmt =
             brackets && _measure ? "[%i]%s" : (brackets & !_measure ? "[%i]" : (!brackets && _measure ? "%i%s"
-                                                                                                     : "%i"));
+                                                                                                      : "%i"));
     PGM_P p = reinterpret_cast<PGM_P>(_prop.desc);
     size_t n = 0;
     uint8_t i = 0;
@@ -197,20 +223,25 @@ void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool bracket
     while (i < 11) {
         unsigned char c = (unsigned char) pgm_read_byte(p++);
         if (c == ')') break;
-        if (start) {measure_c[i] = c;
+        if (start) {
+            measure_c[i] = c;
             i++;
         }
-        if(c=='(') start = true;
+        if (c == '(') start = true;
     }
     measure_c[i] = 0;
     sprintf(str_text, fmt, _prop_val, measure_c);
-    oled.outputTextXY(3, 64, str_text, true);
+    oled.outputTextXY(3, 64, str_text, true, false);
 }
 
+
+#ifdef ENC1_PIN
+#ifdef ENC2_PIN
 
 ISR(PCINT2_vect) {
     unsigned char result = encoder.process();
     if (result != NOTHING) {
+        control_touched = true;
         switch (state) {
             case EDIT_PROP: {
                 result == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
@@ -225,3 +256,6 @@ ISR(PCINT2_vect) {
         }
     }
 }
+
+#endif
+#endif

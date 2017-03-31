@@ -91,7 +91,7 @@ static void printState(uint8_t i){
                 default:
                     return;
             }
-            sprintf(result, "StateLight: %s", ch);
+            sprintf(result, "[%i] StateLight: %s", i, ch);
             break;
         }
         case 1: {
@@ -104,7 +104,7 @@ static void printState(uint8_t i){
                 default:
                     return;
             }
-            sprintf(result, "StateHumid: %s", ch);
+            sprintf(result, "[%i] StateHumid: %s", i, ch);
             break;
         }
         case 2: {
@@ -115,7 +115,7 @@ static void printState(uint8_t i){
                 default:
                     return;
             }
-            sprintf(result, "StateTemp: %s", ch);
+            sprintf(result, "[%i] StateTemp: %s", i, ch);
             break;
         }
     }

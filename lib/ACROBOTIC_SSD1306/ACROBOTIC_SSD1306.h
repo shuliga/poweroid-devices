@@ -59,6 +59,8 @@
 #define SSD1306_Activate_Scroll_Cmd   0x2F
 #define SSD1306_Dectivate_Scroll_Cmd  0x2E
 #define SSD1306_Set_Brightness_Cmd    0x81
+#define SSD1306_Set_PageCols_Cmd      0x21
+#define SSD1306_Set_PageRows_Cmd      0x22
 
 #define Scroll_Left                   0x00
 #define Scroll_Right                  0x01
@@ -90,7 +92,7 @@ class ACROBOTIC_SSD1306 {
     void setHorizontalMode();
 
     void setTextXY(unsigned char Row, unsigned char Column);
-    void outputTextXY(unsigned char row, unsigned char col,const char *_text, const bool centered);
+    void outputTextXY(uint8_t row, uint8_t col, const char *_text, const bool centered, const bool _dither);
     void clearDisplay();
     void setBrightness(unsigned char Brightness);
     bool putChar(unsigned char c);
@@ -131,6 +133,8 @@ class ACROBOTIC_SSD1306 {
     uint8_t getTextWidth(const char *_text);
 
     void cleanPage(const uint8_t rows, const uint8_t s_width, uint8_t e_width, int8_t delta);
+
+    void setPageMode(uint8_t command, uint8_t start, uint8_t end);
 };
 
 extern ACROBOTIC_SSD1306 oled;  // ACROBOTIC_SSD1306 object 

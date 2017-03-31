@@ -7,6 +7,7 @@
 
 #include "commons.h"
 #include "context.h"
+#include <MultiClick.h>
 #include "commands.h"
 #include "sensors.h"
 
@@ -26,9 +27,13 @@ private:
     void outputStatus(const __FlashStringHelper *txt, const long val);
     void outputPropVal(Property &_prop, uint16_t _prop_val, bool brackets, bool _measure);
 
-    void outputSleepScreen();
+    void outputSleepScreen(bool dither);
 
     void outputTitle() const;
+
+    void switchDisplay(boolean inverse) const;
+
+    void exitSleepOnClick(const McEvent &event) const;
 };
 
 

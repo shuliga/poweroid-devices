@@ -7,13 +7,13 @@
 #include "timings.h"
 #include "sensors.h"
 
-const long INST_DELAY = 500L;
+const long INST_DELAY = 50L;
 
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
 static TimingState flash_333 = TimingState(333);
-static TimingState hold_on[3] = {INST_DELAY,INST_DELAY,INST_DELAY};
+static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
 
 DHT *Sensors::searchDht() {
@@ -37,7 +37,7 @@ DHT *Sensors::searchDht() {
 }
 
 void Sensors::updateTnH() {
-    if (dht != NULL && ping(pollTiming)) {
+    if (dht != NULL && pollTiming.ping()) {
         temp = dht->readTemperature();
         humid = dht->readHumidity();
     }
@@ -63,7 +63,7 @@ bool Sensors::checkInstalled(uint8_t pin, bool inst) {
 bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on) {
     bool sign = false;
     if (!inst) {
-        sign = isTimeAfter(hold_on, readPinLow(pin));
+        sign = hold_on.isTimeAfter(readPinLow(pin));
         if (sign) {
             Serial.print(F("Sensor installed on pin "));
             Serial.println(pin);
@@ -74,8 +74,8 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
 
 void Sensors::init_sensors() {
     dht = searchDht();
-    for (uint8_t i = 0; i < 3; i++) {
-        hold_on[i].interval = INST_DELAY;
+    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
+//        hold_on[i].interval = INST_DELAY;
     }
 }
 
@@ -85,8 +85,9 @@ void Sensors::process() {
 }
 
 void Sensors::check_installed() {
-    for (uint8_t i = 0; i < 3; i++) {
-        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], hold_on[i]);
+    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
+        installed[i] = checkInstalled(IN_PINS[i], installed[i]);
+//        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], hold_on[i]);
     }
 }
 
@@ -96,7 +97,7 @@ bool Sensors::is_dht_installed() {
 
 
 bool Sensors::is_sensor_on(uint8_t index) {
-    return isTimeAfter(hold_on[index], readPinLow(IN_PINS[index]) && installed[index]);
+    return hold_on[index].isTimeAfter(readPinLow(IN_PINS[index]) && installed[index]);
 }
 
 int Sensors::get_sensor_val(uint8_t index) {
