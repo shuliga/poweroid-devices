@@ -1,0 +1,1 @@
+C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9/bin/avrdude -CC:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9/etc/avrdude.conf -v -patmega328p -carduino -PCOM4 -b115200 -D -Uflash:w:C:\Users\SHL\CLionProjects\poweroid_fan_2x1_1x1\cmake-build-debug\Poweroid_10.hex:i

@@ -8,11 +8,11 @@
 
 typedef struct Bt {
 
-  char *name;
+  const char *name;
   char result[32];
   bool on = false;
 
-  Bt(char * n);
+  Bt(const char * n);
 
   void getResult();
 

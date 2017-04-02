@@ -4,8 +4,9 @@
 #include "properties.h"
 
 #define STORAGE_MAX_SIZE 64
+#define BASE 100
 #define SIGNATURE_SIZE 4
-#define HEADER_OFFSET (SIGNATURE_SIZE + sizeof(unsigned long))
+#define HEADER_OFFSET (BASE + SIGNATURE_SIZE + sizeof(unsigned long))
 #define ADDR(x) HEADER_OFFSET + sizeof(long)*(x)
 
 struct Persistence{

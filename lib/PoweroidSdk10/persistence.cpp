@@ -11,16 +11,16 @@ unsigned long hashProp(long *props, int size) {
 Persistence::Persistence(const String s, long *props_runtime, int sz){
   checkFactoryReset(props_runtime);
   size = sz;
-  EEPROM.get(0, signature);
+  EEPROM.get(BASE, signature);
   String sign = String(signature);
   unsigned long eeprom_hash;
-  EEPROM.get(SIGNATURE_SIZE, eeprom_hash);
+  EEPROM.get(BASE + SIGNATURE_SIZE, eeprom_hash);
   Serial.print(F("EEPROM signature '"));
   Serial.print(sign + "', hash:");
   Serial.println(eeprom_hash);
   if (sign != s){
     s.toCharArray(signature, SIGNATURE_SIZE);
-    EEPROM.put(0, signature);
+    EEPROM.put(BASE, signature);
     Serial.print(F("Not a native EEPROM. Overwritting signature '"));
     Serial.println(sign + "' with: '" + s + "'");
     storeProperties(props_runtime);
@@ -46,7 +46,7 @@ void Persistence::storeProperties(long *props){
   Serial.print(size);
   Serial.print(F(" properties stored in EEPROM. Hash: "));
   Serial.println(c_hash);
-  EEPROM.put(SIGNATURE_SIZE, hash);
+  EEPROM.put(BASE + SIGNATURE_SIZE, hash);
 }
 
 void Persistence::storeValue(long *prop){

@@ -26,15 +26,15 @@ void Commands::listen() {
 
         if (cmd.startsWith(CMD_GET_VER)) {
             Serial.print(PREFIX(cmd));
-            Serial.println(ctx->version);
+            Serial.print(ctx->version);
+            Serial.print("-");
+            Serial.print(BOARD_VERSION);
             return;
         }
 
         if (cmd.startsWith(F(CMD_GET_DHT))) {
-            char dht[12];
-            ctx->SENS->printDht(dht);
             Serial.print(PREFIX(cmd));
-            Serial.println(dht);
+            Serial.println(ctx->SENS->printDht());
             return;
         }
 
@@ -108,6 +108,15 @@ void Commands::listen() {
             if (i < ctx->states_size) {
                 Serial.print(PREFIX(cmd));
                 ctx->printState(i);
+            }
+            return;
+        }
+
+        if (cmd.startsWith(CMD_PREF_DISARM_STATE)) {
+            uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_DISARM_STATE) - 1, sizeof(CMD_PREF_DISARM_STATE)).toInt();
+            bool trigger = (bool) cmd.substring((cmd.lastIndexOf(':') + 1)).toInt();
+            if (i < ctx->states_size) {
+                ctx->disarmState(i, trigger);
             }
             return;
         }

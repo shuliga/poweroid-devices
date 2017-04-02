@@ -2,7 +2,7 @@
 // Created by SHL on 25.03.2017.
 //
 
-#include "Relays.h"
+#include "relays.h"
 #include "pin_io.h"
 
 void Relays::powerOn(uint8_t i) {

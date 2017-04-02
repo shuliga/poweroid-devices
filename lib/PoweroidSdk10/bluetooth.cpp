@@ -1,8 +1,8 @@
 #include "bluetooth.h"
 
-Bt::Bt(char *n): name(n){
-    if (Serial && !on){
-        delay(2000);
+Bt::Bt(const char *n): name(n){
+    if (!on){
+        delay(600);
         Serial.print(F("AT+VERSION"));
         delay(600);
         if (Serial.available() > 0){

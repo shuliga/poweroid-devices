@@ -45,11 +45,14 @@ public:
 
     uint8_t size();
 
-    void printDht(char *buffer);
+    const char *printDht();
 
 private:
+
     TimingState pollTiming = TimingState(5000L);
+
     float temp;
+
     float humid;
 
     DHT *dht;

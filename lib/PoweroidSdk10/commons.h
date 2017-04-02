@@ -57,10 +57,6 @@
 
 #endif // PWR20
 
-//extern const uint8_t IN_PINS[];
-//extern const uint8_t INA_PINS[];
-//extern const uint8_t OUT_PINS[];
-
 unsigned long hash(byte *data, unsigned long size);
 
 #endif

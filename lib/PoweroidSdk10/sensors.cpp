@@ -15,6 +15,7 @@ const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 static TimingState flash_333 = TimingState(333);
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
+static char CHAR_BUF[32];
 
 DHT *Sensors::searchDht() {
     DHT *result = NULL;
@@ -113,16 +114,16 @@ bool Sensors::is_sensor_val(uint8_t index, uint8_t val) {
 }
 
 char *Sensors::printSensor(uint8_t idx) {
-    char *result = new char;
-    sprintf(result, "Sensor[%i]: %s", idx, installed[idx] ? "installed" : "not installed");
-    return result;
+    sprintf(CHAR_BUF, "Sensor[%i]: %s", idx, installed[idx] ? "installed" : "not installed");
+    return CHAR_BUF;
 }
 
 uint8_t Sensors::size() {
     return ARRAY_SIZE(IN_PINS);
 }
 
-void Sensors::printDht(char *buffer) {
-    sprintf(buffer, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
+const char *Sensors::printDht() {
+    sprintf(CHAR_BUF, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
+    return CHAR_BUF;
 }
 

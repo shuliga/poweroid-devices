@@ -2,23 +2,20 @@
 #define ID "PWR-FAN-FLR-32-DHT"
 
 #include "pin_io.h"
-#include "bluetooth.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_3x1_dht_prop.h"
-#include "../lib/PoweroidSdk10/commons.h"
 
-char c_ID[] = ID;
-
-Context *CTX;
-Pwr *PWR;
-
-Timings timings = {0, 0, 0, 0, 0, 0};
+Timings timings = {500L, 0, 0, 0, 0, 0, 0};
 
 StateLight prev_state_light = SL_DISARM;
 StateHumid prev_state_humid = SH_DISARM;
 StateTemp prev_state_temp = ST_DISARM;
 
-void init_timing() {
+Context CTX = Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
+                      state_count, printState, disarmState};
+Pwr PWR(CTX);
+
+void apply_properties() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.RUNTIME[0];
     timings.delay_power.interval = (unsigned long) FAN_PROPS.RUNTIME[1];
     timings.light1_standby.interval = (unsigned long) FAN_PROPS.RUNTIME[2];
@@ -49,7 +46,7 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
             bool firstRun = prev_state_light != SL_POWER;
             prev_state_light = SL_POWER;
             if (timings.countdown_power.countdown(firstRun, false, false)) {
-                if (light) {
+                if (timings.debounce_delay.isTimeAfter(light)) {
                     state = SL_POWER_SBY;
                 }
 
@@ -63,7 +60,7 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
             bool firstRun = prev_state_light != SL_POWER_SBY;
             prev_state_light = SL_POWER_SBY;
             if (timings.countdown_power.countdown(false, true, false)) {
-                if (!light) {
+                if (timings.debounce_delay.isTimeAfter(!light)) {
                     state = SL_POWER;
                 }
                 if (firstRun) {
@@ -73,6 +70,10 @@ void run_state_light(bool light, StateLight &state, Timings &timings) {
                     state = AL;
                 }
             }
+            break;
+        }
+        case SL_DISARM: {
+            prev_state_light = SL_DISARM;
             break;
         }
 
@@ -111,6 +112,10 @@ void run_state_humid(bool light, bool humidity, StateHumid &state, Timings &timi
             }
             break;
         }
+        case SH_DISARM: {
+            prev_state_humid = SH_DISARM;
+            break;
+        }
     }
     if (prev_state_humid != state) {
         printState(1);
@@ -127,11 +132,14 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
             break;
         }
         case ST_POWER: {
-            bool firstRun = prev_state_temp != ST_POWER;
             prev_state_temp = ST_POWER;
             if (timings.temperature_delay.isTimeAfter(!temperature)) {
                 state = ST_OFF;
             }
+            break;
+        }
+        case ST_DISARM: {
+            prev_state_temp = ST_DISARM;
             break;
         }
     }
@@ -141,26 +149,19 @@ void run_state_temp(bool temperature, StateTemp &state, Timings &timings) {
 }
 
 void setup() {
-    delay(1000);
-    Serial.begin(9600);
-    BT = new Bt(c_ID);
-    CTX = new Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size,
-                      (char *) &c_ID, state_count, printState};
-    PWR = new Pwr(CTX);
-    PWR->printVersion();
-    PWR->begin();
+    PWR.begin();
 }
 
 void loop() {
 
-    init_timing();
+    apply_properties();
 
-    PWR->processSensors();
+    PWR.processSensors();
 
-    bool light1 = PWR->SENS->is_sensor_on(1);
-    bool light2 = PWR->SENS->is_sensor_on(2);
-    bool humidity = PWR->SENS->getHumidity() > GET_PROP_NORM(3);
-    bool temperature = PWR->SENS->getTemperature() < GET_PROP_NORM(6);
+    bool light1 = PWR.SENS->is_sensor_on(1);
+    bool light2 = PWR.SENS->is_sensor_on(2);
+    bool humidity = PWR.SENS->getHumidity() > GET_PROP_NORM(3);
+    bool temperature = PWR.SENS->getTemperature() < GET_PROP_NORM(6);
 
     run_state_light(light1 || light2, state_light, timings);
     run_state_humid(light1 || light2, humidity, state_humid, timings);
@@ -170,11 +171,11 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR->REL.power(0, fan_power);
-    PWR->REL.power(1, floor_power);
+    PWR.REL.power(0, fan_power);
+    PWR.REL.power(1, floor_power);
 
     led(LED_PIN, fan_power || floor_power);
 
-    PWR->run();
+    PWR.run();
 
 }

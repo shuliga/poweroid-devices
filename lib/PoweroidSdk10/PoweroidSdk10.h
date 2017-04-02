@@ -14,8 +14,9 @@
 #include "commons.h"
 #include "context.h"
 #include "properties.h"
-#include "Relays.h"
+#include "relays.h"
 #include "sensors.h"
+#include "bluetooth.h"
 #include "context.h"
 #include "commands.h"
 #include "controller.h"
@@ -27,11 +28,12 @@ class Pwr {
 public:
     Context *CTX;
     Sensors *SENS;
+    Bt *BT;
     Relays REL;
     Commands CMD;
     Controller CTRL;
 
-    Pwr(Context *ctx);
+    Pwr(Context &ctx);
 
     void begin();
 

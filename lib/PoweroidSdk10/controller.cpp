@@ -188,9 +188,7 @@ void Controller::switchDisplay(boolean inverse) const {
 
 void Controller::outputSleepScreen(bool dither) {
     if (displayTiming.ping()) {
-        char out[12];
-        ctx->SENS->printDht(out);
-        oled.outputTextXY(3, 64, out, true, dither);
+        oled.outputTextXY(3, 64, ctx->SENS->printDht(), true, dither);
     }
 }
 

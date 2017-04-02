@@ -4,6 +4,7 @@
 #define CMD_GET_VER "get_ver"
 #define CMD_GET_DHT "get_dht"
 #define CMD_PREF_GET_STATE "get_state_"
+#define CMD_PREF_DISARM_STATE "disarm_state_"
 #define CMD_GET_STATE_ALL "get_state_all"
 #define CMD_PREF_GET_PROP "get_prop_"
 #define CMD_PREF_SET_PROP "set_prop_"

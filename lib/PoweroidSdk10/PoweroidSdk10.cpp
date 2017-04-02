@@ -1,18 +1,24 @@
+#include <avr/wdt.h>
 #include "PoweroidSdk10.h"
 #include "pin_io.h"
 
-Pwr::Pwr(Context *ctx) : CTX(ctx), CMD(Commands(*CTX)), CTRL(Controller(CMD, *CTX)) {
+Pwr::Pwr(Context &ctx) : CTX(&ctx), CMD(Commands(*CTX)), CTRL(Controller(CMD, *CTX)) {
     REL = Relays();
-    SENS = ctx->SENS;
+    SENS = ctx.SENS;
 }
 
 void Pwr::begin() {
+    Serial.begin(9600);
+    printVersion();
     init_outputs();
     init_inputs();
     SENS->init_sensors();
+    BT = new Bt(CTX->id);
+    wdt_enable(WDTO_4S);
 }
 
 void Pwr::run() {
+    wdt_reset();
     CMD.listen();
     CTRL.process();
 }
