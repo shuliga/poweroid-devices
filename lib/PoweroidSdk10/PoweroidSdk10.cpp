@@ -1,10 +1,9 @@
 #include <avr/wdt.h>
 #include "PoweroidSdk10.h"
-#include "pin_io.h"
 
-Pwr::Pwr(Context &ctx) : CTX(&ctx), CMD(Commands(*CTX)), CTRL(Controller(CMD, *CTX)) {
-    REL = Relays();
-    SENS = ctx.SENS;
+Pwr::Pwr(Context &ctx) : REL(Relays()), SENS(Sensors()), CTX(&ctx), CMD(Commands(*CTX)), CTRL(Controller(CMD, *CTX)) {
+    ctx.SENS = &SENS;
+    ctx.RELAYS = &REL;
 }
 
 void Pwr::begin() {
@@ -12,7 +11,8 @@ void Pwr::begin() {
     printVersion();
     init_outputs();
     init_inputs();
-    SENS->init_sensors();
+    SENS.initSensors();
+    CTRL.begin();
     BT = new Bt(CTX->id);
     wdt_enable(WDTO_4S);
 }
@@ -24,7 +24,7 @@ void Pwr::run() {
 }
 
 void Pwr::processSensors() {
-    SENS->process();
+    SENS.process();
 }
 
 void Pwr::printVersion() {
@@ -40,7 +40,7 @@ void Pwr::init_outputs() {
 }
 
 void Pwr::init_inputs() {
-    for (uint8_t i = 0; i < SENS->size(); i++) {
+    for (uint8_t i = 0; i < SENS.size(); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
 }

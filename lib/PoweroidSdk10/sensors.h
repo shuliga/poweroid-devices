@@ -29,19 +29,19 @@ public:
 
     bool checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on);
 
-    void init_sensors();
+    void initSensors();
 
-    void check_installed();
+    void checkInstalled();
 
-    bool is_dht_installed();
+    bool isDhtInstalled();
 
-    bool is_sensor_on(uint8_t index);
+    bool isSensorOn(uint8_t index);
 
-    int get_sensor_val(uint8_t index);
+    int getSensorVal(uint8_t index);
 
-    bool is_sensor_val(uint8_t index, uint8_t val);
+    bool isSensorVal(uint8_t index, uint8_t val);
 
-    char *printSensor(uint8_t idx);
+    const char * printSensor(uint8_t idx);
 
     uint8_t size();
 
@@ -58,6 +58,8 @@ private:
     DHT *dht;
 
     DHT *searchDht();
+
+    void printInstalled(uint8_t pin);
 };
 
 

@@ -27,8 +27,8 @@ static char version[] = VERSION;
 class Pwr {
 public:
     Context *CTX;
-    Sensors *SENS;
     Bt *BT;
+    Sensors SENS;
     Relays REL;
     Commands CMD;
     Controller CTRL;

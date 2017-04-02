@@ -11,7 +11,7 @@ StateLight prev_state_light = SL_DISARM;
 StateHumid prev_state_humid = SH_DISARM;
 StateTemp prev_state_temp = ST_DISARM;
 
-Context CTX = Context{SIGNATURE, version, new Sensors(), FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
+Context CTX = Context{SIGNATURE, version, NULL, NULL, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
                       state_count, printState, disarmState};
 Pwr PWR(CTX);
 
@@ -158,10 +158,10 @@ void loop() {
 
     PWR.processSensors();
 
-    bool light1 = PWR.SENS->is_sensor_on(1);
-    bool light2 = PWR.SENS->is_sensor_on(2);
-    bool humidity = PWR.SENS->getHumidity() > GET_PROP_NORM(3);
-    bool temperature = PWR.SENS->getTemperature() < GET_PROP_NORM(6);
+    bool light1 = PWR.SENS.isSensorOn(1);
+    bool light2 = PWR.SENS.isSensorOn(2);
+    bool humidity = PWR.SENS.isDhtInstalled() && PWR.SENS.getHumidity() > GET_PROP_NORM(3);
+    bool temperature = PWR.SENS.isDhtInstalled() && PWR.SENS.getTemperature() < GET_PROP_NORM(6);
 
     run_state_light(light1 || light2, state_light, timings);
     run_state_humid(light1 || light2, humidity, state_humid, timings);

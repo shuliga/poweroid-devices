@@ -14,6 +14,7 @@
 #define CMD_STORE_PROPS "store_props"
 #define CMD_RESET_PROPS "reset_props"
 #define CMD_GET_SENSOR_ALL "get_sensor_all"
+#define CMD_GET_RELAY_ALL "get_relay_all"
 
 #include "commons.h"
 #include "context.h"

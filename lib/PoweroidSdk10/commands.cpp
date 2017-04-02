@@ -103,6 +103,15 @@ void Commands::listen() {
             }
             return;
         }
+
+        if (cmd.startsWith(CMD_GET_RELAY_ALL)) {
+            for (uint8_t i = 0; i < ctx->RELAYS->size(); i++) {
+                Serial.print(PREFIX(cmd));
+                Serial.println(ctx->RELAYS->printRelay(i));
+            }
+            return;
+        }
+
         if (cmd.startsWith(CMD_PREF_GET_STATE)) {
             uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_GET_STATE)).toInt();
             if (i < ctx->states_size) {

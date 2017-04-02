@@ -38,7 +38,7 @@ DHT *Sensors::searchDht() {
 }
 
 void Sensors::updateTnH() {
-    if (dht != NULL && pollTiming.ping()) {
+    if (isDhtInstalled() && pollTiming.ping()) {
         temp = dht->readTemperature();
         humid = dht->readHumidity();
     }
@@ -52,11 +52,15 @@ float Sensors::getHumidity() const {
     return humid;
 }
 
+void Sensors::printInstalled(uint8_t pin) {
+    Serial.print(F("Sensor installed on pin "));
+    Serial.println(pin);
+}
+
 bool Sensors::checkInstalled(uint8_t pin, bool inst) {
     bool sign = readPinLow(pin);
     if (!inst && sign) {
-        Serial.print(F("Sensor installed on pin "));
-        Serial.println(pin);
+        printInstalled(pin);
     }
     return inst || sign;
 }
@@ -66,14 +70,13 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
     if (!inst) {
         sign = hold_on.isTimeAfter(readPinLow(pin));
         if (sign) {
-            Serial.print(F("Sensor installed on pin "));
-            Serial.println(pin);
+            printInstalled(pin);
         }
     }
     return inst || sign;
 }
 
-void Sensors::init_sensors() {
+void Sensors::initSensors() {
     dht = searchDht();
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
 //        hold_on[i].interval = INST_DELAY;
@@ -81,27 +84,27 @@ void Sensors::init_sensors() {
 }
 
 void Sensors::process() {
-    check_installed();
+    checkInstalled();
     updateTnH();
 }
 
-void Sensors::check_installed() {
+void Sensors::checkInstalled() {
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
         installed[i] = checkInstalled(IN_PINS[i], installed[i]);
 //        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], hold_on[i]);
     }
 }
 
-bool Sensors::is_dht_installed() {
+bool Sensors::isDhtInstalled() {
     return dht != NULL;
 }
 
 
-bool Sensors::is_sensor_on(uint8_t index) {
+bool Sensors::isSensorOn(uint8_t index) {
     return hold_on[index].isTimeAfter(readPinLow(IN_PINS[index]) && installed[index]);
 }
 
-int Sensors::get_sensor_val(uint8_t index) {
+int Sensors::getSensorVal(uint8_t index) {
     if (installed[index]) {
         return readPinVal(INA_PINS[index]);
     } else {
@@ -109,11 +112,11 @@ int Sensors::get_sensor_val(uint8_t index) {
     }
 }
 
-bool Sensors::is_sensor_val(uint8_t index, uint8_t val) {
-    return get_sensor_val(index) == val;
+bool Sensors::isSensorVal(uint8_t index, uint8_t val) {
+    return getSensorVal(index) == val;
 }
 
-char *Sensors::printSensor(uint8_t idx) {
+const char *Sensors::printSensor(uint8_t idx) {
     sprintf(CHAR_BUF, "Sensor[%i]: %s", idx, installed[idx] ? "installed" : "not installed");
     return CHAR_BUF;
 }

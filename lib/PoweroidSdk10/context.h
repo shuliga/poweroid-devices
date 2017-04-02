@@ -6,11 +6,13 @@
 #define POWEROID_10_CONTEXT_H
 
 #include "sensors.h"
+#include "relays.h"
 
 typedef struct Context {
     const char *signature;
     const char *version;
     Sensors *SENS;
+    Relays *RELAYS;
     Property *FACTORY;
     long *RUNTIME;
     const uint8_t props_size;

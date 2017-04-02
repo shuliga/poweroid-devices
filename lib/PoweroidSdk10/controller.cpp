@@ -38,7 +38,9 @@ MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
 
 
-Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {
+Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {}
+
+void Controller::begin(){
     initDisplay();
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN
