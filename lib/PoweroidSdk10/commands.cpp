@@ -6,8 +6,7 @@
 
 #define PREFIX(cmd) cmd + F(" -> ")
 
-Commands::Commands(Context &_ctx): ctx(&_ctx){
-    persist = new Persistence(ctx->signature, ctx->RUNTIME, ctx->props_size);
+Commands::Commands(Context &_ctx, Persistence &_pers): ctx(&_ctx), persist(&_pers){
 }
 
 void Commands::printProperty(uint8_t i) {
@@ -125,7 +124,10 @@ void Commands::listen() {
             uint8_t i = (uint8_t) cmd.substring(sizeof(CMD_PREF_DISARM_STATE) - 1, sizeof(CMD_PREF_DISARM_STATE)).toInt();
             bool trigger = (bool) cmd.substring((cmd.lastIndexOf(':') + 1)).toInt();
             if (i < ctx->states_size) {
+                Serial.print(PREFIX(cmd));
                 ctx->disarmState(i, trigger);
+                persist->storeState(i, trigger);
+                ctx->printState(i);
             }
             return;
         }

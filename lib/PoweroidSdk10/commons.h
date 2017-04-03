@@ -5,7 +5,7 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
-#define PWR21
+#define PWR20
 
 #define LED_PIN 13
 #define FACTORY_RESET_PIN 9

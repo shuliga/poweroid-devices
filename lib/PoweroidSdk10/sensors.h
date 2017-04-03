@@ -48,9 +48,6 @@ public:
     const char *printDht();
 
 private:
-
-    TimingState pollTiming = TimingState(5000L);
-
     float temp;
 
     float humid;

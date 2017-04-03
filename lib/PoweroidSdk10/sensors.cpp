@@ -13,12 +13,15 @@ const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
 static TimingState flash_333 = TimingState(333);
+static TimingState pollTiming = TimingState(5000L);
+
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
 static char CHAR_BUF[32];
 
 DHT *Sensors::searchDht() {
     DHT *result = NULL;
+    delay(500);
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
         result = new DHT(IN_PINS[i], DHTTYPE);
         result->begin();
@@ -81,6 +84,7 @@ void Sensors::initSensors() {
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
 //        hold_on[i].interval = INST_DELAY;
     }
+    pollTiming.reset();
 }
 
 void Sensors::process() {

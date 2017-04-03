@@ -22,7 +22,7 @@
 
 class Commands {
 public:
-    Commands(Context &_ctx);
+    Commands(Context &_ctx, Persistence &_pers);
 
     void listen();
 

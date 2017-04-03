@@ -8,6 +8,9 @@
 #define GET_PROP_NORM(i) FAN_PROPS.RUNTIME[(i)] / FAN_PROPS.FACTORY[(i)].scale
 #define TOCBUFF(x) strcpy(CHAR_BUFF_12,x)
 
+char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
+char *STATE_FORMAT_BUFF = {"[%i] StateLight: %s\0[%i] StateHumid: %s\0[%i] StateTemp: %s"}; // OFFSETS:0, 20, 40
+
 typedef struct Timings {
     TimingState debounce_delay, countdown_power, delay_power, light1_standby, humidity_delay, humidity_runtime, temperature_delay;
 };
@@ -29,10 +32,7 @@ static StateHumid state_humid = SH_OFF;
 static StateTemp state_temp = ST_OFF;
 
 static uint8_t state_count = 3;
-static char CHAR_BUFF_12[12];
-static char CHAR_BUFF_24[24];
-
-Bt *BT;
+static char CHAR_BUFF_32[32];
 
 static struct Properties {
 
@@ -82,72 +82,71 @@ static struct Properties {
 } FAN_PROPS;
 
 static void printState(uint8_t i) {
+    uint8_t offset = 0;
     switch (i) {
         case 0: {
             switch (state_light) {
                 case SL_DISARM:
-                    TOCBUFF("DISARM");
+                    offset = 0;
                     break;
                 case SL_OFF:
-                    TOCBUFF("OFF");
+                    offset = 7;
                     break;
                 case AL:
-                    TOCBUFF("AL");
+                    offset = 11;
                     break;
                 case SL_POWER:
-                    TOCBUFF("POWER");
+                    offset = 17;
                     break;
                 case SL_POWER_SBY:
-                    TOCBUFF("POWER-SBY");
+                    offset = 23;
                     break;
                 default:
                     return;
             }
-            sprintf(CHAR_BUFF_24, "[%i] StateLight: %s", i, CHAR_BUFF_12);
             break;
         }
         case 1: {
             switch (state_humid) {
                 case SH_DISARM:
-                    TOCBUFF("DISARM");
+                    offset = 0;
                     break;
                 case SH_OFF:
-                    TOCBUFF("OFF");
+                    offset = 7;
                     break;
                 case AH:
-                    TOCBUFF("AH");
+                    offset = 14;
                     break;
                 case SH_POWER:
-                    TOCBUFF("POWER");
+                    offset = 17;
                     break;
                 case SH_POWER_SBY:
-                    TOCBUFF("POWER-SBY");
+                    offset = 23;
                     break;
                 default:
                     return;
             }
-            sprintf(CHAR_BUFF_24, "[%i] StateHumid: %s", i, CHAR_BUFF_12);
             break;
         }
         case 2: {
             switch (state_temp) {
                 case ST_DISARM:
-                    TOCBUFF("DISARM");
+                    offset = 0;
                     break;
                 case ST_OFF:
-                    TOCBUFF("OFF");
+                    offset = 7;
                     break;
                 case ST_POWER:
-                    TOCBUFF("POWER");
+                    offset = 17;
                     break;
                 default:
                     return;
             }
-            sprintf(CHAR_BUFF_24, "[%i] StateTemp: %s", i, CHAR_BUFF_12);
             break;
         }
     }
-    Serial.println(CHAR_BUFF_24);
+    sprintf(CHAR_BUFF_32, STATE_FORMAT_BUFF + i * 20, i, STATE_BUFF + offset);
+    Serial.println(CHAR_BUFF_32);
 }
 
 static void disarmState(uint8_t i, bool _disarm) {

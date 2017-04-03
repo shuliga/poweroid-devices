@@ -27,6 +27,7 @@ static char version[] = VERSION;
 class Pwr {
 public:
     Context *CTX;
+    Persistence PERS;
     Bt *BT;
     Sensors SENS;
     Relays REL;
@@ -48,6 +49,7 @@ private:
 
     void init_inputs();
 
+    void loadDisarmedStates();
 };
 
 #endif
