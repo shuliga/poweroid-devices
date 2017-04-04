@@ -22,7 +22,7 @@
 #include "gfxfont.h"
 #include <I2C.h>
 
-#define FONT_PULL_UP 10
+#define FONT_PULL_UP 14
 #define FONT_SIZE 30
 
 bool connected = false;
@@ -33,7 +33,7 @@ ACROBOTIC_SSD1306::ACROBOTIC_SSD1306() {
     I2c.setSpeed(true);
 }
 
-void ACROBOTIC_SSD1306::init(void) {
+void ACROBOTIC_SSD1306::init(bool flip) {
     sendCommand(0xAE);            //display off
     sendCommand(0xA6);            //Set Normal Display (default)
     sendCommand(0xAE);            //DISPLAYOFF
@@ -48,8 +48,14 @@ void ACROBOTIC_SSD1306::init(void) {
     sendCommand(0x14);
     sendCommand(0x20);            //MEMORYMODE
     sendCommand(0x00);            //0x0 act like ks0108
-    sendCommand(0xA1);            //SEGREMAP   Mirror screen horizontally (A0)
-    sendCommand(0xC8);            //COMSCANDEC Rotate screen vertically (C0)
+    if (flip){
+        sendCommand(0xA0);            //SEGREMAP   Mirror screen horizontally (A0)
+        sendCommand(0xC0);            //COMSCANDEC Rotate screen vertically (C0)
+    }
+     else {
+        sendCommand(0xA1);            //SEGREMAP   Mirror screen horizontally (A0)
+        sendCommand(0xC8);            //COMSCANDEC Rotate screen vertically (C0)
+    }
     sendCommand(0xDA);            //0xDA
     sendCommand(0x12);            //COMSCANDEC
     sendCommand(0x81);            //SETCONTRAST
@@ -68,12 +74,12 @@ void ACROBOTIC_SSD1306::init(void) {
     setFont(font8x8);
 }
 
-bool ACROBOTIC_SSD1306::checkAndInit() {
+bool ACROBOTIC_SSD1306::checkAndInit(bool flip) {
     Serial.println(F("I2C display scan"));
     if (!connected && isConnected()) {
         Serial.println(F("I2C display init"));
         oled.setGfxFont(&FreeSans12pt7b);
-        init();
+        init(flip);
         return true;
     } else {
         return false;

@@ -2,12 +2,12 @@
 // Created by SHL on 20.03.2017.
 //
 
-#include <Rotary.h>
-#include <ACROBOTIC_SSD1306.h>
 
 #define INCR(val, max) val < max ? val++ : val
 #define DECR(val, min) val > min ? val-- : val
 
+#include <Rotary.h>
+#include <ACROBOTIC_SSD1306.h>
 #include "commons.h"
 #include "commands.h"
 #include "controller.h"
@@ -20,11 +20,13 @@ static TimingState sleep_timer = TimingState(100000L);
 
 static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
-static int8_t c_prop_idx = -1;
-
 static volatile long prop_value;
+
+static int8_t c_prop_idx = -1;
 static long c_prop_value = -1;
 static long old_prop_value;
+static bool prop_changed;
+
 static volatile long prop_min;
 static volatile long prop_max;
 
@@ -57,7 +59,7 @@ void Controller::initEncoderInterrupts() {
 }
 
 void Controller::initDisplay() {
-    if (oled.checkAndInit()) {
+    if (oled.checkAndInit(FLIP_DISPLAY)) {
         oled.clearDisplay();
         oled.setBrightness(0);
         outputTitle();
@@ -65,8 +67,10 @@ void Controller::initDisplay() {
 }
 
 void Controller::outputTitle() const {
-    oled.setTextXY(0, 1);
-    oled.putString(ctx->id);
+    char _cbuff[17];
+    oled.setTextXY(7, 0);
+    strlcpy(_cbuff, ctx->id, 17);
+    oled.putString(_cbuff);
 }
 
 
@@ -84,6 +88,7 @@ void Controller::process() {
                 sei();
                 printPropDescr((uint8_t) prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
+                outputStatus(F("edit value:"), old_prop_value);
             }
             if (event == CLICK) {
                 c_prop_idx = -1; // invalidate cache;
@@ -106,14 +111,16 @@ void Controller::process() {
 
             if (c_prop_idx != prop_idx) {
                 cli();
-                prop_value = (ctx->RUNTIME[prop_idx] / ctx->FACTORY[prop_idx].scale);
-                prop_min = (ctx->FACTORY[prop_idx].minv / ctx->FACTORY[prop_idx].scale);
-                prop_max = (ctx->FACTORY[prop_idx].maxv / ctx->FACTORY[prop_idx].scale);
+                long scale = ctx->FACTORY[prop_idx].scale;
+                prop_value = (ctx->RUNTIME[prop_idx] / scale);
+                prop_min = (ctx->FACTORY[prop_idx].minv / scale);
+                prop_max = (ctx->FACTORY[prop_idx].maxv / scale);
                 c_prop_idx = prop_idx;
                 sei();
 
                 printPropDescr(prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
+                outputStatus(F("property:  "), prop_idx); prop_changed = false;
             }
 
             if (event == CLICK) {
@@ -132,6 +139,8 @@ void Controller::process() {
         case STORE: {
             oldState = state;
             cmd->storeProps();
+            outputStatus(F("<storing..>"), prop_value);
+            delay(500);
             c_prop_value = -1; // invalidate cache;
             c_prop_idx = -1; // invalidate cache;
             state = BROWSE;
@@ -150,21 +159,6 @@ void Controller::process() {
 
             exitSleepOnClick(event);
             break;
-        }
-    }
-
-    if (oldState != state || state == BROWSE) {
-        switch (state) {
-            case EDIT_PROP:
-                outputStatus(F("edit value:"), old_prop_value);
-                break;
-            case BROWSE:
-                outputStatus(F("property:  "), prop_idx);
-                break;
-            case STORE:
-                outputStatus(F("<storing..>"), prop_value);
-                delay(500);
-                break;
         }
     }
 
@@ -203,9 +197,9 @@ void Controller::printPropDescr(uint8_t _idx) {
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
-    oled.setTextXY(7, 0);
+    oled.setTextXY(0, 0);
     oled.putString(txt);
-    oled.setTextXY(7, 12);
+    oled.setTextXY(0, 12);
     oled.putNumber(val);
     oled.putString("  ");
 }
@@ -251,8 +245,6 @@ ISR(PCINT2_vect) {
                 result == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
                 break;
             }
-            case STORE:
-                break;
         }
     }
 }

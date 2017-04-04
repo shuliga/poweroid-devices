@@ -80,7 +80,7 @@ class ACROBOTIC_SSD1306 {
     ACROBOTIC_SSD1306();
 
     char addressingMode;
-    void init(void);
+    void init(bool flip);
 
     void setNormalDisplay();
     void setInverseDisplay();
@@ -117,7 +117,7 @@ class ACROBOTIC_SSD1306 {
 
     bool getConnected();
     bool isConnected();
-    bool checkAndInit();
+    bool checkAndInit(bool flip);
     GFXfont *gfxfont;
 
   private:

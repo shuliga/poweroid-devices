@@ -5,6 +5,8 @@
 #ifndef _CONTROLLER_H
 #define _CONTROLLER_H
 
+#define FLIP_DISPLAY 1
+
 #include "commons.h"
 #include "context.h"
 #include <MultiClick.h>
