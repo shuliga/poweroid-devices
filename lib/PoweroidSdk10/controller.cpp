@@ -38,11 +38,12 @@ Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
 
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
+TimingState displaySearchTiming = TimingState(2000L);
 
 
 Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {}
 
-void Controller::begin(){
+void Controller::begin() {
     initDisplay();
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN
@@ -81,7 +82,7 @@ void Controller::process() {
     switch (state) {
         case EDIT_PROP: {
             oldState = state;
-            if (c_prop_value != prop_value) {
+            if (c_prop_value != prop_value || ctx->invalidate) {
                 cli();
                 ctx->RUNTIME[prop_idx] = prop_value * ctx->FACTORY[prop_idx].scale;
                 c_prop_value = prop_value;
@@ -104,12 +105,12 @@ void Controller::process() {
             bool firstRun = oldState != state;
             oldState = state;
 
-            if (control_touched || firstRun){
+            if (control_touched || firstRun) {
                 sleep_timer.reset();
                 control_touched = false;
             }
 
-            if (c_prop_idx != prop_idx) {
+            if (c_prop_idx != prop_idx || ctx->invalidate) {
                 cli();
                 long scale = ctx->FACTORY[prop_idx].scale;
                 prop_value = (ctx->RUNTIME[prop_idx] / scale);
@@ -120,7 +121,8 @@ void Controller::process() {
 
                 printPropDescr(prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
-                outputStatus(F("property:  "), prop_idx); prop_changed = false;
+                outputStatus(F("property:  "), prop_idx);
+                prop_changed = false;
             }
 
             if (event == CLICK) {
@@ -161,7 +163,8 @@ void Controller::process() {
             break;
         }
     }
-
+    ctx->invalidate = false;
+    detectDisplay();
 }
 
 void Controller::exitSleepOnClick(const McEvent &event) const {
@@ -182,8 +185,14 @@ void Controller::switchDisplay(boolean inverse) const {
     oled.displayOn();
 }
 
+void Controller::detectDisplay() {
+    if (displaySearchTiming.ping() && !oled.getConnected()) {
+        initDisplay();
+    }
+}
+
 void Controller::outputSleepScreen(bool dither) {
-    if (displayTiming.ping()) {
+    if (displayTiming.ping() && oled.getConnected()) {
         oled.outputTextXY(3, 64, ctx->SENS->printDht(), true, dither);
     }
 }

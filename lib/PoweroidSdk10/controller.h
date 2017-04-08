@@ -45,6 +45,7 @@ private:
 
     void exitSleepOnClick(const McEvent &event) const;
 
+    void detectDisplay();
 };
 
 

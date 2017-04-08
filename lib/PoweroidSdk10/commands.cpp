@@ -49,6 +49,7 @@ void Commands::listen() {
             for (uint8_t i = 0; i < ctx->props_size; i++) {
                 ctx->RUNTIME[i] = ctx->FACTORY[i].val;
             }
+            ctx->invalidate = true;
             Serial.print(PREFIX(cmd));
             Serial.println(F("Properties reset to factory settings"));
             return;
@@ -90,6 +91,7 @@ void Commands::listen() {
             if (i < ctx->props_size && idx > 0) {
                 long v = cmd.substring(idx).toInt();
                 ctx->RUNTIME[i] = v * ctx->FACTORY[i].scale;
+                ctx->invalidate = true;
                 Serial.print(PREFIX(cmd));
                 printProperty(i);
             }

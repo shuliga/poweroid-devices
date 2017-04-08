@@ -6,7 +6,6 @@
 #include "timings.h"
 
 #define GET_PROP_NORM(i) FAN_PROPS.RUNTIME[(i)] / FAN_PROPS.FACTORY[(i)].scale
-#define TOCBUFF(x) strcpy(CHAR_BUFF_12,x)
 
 char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
 char *STATE_FORMAT_BUFF = {"[%i] StateLight: %s\0[%i] StateHumid: %s\0[%i] StateTemp: %s"}; // OFFSETS:0, 20, 40

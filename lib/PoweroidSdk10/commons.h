@@ -57,6 +57,8 @@
 
 #endif // PWR20
 
+#define DEBOUNCE_DELAY 500L
+
 unsigned long hash(byte *data, unsigned long size);
 
 #endif

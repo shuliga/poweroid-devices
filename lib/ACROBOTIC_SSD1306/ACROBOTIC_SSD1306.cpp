@@ -75,7 +75,6 @@ void ACROBOTIC_SSD1306::init(bool flip) {
 }
 
 bool ACROBOTIC_SSD1306::checkAndInit(bool flip) {
-    Serial.println(F("I2C display scan"));
     if (!connected && isConnected()) {
         Serial.println(F("I2C display init"));
         oled.setGfxFont(&FreeSans12pt7b);
