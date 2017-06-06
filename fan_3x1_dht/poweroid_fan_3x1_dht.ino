@@ -12,7 +12,7 @@ StateHumid prev_state_humid = SH_DISARM;
 StateTemp prev_state_temp = ST_DISARM;
 
 Context CTX = Context{SIGNATURE, version, NULL, NULL, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
-                  state_count, printState, disarmState, false};
+                  state_count, printState, disarmState, false, false};
 Pwr *PWR;
 
 void apply_timings() {

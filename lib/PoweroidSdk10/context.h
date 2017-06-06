@@ -20,7 +20,8 @@ typedef struct Context {
     const uint8_t states_size;
     void (*printState)(uint8_t i);
     void (*disarmState)(uint8_t i, bool _disarm);
-    bool invalidate;
+    bool refreshProps;
+    bool passive;
 } Context;
 
 #endif //POWEROID_10_CONTEXT_H

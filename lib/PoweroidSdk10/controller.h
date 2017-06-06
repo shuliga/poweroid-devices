@@ -17,6 +17,8 @@ static volatile int props_idx_max = 0;
 
 class Controller {
 public:
+    bool passive = false;
+
     Controller(Commands &_cmd, Context &_ctx);
 
     void process();
@@ -31,7 +33,7 @@ private:
 
     void initDisplay();
 
-    void printPropDescr(uint8_t _idx);
+    void outputPropDescr(uint8_t _idx);
 
     void outputStatus(const __FlashStringHelper *txt, const long val);
 
@@ -46,6 +48,12 @@ private:
     void exitSleepOnClick(const McEvent &event) const;
 
     void detectDisplay();
+
+    void updateProperty(uint8_t idx) const;
+
+    void loadProperty(uint8_t idx) const;
+
+    bool testSerialConnection() const;
 };
 
 

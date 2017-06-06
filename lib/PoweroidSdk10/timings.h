@@ -11,7 +11,7 @@ typedef struct TimingState{
     long suspended;
     bool state;
     bool dirty;
-    TimingState(unsigned long _int) : interval(_int) {};
+    TimingState(unsigned long interval) : interval(interval) {};
     void reset();
 
     unsigned long getCurrent();

@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+#define LED_PIN
 bool readPinLow(uint8_t pin);
 bool readPinHigh(uint8_t pin);
 int readPinVal(uint8_t pin);

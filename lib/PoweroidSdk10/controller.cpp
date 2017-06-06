@@ -12,6 +12,9 @@
 #include "commands.h"
 #include "controller.h"
 
+#define DISPLAY_BASE 1
+#define DISPLAY_BOTTOM 7
+
 static enum State {
     EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS
 } oldState = STORE, state = BROWSE;
@@ -69,7 +72,7 @@ void Controller::initDisplay() {
 
 void Controller::outputTitle() const {
     char _cbuff[17];
-    oled.setTextXY(7, 0);
+    oled.setTextXY(0, 0);
     strlcpy(_cbuff, ctx->id, 17);
     oled.putString(_cbuff);
 }
@@ -82,12 +85,9 @@ void Controller::process() {
     switch (state) {
         case EDIT_PROP: {
             oldState = state;
-            if (c_prop_value != prop_value || ctx->invalidate) {
-                cli();
-                ctx->RUNTIME[prop_idx] = prop_value * ctx->FACTORY[prop_idx].scale;
-                c_prop_value = prop_value;
-                sei();
-                printPropDescr((uint8_t) prop_idx);
+            if (c_prop_value != prop_value || ctx->refreshProps) {
+                updateProperty(prop_idx);
+                outputPropDescr((uint8_t) prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
                 outputStatus(F("edit value:"), old_prop_value);
             }
@@ -110,16 +110,10 @@ void Controller::process() {
                 control_touched = false;
             }
 
-            if (c_prop_idx != prop_idx || ctx->invalidate) {
-                cli();
-                long scale = ctx->FACTORY[prop_idx].scale;
-                prop_value = (ctx->RUNTIME[prop_idx] / scale);
-                prop_min = (ctx->FACTORY[prop_idx].minv / scale);
-                prop_max = (ctx->FACTORY[prop_idx].maxv / scale);
-                c_prop_idx = prop_idx;
-                sei();
+            if (c_prop_idx != prop_idx || ctx->refreshProps) {
+                loadProperty(prop_idx);
 
-                printPropDescr(prop_idx);
+                outputPropDescr(prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
                 outputStatus(F("property:  "), prop_idx);
                 prop_changed = false;
@@ -163,8 +157,43 @@ void Controller::process() {
             break;
         }
     }
-    ctx->invalidate = false;
+    ctx->refreshProps = false;
     detectDisplay();
+}
+
+void Controller::loadProperty(uint8_t idx) const {
+    if (!passive) {
+        cli();
+        long scale = ctx->FACTORY[idx].scale;
+        prop_value = (ctx->RUNTIME[idx] / scale);
+        prop_min = (ctx->FACTORY[idx].minv / scale);
+        prop_max = (ctx->FACTORY[idx].maxv / scale);
+        c_prop_idx = idx;
+        sei();
+    } else {
+        Serial.print(cmd->cmd_str.CMD_PREF_GET_PROP);
+        Serial.println(idx);
+        if (testSerialConnection()){
+            String repl = Serial.readString();
+            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)){
+                // TODO
+            }
+        };
+    }
+}
+
+void Controller::updateProperty(uint8_t idx) const {
+    if (!passive) {
+        cli();
+        ctx->RUNTIME[idx] = prop_value * ctx->FACTORY[idx].scale;
+        c_prop_value = prop_value;
+        sei();
+    } else {
+        Serial.print(cmd->cmd_str.CMD_PREF_SET_PROP);
+        Serial.print(idx);
+        Serial.print(':');
+        Serial.println(prop_value);
+    }
 }
 
 void Controller::exitSleepOnClick(const McEvent &event) const {
@@ -193,22 +222,22 @@ void Controller::detectDisplay() {
 
 void Controller::outputSleepScreen(bool dither) {
     if (displayTiming.ping() && oled.getConnected()) {
-        oled.outputTextXY(3, 64, ctx->SENS->printDht(), true, dither);
+        oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS->printDht(), true, dither);
     }
 }
 
-void Controller::printPropDescr(uint8_t _idx) {
+void Controller::outputPropDescr(uint8_t _idx) {
     if (oled.getConnected()) {
-        oled.setTextXY(1, 0);
+        oled.setTextXY(DISPLAY_BASE, 0);
         oled.putString(ctx->FACTORY[_idx].desc);
         oled.putString(F("      "));
     }
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
-    oled.setTextXY(0, 0);
+    oled.setTextXY(DISPLAY_BOTTOM, 0);
     oled.putString(txt);
-    oled.setTextXY(0, 12);
+    oled.setTextXY(DISPLAY_BOTTOM, 12);
     oled.putNumber(val);
     oled.putString("  ");
 }
@@ -234,12 +263,16 @@ void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool bracket
     }
     measure_c[i] = 0;
     sprintf(str_text, fmt, _prop_val, measure_c);
-    oled.outputTextXY(3, 64, str_text, true, false);
+    oled.outputTextXY(DISPLAY_BASE + 2, 64, str_text, true, false);
 }
 
 
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN
+
+bool Controller::testSerialConnection() const {
+    return false;
+}
 
 ISR(PCINT2_vect) {
     unsigned char result = encoder.process();
