@@ -6,6 +6,8 @@
 
 #define BT_VER_05 "+VERSION:hc01.comV2.1"
 #define BT_VER_06 "hc01.comV2.0"
+#define PASSWD "1234"
+
 
 #define HISPEED 115200
 
@@ -24,11 +26,11 @@ private:
     bool connected = false;
     bool passive = false;
 
-    void execBtAtCommand(const __FlashStringHelper *cmd, char *res);
+    String execBtAtCommand(const __FlashStringHelper *cmd);
+    String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2);
+    String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout);
 
-    void execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, char *res);
-
-    void execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, char *res, uint16_t timeout);
+    bool isConnected();
 };
 
 #endif
