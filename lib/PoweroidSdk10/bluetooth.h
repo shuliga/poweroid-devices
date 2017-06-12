@@ -21,13 +21,10 @@ public:
   void getResult();
   bool getConnected();
   bool getPassive();
-  void setPin(char * pin);
 private:
     bool connected = false;
     bool passive = false;
 
-    String execBtAtCommand(const __FlashStringHelper *cmd);
-    String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2);
     String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout);
 
     bool isConnected();
