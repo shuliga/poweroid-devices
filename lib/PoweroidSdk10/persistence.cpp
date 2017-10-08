@@ -5,7 +5,9 @@
 #include "persistence.h"
 
 // Console output codes
-// 101 - Factory reset
+// 100 - Signature
+// 101 - Hash
+// 200 - Factory reset
 // 201 - Properties stored in EEPROM.
 // 202 - Properties loaded from EEPROM
 // 501 - Not a native EEPROM. Overwriting signature.
@@ -16,22 +18,23 @@ unsigned long hashProp(long *props, int size) {
     return hash((byte *) props, size * sizeof(long));
 }
 
-Persistence::Persistence(String s, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz) {
-    delay(501);
+Persistence::Persistence(const String &_sign, long *_props_runtime, uint8_t props_size, uint8_t *_mappings, uint8_t msz): given_sign(_sign), props_runtime(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
+
+void  Persistence::begin(){
+    delay(250);
     checkFactoryReset(props_runtime);
-    size = props_size;
-    mappings_size = msz;
     EEPROM.get(BASE, signature);
+    signature[SIGNATURE_SIZE - 1] = 0;
     String sign = String(signature);
+    delay(50);
+    writeLog('I', ORIGIN, 100, signature);
+    delay(50);
     unsigned long eeprom_hash;
     EEPROM.get(HASH_OFFSET, eeprom_hash);
-    Serial.print(F("EEPROM signature '"));
-    Serial.print(sign + "', hash:");
-    Serial.println(eeprom_hash);
-    if (sign != s) {
-        writeLog('W', ORIGIN, 510);
-        Serial.println("Overwriting signature '" + sign + "' with: '" + s + "'");
-        s.toCharArray(signature, SIGNATURE_SIZE);
+    writeLog('I', ORIGIN, 101, eeprom_hash);
+    if (sign != given_sign) {
+        given_sign.toCharArray(signature, SIGNATURE_SIZE);
+        writeLog('W', ORIGIN, 510, signature);
         EEPROM.put(BASE, signature);
         storeProperties(props_runtime);
         storeMappings(mappings);
@@ -61,11 +64,8 @@ void Persistence::storeProperties(long *props) {
         storeValue(i, props[i]);
     }
     unsigned long hash = hashProp(props, size);
-    char c_hash[11];
-    c_hash[10] = 0;
-    ultoa(hash, c_hash, 10);
     writeLog('I', ORIGIN, 201, size);
-    Serial.println("Hash: " + String(c_hash));
+    writeLog('I', ORIGIN, 101, hash);
     EEPROM.put(HASH_OFFSET, hash);
 }
 
@@ -85,9 +85,9 @@ void Persistence::loadProperties(long *props) {
 void Persistence::checkFactoryReset(long *props_runtime) {
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
     if (digitalRead(FACTORY_RESET_PIN) == LOW) {
+        writeLog('I', ORIGIN, 200);
         storeProperties(props_runtime);
         EEPROM.put(STATES_OFFSET, 0); // Clear state DISARM flags
-        writeLog('I', ORIGIN, 101);
     }
 }
 

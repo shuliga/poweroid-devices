@@ -14,15 +14,18 @@
 #define PROPS_OFFSET (MAPPINGS_OFFSET + MAPPINGS_SIZE)
 #define ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
 
-static const char *const ORIGIN = "EEPROM";
 
 struct Persistence {
 
+    const char *const ORIGIN = "EEPROM";
     uint8_t size;
     uint8_t mappings_size;
     char signature[SIGNATURE_SIZE];
+    String given_sign;
+    long *props_runtime;
+    uint8_t *mappings;
 
-    Persistence(String s, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz);
+    Persistence(const String &_sign, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz);
 
     void storeProperties(long *props);
 
@@ -43,6 +46,8 @@ struct Persistence {
     void storeMappings(uint8_t *mappings);
 
     void loadMappings(uint8_t *mappings);
+
+    void begin();
 };
 
 

@@ -6,7 +6,7 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
     if (!on) {
-        delay(600);
+        delay(500);
         Serial.print(F("AT+VERSION"));
         String ver = Serial.readString();
         if (ver.startsWith(BT_VER_06)) {
@@ -119,6 +119,7 @@ void Bt::applyBt05() {
             delay(200);
             execBtAtCommand(F("AT+POLAR=1,0"));
             connected = true;
+            passive = true;
             sprintf(result, "BT-passive");
             break;
         }

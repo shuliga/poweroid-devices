@@ -1,7 +1,7 @@
 #include <avr/wdt.h>
 #include "PoweroidSdk10.h"
 
-Pwr::Pwr(Context &ctx, Commands &_cmd, Controller &_ctrl, Bt &_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
+Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
     REL = &ctx.RELAYS;
     SENS = &ctx.SENS;
 }
@@ -9,29 +9,33 @@ Pwr::Pwr(Context &ctx, Commands &_cmd, Controller &_ctrl, Bt &_bt) : CTX(&ctx), 
 void Pwr::begin() {
     Serial.begin(9600);
     printVersion();
+
     init_outputs();
     init_inputs();
 
-    if (&BT != NULL){
-        BT.begin();
-    }
+    CTX->PERS.begin();
 
     SENS->initSensors();
-    if (&CTRL != NULL) {
-        CTRL.begin();
+    if (CTRL) {
+        CTRL->begin();
     }
 
     loadDisarmedStates();
+
+    if (BT){
+        BT->begin();
+        CTX->passive = BT->getPassive();
+    }
 //    wdt_enable(WDTO_8S);
 }
 
 void Pwr::run() {
 //    wdt_reset();
-    if (&CMD != NULL) {
-        CMD.listen();
+    if (CMD) {
+        CMD->listen();
     }
-    if (&CTRL != NULL) {
-        CTRL.process();
+    if (CTRL) {
+        CTRL->process();
     }
 }
 

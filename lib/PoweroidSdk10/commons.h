@@ -61,7 +61,8 @@
 
 unsigned long hash(byte *data, unsigned long size);
 void writeLog(const char level, const char *origin, const int code);
-void writeLog(const char level, const char *origin, const int code, int result);
+void writeLog(const char level, const char *origin, const int code, long result);
+void writeLog(const char level, const char *origin, const int code, char *result);
 
 #endif
 

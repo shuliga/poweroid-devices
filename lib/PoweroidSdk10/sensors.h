@@ -11,12 +11,14 @@
 
 #define DHTTYPE DHT22
 
+
 extern const uint8_t IN_PINS[];
 extern const uint8_t INA_PINS[];
 
 class Sensors {
 public:
 
+    const char *const ORIGIN = "SENSORS";
     Sensors();
 
     void updateTnH();

@@ -7,6 +7,14 @@
 #include "timings.h"
 #include "sensors.h"
 
+// Console output codes
+// 100 -
+// 201 - Sensor installed
+// 501 - Sensor not installed
+// 200 - DHT installed
+// 500 - DHT not installed
+
+
 const long INST_DELAY = 50L;
 
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
@@ -24,12 +32,10 @@ Sensors::Sensors() : dht(DHT_PIN, DHTTYPE) {
 }
 
 void Sensors::searchDht() {
-    delay(500);
     dht.begin();
     float val = dht.readHumidity();
     if (!isnan(val)) {
-        Serial.print(F("DHT installed on pin:"));
-        Serial.println(DHT_PIN);
+        writeLog('I', ORIGIN, 200, DHT_PIN);
         for(int i = 0; i < ARRAY_SIZE(IN_PINS); i++){
             if (IN_PINS[i] == DHT_PIN){
                 installed[i] = true;
@@ -40,7 +46,7 @@ void Sensors::searchDht() {
 }
 
 void Sensors::updateTnH() {
-    if (isDhtInstalled() && pollTiming.ping()) {
+    if (dht_installed && pollTiming.ping()) {
         temp = dht.readTemperature();
         humid = dht.readHumidity();
     }
@@ -55,8 +61,7 @@ float Sensors::getHumidity() const {
 }
 
 void Sensors::printInstalled(uint8_t pin) {
-    Serial.print(F("Sensor installed on pin "));
-    Serial.println(pin);
+    writeLog('I', ORIGIN, 201, pin);
 }
 
 bool Sensors::checkInstalled(uint8_t pin, bool inst) {
@@ -116,8 +121,7 @@ bool Sensors::isSensorVal(uint8_t index, uint8_t val) {
 }
 
 const char *Sensors::printSensor(uint8_t idx) {
-    sprintf(CHAR_BUF, "Sensor[%i]: %s", idx, installed[idx] ? "installed" : "not installed");
-    return CHAR_BUF;
+    writeLog('I', ORIGIN, installed[idx] ? 201 : 501, idx);
 }
 
 uint8_t Sensors::size() {

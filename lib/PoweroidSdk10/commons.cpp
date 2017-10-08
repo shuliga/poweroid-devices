@@ -19,9 +19,14 @@ void writeLog(const char level, const char *origin, const int code){
   Serial.println(buff);
 }
 
-void writeLog(const char level, const char *origin, const int code, int result){
+void writeLog(const char level, const char *origin, const int code, long result){
   char buff[32];
-  sprintf(buff, "%c [%s] %i (%i)", level, origin, code, result);
+  sprintf(buff, "%c [%s] %i (%li)", level, origin, code, result);
   Serial.println(buff);
+}
 
+void writeLog(const char level, const char *origin, const int code, char *result){
+  char buff[32];
+  sprintf(buff, "%c [%s] %i '%s'", level, origin, code, result);
+  Serial.println(buff);
 }

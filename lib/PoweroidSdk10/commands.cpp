@@ -32,8 +32,7 @@ void Commands::listen() {
     if (Serial.available() > 0) {
         String cmd = Serial.readString();
         cmd.replace("\n", "");
-
-        if (cmd.startsWith(REL_PREFIX)) {
+        if (ctx->passive && cmd.startsWith(REL_PREFIX)) {
             uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1), (unsigned int) cmd.indexOf(']')).toInt();
             int8_t i = getMappedFromVirtual(ri);
             if (i >= 0) {

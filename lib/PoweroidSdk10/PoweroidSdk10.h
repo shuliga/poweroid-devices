@@ -32,11 +32,11 @@ public:
     Context *CTX;
     Relays *REL;
     Sensors *SENS;
-    Commands CMD;
-    Controller CTRL;
-    Bt BT;
+    Commands *CMD;
+    Controller *CTRL;
+    Bt *BT;
 
-    Pwr(Context &ctx, Commands &_cmd, Controller &_ctrl, Bt &_bt);
+    Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt);
 
     void begin();
 

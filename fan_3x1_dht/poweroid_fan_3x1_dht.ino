@@ -19,7 +19,7 @@ Commands CMD(CTX);
 Controller CTRL(CTX, CMD);
 Bt BT(CTX.id);
 
-Pwr PWR(CTX, CMD, CTRL, BT);
+Pwr PWR(CTX, &CMD, &CTRL, &BT);
 
 void apply_timings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.RUNTIME[0];
@@ -180,7 +180,7 @@ void loop() {
     PWR.REL->power(0, fan_power);
     PWR.REL->power(1, floor_power);
 
-    led(LED_PIN, fan_power || floor_power);
+//    led(LED_PIN, fan_power || floor_power);
 
     PWR.run();
 
