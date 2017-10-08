@@ -53,6 +53,12 @@ private:
     void loadProperty(uint8_t idx) const;
 
     bool testSerialConnection() const;
+
+    void goToEditProp(uint8_t i) const;
+
+    bool firstRun() const;
+
+    void goToBrowse() const;
 };
 
 

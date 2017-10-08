@@ -12,10 +12,10 @@
 typedef struct Context {
     Context(const char *_signature, const char *_version, Property *_factory, long *_runtime, const uint8_t _props_size,
             const char *_id, const uint8_t _states_size, char *(*_printState)(uint8_t i),
-            void (*_disarmState)(uint8_t i, bool _disarm))
+            void (*_disarmState)(uint8_t i, bool _disarm), int8_t _defaultPropIdx)
             : signature(_signature), version(_version), FACTORY(_factory), RUNTIME(_runtime), SENS(), RELAYS(),
               props_size(_props_size), id(_id), states_size(_states_size), PERS(Persistence(_signature, _runtime, _props_size, RELAYS.mappings, VIRTUAL_RELAYS)),
-              printState(_printState), disarmState(_disarmState) {}
+              printState(_printState), disarmState(_disarmState), defaultPropertyIdx(_defaultPropIdx) {}
 
     const char *signature;
     const char *version;
@@ -35,6 +35,7 @@ typedef struct Context {
 
     void (*disarmState)(uint8_t i, bool _disarm);
 
+    int8_t defaultPropertyIdx;
     bool refreshProps;
     bool passive;
 };

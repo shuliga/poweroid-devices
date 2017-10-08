@@ -13,7 +13,7 @@ StateHumid prev_state_humid = SH_DISARM;
 StateTemp prev_state_temp = ST_DISARM;
 
 Context CTX = Context{SIGNATURE, version, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
-                  state_count, printState, disarmState};
+                  state_count, printState, disarmState, FAN_PROPS.DEFAULT_PROPERTY};
 
 Commands CMD(CTX);
 Controller CTRL(CTX, CMD);

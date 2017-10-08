@@ -9,6 +9,8 @@
 
 static struct Properties {
 
+    int8_t DEFAULT_PROPERTY = 6;
+
     Property FACTORY[8] = {
 
             //desc  value   minV    maxV        scale

@@ -10,14 +10,15 @@
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
 
-#define DISPLAY_BASE 1
-#define DISPLAY_BOTTOM 7
+#define DISPLAY_BASE 0
+#define DISPLAY_BOTTOM 6
 
 static enum State {
     EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS, SUSPEND
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
+static TimingState autoComplete_timer = TimingState(6000L);
 
 static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
@@ -71,7 +72,7 @@ void Controller::initDisplay() {
 
 void Controller::outputTitle() const {
     char _cbuff[17];
-    oled.setTextXY(0, 0);
+    oled.setTextXY(DISPLAY_BOTTOM + 1, 0);
     strlcpy(_cbuff, ctx->id, 17);
     oled.putString(_cbuff);
 }
@@ -83,17 +84,24 @@ void Controller::process() {
 
     switch (state) {
         case EDIT_PROP: {
-            oldState = state;
+            if (firstRun() || control_touched){
+                autoComplete_timer.reset();
+                control_touched = false;
+                outputTitle();
+            }
             if (c_prop_value != prop_value || ctx->refreshProps) {
                 updateProperty(prop_idx);
                 outputPropDescr((uint8_t) prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
                 outputStatus(F("edit value:"), old_prop_value);
             }
-            if (event == CLICK) {
-                c_prop_idx = -1; // invalidate cache;
-                c_prop_value = -1; // invalidate cache;
-                state = BROWSE;
+            if (event == CLICK || autoComplete_timer.isTimeAfter(true)) {
+                goToBrowse();
+            };
+            if (event == DOUBLE_CLICK) {
+                prop_value = old_prop_value;
+                updateProperty(prop_idx);
+                goToBrowse();
             };
             if (event == HOLD) {
                 state = STORE;
@@ -101,10 +109,7 @@ void Controller::process() {
             break;
         }
         case BROWSE: {
-            bool firstRun = oldState != state;
-            oldState = state;
-
-            if (control_touched || firstRun) {
+            if (control_touched || firstRun()) {
                 sleep_timer.reset();
                 control_touched = false;
                 outputTitle();
@@ -115,15 +120,12 @@ void Controller::process() {
 
                 outputPropDescr(prop_idx);
                 outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
-                outputStatus(F("property:  "), prop_idx);
+                outputStatus(F("Property:  "), prop_idx);
                 prop_changed = false;
             }
 
             if (event == CLICK) {
-                c_prop_value = -1; // invalidate cache;
-                c_prop_idx = -1; // invalidate cache;
-                old_prop_value = prop_value; // for reminder in status
-                state = EDIT_PROP;
+                goToEditProp(prop_idx);
             };
 
             if (event == HOLD || sleep_timer.isTimeAfter(true)) {
@@ -133,20 +135,15 @@ void Controller::process() {
             break;
         }
         case STORE: {
-            oldState = state;
+            firstRun();
             cmd->storeProps();
             outputStatus(F("<storing..>"), prop_value);
             delay(500);
-            c_prop_value = -1; // invalidate cache;
-            c_prop_idx = -1; // invalidate cache;
-            state = BROWSE;
+            goToBrowse();
             break;
         }
         case SLEEP: {
-            bool firstRun = oldState != state;
-            oldState = state;
-
-            if (firstRun) {
+            if (firstRun()) {
                 sleep_timer.reset();
                 dither = false;
                 switchDisplay(false);
@@ -170,28 +167,27 @@ void Controller::process() {
             }
 
             // Exit SLEEP state on event
-            if (event == CLICK || control_touched) {
-                control_touched = false;
+            if (event == CLICK ) {
                 switchDisplay(true);
                 state = BROWSE;
             };
 
+            if (control_touched && ctx->defaultPropertyIdx >= 0){
+                control_touched = false;
+                switchDisplay(true);
+                prop_idx = (uint8_t) ctx->defaultPropertyIdx;
+                loadProperty(prop_idx);
+                goToEditProp(prop_idx);
+            }
+
             break;
         }
         case SUSPEND: {
-            bool firstRun = oldState != state;
-            oldState = state;
-
-            if (firstRun) {
+            if (firstRun()) {
                 oled.displayOff();
             }
 
-            if (event == CLICK) {
-                oled.displayOn();
-                switchDisplay(true);
-                state = BROWSE;
-            }
-            if (control_touched) {
+            if (event == CLICK || control_touched) {
                 control_touched = false;
                 oled.displayOn();
                 state = SLEEP;
@@ -202,6 +198,25 @@ void Controller::process() {
     }
     ctx->refreshProps = false;
     detectDisplay();
+}
+
+void Controller::goToBrowse() const {
+    c_prop_idx = -1; // invalidate cache;
+    c_prop_value = -1; // invalidate cache;
+    state = BROWSE;
+}
+
+bool Controller::firstRun() const {
+    bool fr = oldState != state;
+    oldState = state;
+    return fr;
+}
+
+void Controller::goToEditProp(uint8_t i) const {
+    c_prop_value = -1; // invalidate cache;
+    c_prop_idx = -1; // invalidate cache;
+    old_prop_value = prop_value; // for reminder in status
+    state = EDIT_PROP;
 }
 
 void Controller::loadProperty(uint8_t idx) const {
