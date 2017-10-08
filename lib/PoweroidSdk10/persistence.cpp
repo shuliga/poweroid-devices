@@ -4,36 +4,57 @@
 #include "commons.h"
 #include "persistence.h"
 
+// Console output codes
+// 101 - Factory reset
+// 201 - Properties stored in EEPROM.
+// 202 - Properties loaded from EEPROM
+// 501 - Not a native EEPROM. Overwriting signature.
+// 502 - Hash differs from factory.
+
+
 unsigned long hashProp(long *props, int size) {
     return hash((byte *) props, size * sizeof(long));
 }
 
-Persistence::Persistence(const String s, long *props_runtime, int sz) {
+Persistence::Persistence(String s, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz) {
+    delay(501);
     checkFactoryReset(props_runtime);
-    size = sz;
+    size = props_size;
+    mappings_size = msz;
     EEPROM.get(BASE, signature);
     String sign = String(signature);
     unsigned long eeprom_hash;
-    EEPROM.get(BASE + SIGNATURE_SIZE, eeprom_hash);
+    EEPROM.get(HASH_OFFSET, eeprom_hash);
     Serial.print(F("EEPROM signature '"));
     Serial.print(sign + "', hash:");
     Serial.println(eeprom_hash);
     if (sign != s) {
+        writeLog('W', ORIGIN, 510);
+        Serial.println("Overwriting signature '" + sign + "' with: '" + s + "'");
         s.toCharArray(signature, SIGNATURE_SIZE);
         EEPROM.put(BASE, signature);
-        Serial.print(F("Not a native EEPROM. Overwriting signature '"));
-        Serial.println(sign + "' with: '" + s + "'");
         storeProperties(props_runtime);
+        storeMappings(mappings);
         return;
     }
-    unsigned long hash = hashProp(props_runtime, size);
-    if (eeprom_hash != hash) {
-        Serial.println(F("EEPROM hash differs from factory"));
+    if (eeprom_hash != hashProp(props_runtime, size)) {
+        writeLog('W', ORIGIN, 502);
         loadProperties(props_runtime);
+        loadMappings(mappings);
     }
-
 }
 
+void Persistence::storeMappings(uint8_t *mappings) {
+    for (uint8_t i = 0; i < mappings_size; i++) {
+        storeMapping(i, mappings[i]);
+    }
+}
+
+void Persistence::loadMappings(uint8_t *mappings) {
+    for (uint8_t i = 0; i < mappings_size; i++) {
+        mappings[i] = (uint8_t) loadMapping(i);
+    }
+}
 
 void Persistence::storeProperties(long *props) {
     for (uint8_t i = 0; i < size; i++) {
@@ -43,10 +64,9 @@ void Persistence::storeProperties(long *props) {
     char c_hash[11];
     c_hash[10] = 0;
     ultoa(hash, c_hash, 10);
-    Serial.print(size);
-    Serial.print(F(" properties stored in EEPROM. Hash: "));
-    Serial.println(c_hash);
-    EEPROM.put(BASE + SIGNATURE_SIZE, hash);
+    writeLog('I', ORIGIN, 201, size);
+    Serial.println("Hash: " + String(c_hash));
+    EEPROM.put(HASH_OFFSET, hash);
 }
 
 void Persistence::storeValue(uint8_t i, long val) {
@@ -55,34 +75,39 @@ void Persistence::storeValue(uint8_t i, long val) {
     }
 }
 
-
 void Persistence::loadProperties(long *props) {
     for (uint8_t i = 0; i < size; i++) {
         EEPROM.get(ADDR(i), props[i]);
     }
-    Serial.print(size);
-    Serial.println(F(" properties loaded form EEPROM"));
+    writeLog('I', ORIGIN, 202, size);
 }
 
 void Persistence::checkFactoryReset(long *props_runtime) {
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
-    if (readPinLow(FACTORY_RESET_PIN)) {
+    if (digitalRead(FACTORY_RESET_PIN) == LOW) {
         storeProperties(props_runtime);
         EEPROM.put(STATES_OFFSET, 0); // Clear state DISARM flags
-        Serial.println(F("Factory reset EEPROM"));
+        writeLog('I', ORIGIN, 101);
     }
 }
 
 bool Persistence::loadState(uint8_t id) {
-    if (id < 8) {
-        return (bool) ((EEPROM.read(STATES_OFFSET) & (1 << id)) >> id);
-    }
-    return false;
+    return id < 8 ? (bool) ((EEPROM.read(STATES_OFFSET) & (1 << id)) >> id) : false;
 }
 
 void Persistence::storeState(uint8_t id, bool state) {
     if (id < 8) {
         EEPROM.put(STATES_OFFSET,
                    state ? EEPROM.read(STATES_OFFSET) | (1 << id) :  EEPROM.read(STATES_OFFSET) & (~(1 << id)));
+    }
+}
+
+int8_t Persistence::loadMapping(uint8_t id) {
+    return (id < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + id) :  -1;
+}
+
+void Persistence::storeMapping(uint8_t id, int8_t mapped_id) {
+    if (id < MAPPINGS_SIZE) {
+        EEPROM.put(MAPPINGS_OFFSET + id, mapped_id);
     }
 }

@@ -8,15 +8,13 @@
 
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
-#include "commons.h"
-#include "commands.h"
 #include "controller.h"
 
 #define DISPLAY_BASE 1
 #define DISPLAY_BOTTOM 7
 
 static enum State {
-    EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS
+    EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS, SUSPEND
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
@@ -29,6 +27,7 @@ static int8_t c_prop_idx = -1;
 static long c_prop_value = -1;
 static long old_prop_value;
 static bool prop_changed;
+static bool dither = false;
 
 static volatile long prop_min;
 static volatile long prop_max;
@@ -44,7 +43,7 @@ TimingState displayTiming = TimingState(1000L);
 TimingState displaySearchTiming = TimingState(2000L);
 
 
-Controller::Controller(Commands &_cmd, Context &_ctx) : cmd(&_cmd), ctx(&_ctx) {}
+Controller::Controller(Context &_ctx, Commands &_cmd) : cmd(&_cmd), ctx(&_ctx) {}
 
 void Controller::begin() {
     initDisplay();
@@ -108,6 +107,7 @@ void Controller::process() {
             if (control_touched || firstRun) {
                 sleep_timer.reset();
                 control_touched = false;
+                outputTitle();
             }
 
             if (c_prop_idx != prop_idx || ctx->refreshProps) {
@@ -148,12 +148,55 @@ void Controller::process() {
 
             if (firstRun) {
                 sleep_timer.reset();
+                dither = false;
                 switchDisplay(false);
+                c_prop_idx = -1; // invalidate cache;
             }
 
-            outputSleepScreen(sleep_timer.isTimeAfter(true));
 
-            exitSleepOnClick(event);
+            if (sleep_timer.isTimeAfter(true)) {
+                if (dither) {
+                    state = SUSPEND;
+                } else {
+                    dither = true;
+                    sleep_timer.reset();
+                }
+
+            }
+
+            // Output Sleep Screen
+            if (displayTiming.ping() && oled.getConnected()) {
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS.printDht(), true, dither);
+            }
+
+            // Exit SLEEP state on event
+            if (event == CLICK || control_touched) {
+                control_touched = false;
+                switchDisplay(true);
+                state = BROWSE;
+            };
+
+            break;
+        }
+        case SUSPEND: {
+            bool firstRun = oldState != state;
+            oldState = state;
+
+            if (firstRun) {
+                oled.displayOff();
+            }
+
+            if (event == CLICK) {
+                oled.displayOn();
+                switchDisplay(true);
+                state = BROWSE;
+            }
+            if (control_touched) {
+                control_touched = false;
+                oled.displayOn();
+                state = SLEEP;
+            };
+
             break;
         }
     }
@@ -173,9 +216,9 @@ void Controller::loadProperty(uint8_t idx) const {
     } else {
         Serial.print(cmd->cmd_str.CMD_PREF_GET_PROP);
         Serial.println(idx);
-        if (testSerialConnection()){
+        if (testSerialConnection()) {
             String repl = Serial.readString();
-            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)){
+            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)) {
                 // TODO
             }
         };
@@ -196,17 +239,6 @@ void Controller::updateProperty(uint8_t idx) const {
     }
 }
 
-void Controller::exitSleepOnClick(const McEvent &event) const {
-    if (event == CLICK || control_touched) {
-        control_touched = false;
-        switchDisplay(true);
-        outputTitle();
-        c_prop_idx = -1; // invalidate cache;
-        sleep_timer.reset();
-        state = BROWSE;
-    };
-}
-
 void Controller::switchDisplay(boolean inverse) const {
     oled.displayOff();
     inverse ? oled.setInverseDisplay() : oled.setNormalDisplay();
@@ -217,12 +249,6 @@ void Controller::switchDisplay(boolean inverse) const {
 void Controller::detectDisplay() {
     if (displaySearchTiming.ping() && !oled.getConnected()) {
         initDisplay();
-    }
-}
-
-void Controller::outputSleepScreen(bool dither) {
-    if (displayTiming.ping() && oled.getConnected()) {
-        oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS->printDht(), true, dither);
     }
 }
 

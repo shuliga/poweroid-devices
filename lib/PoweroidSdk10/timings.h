@@ -18,9 +18,7 @@ typedef struct TimingState{
 
     bool testInterval(unsigned long current);
 
-    bool countdown(bool on, bool cancel);
-
-    bool countdown(bool on, bool suspend, bool cancel);
+   bool countdown(bool on, bool suspend, bool cancel);
 
     bool isTimeAfter(bool trigger);
 

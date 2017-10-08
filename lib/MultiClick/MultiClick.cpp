@@ -20,10 +20,11 @@ McEvent MultiClick::checkButton() {
 // Button released
     else if (buttonVal == HIGH && buttonLast == LOW && (millis() - downTime) > debounce) {
         if (not ignoreUp) {
+            event = RELEASED;
             upTime = millis();
             if (DConUp == false) DCwaiting = true;
             else {
-                event = RELEASED;
+                event = DOUBLE_CLICK;
                 DConUp = false;
                 DCwaiting = false;
                 singleOK = false;

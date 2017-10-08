@@ -18,6 +18,8 @@ public:
   bool on = false;
   Bt(const char *id);
 
+  void begin();
+
   void getResult();
   bool getConnected();
   bool getPassive();
@@ -26,8 +28,9 @@ private:
     bool passive = false;
 
     String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout);
+    String execBtAtCommand(const __FlashStringHelper *cmd);
 
-    bool isConnected();
+    void applyBt05();
 };
 
 #endif

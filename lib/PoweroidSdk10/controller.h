@@ -7,11 +7,10 @@
 
 #define FLIP_DISPLAY 1
 
+#include <MultiClick.h>
 #include "commons.h"
 #include "context.h"
-#include <MultiClick.h>
 #include "commands.h"
-#include "sensors.h"
 
 static volatile int props_idx_max = 0;
 
@@ -19,7 +18,7 @@ class Controller {
 public:
     bool passive = false;
 
-    Controller(Commands &_cmd, Context &_ctx);
+    Controller(Context &_ctx, Commands &_cmd);
 
     void process();
 

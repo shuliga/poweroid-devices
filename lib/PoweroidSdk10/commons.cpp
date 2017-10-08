@@ -13,4 +13,15 @@ unsigned long hash(byte *data, unsigned long size) {
   return hash;
 }
 
+void writeLog(const char level, const char *origin, const int code){
+  char buff[32];
+  sprintf(buff, "%c [%s] %i", level, origin, code);
+  Serial.println(buff);
+}
 
+void writeLog(const char level, const char *origin, const int code, int result){
+  char buff[32];
+  sprintf(buff, "%c [%s] %i (%i)", level, origin, code, result);
+  Serial.println(buff);
+
+}

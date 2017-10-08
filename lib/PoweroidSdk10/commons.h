@@ -17,7 +17,7 @@
 
 #define BOARD_VERSION "PWR21"
 
-#define DHTPIN 5
+#define DHT_PIN 5
 
 #define ENC1_PIN 2
 #define ENC2_PIN 3
@@ -42,7 +42,7 @@
 
 #define ENC_BTN_PIN 7
 
-#define DHTPIN 2
+#define DHT_PIN 2
 
 #define IN1_PIN 2
 #define IN2_PIN 4
@@ -60,6 +60,8 @@
 #define DEBOUNCE_DELAY 500L
 
 unsigned long hash(byte *data, unsigned long size);
+void writeLog(const char level, const char *origin, const int code);
+void writeLog(const char level, const char *origin, const int code, int result);
 
 #endif
 

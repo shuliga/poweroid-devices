@@ -3,7 +3,8 @@
 
 #define VERSION "POWEROID SDK 1.0"
 
-#ifndef DHTPIN
+
+#ifndef DHT_PIN
     #define DHTPIN 5
 #endif
 #ifndef ENC_BTN_PIN
@@ -21,20 +22,21 @@
 #include "commands.h"
 #include "controller.h"
 
+#define FULL_VERSION VERSION "-" BOARD_VERSION
+
 static char SIGNATURE[] = "PWR";
 static char version[] = VERSION;
 
 class Pwr {
 public:
     Context *CTX;
-    Persistence PERS;
-    Bt *BT;
-    Sensors SENS;
-    Relays REL;
+    Relays *REL;
+    Sensors *SENS;
     Commands CMD;
     Controller CTRL;
+    Bt BT;
 
-    Pwr(Context &ctx);
+    Pwr(Context &ctx, Commands &_cmd, Controller &_ctrl, Bt &_bt);
 
     void begin();
 

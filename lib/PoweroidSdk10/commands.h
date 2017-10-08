@@ -2,8 +2,8 @@
 #define COMMANDS_H
 
 #include "commons.h"
-#include "context.h"
 #include "persistence.h"
+#include "context.h"
 
 struct CommandsStr {
     const char* CMD_GET_VER;
@@ -45,17 +45,26 @@ public:
 
     CommandsStr cmd_str;
 
-    Commands(Context &_ctx, Persistence &_pers);
+    Commands(Context &_ctx);
 
     void listen();
 
     void storeProps();
 
 private:
-    Context *ctx;
-    Persistence *persist;
 
-    void printProperty(uint8_t i);
+    Context *ctx;
+
+    char * printProperty(uint8_t i);
+
+    void execute();
+
+    int8_t getMappedFromVirtual(uint8_t i);
+
+    uint8_t getIndex(const String &cmd) const;
+
+    void printCmd(const String &cmd, const char *suffix) const;
+
 };
 
 #endif // COMMANDS_H

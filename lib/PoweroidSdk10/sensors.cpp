@@ -17,33 +17,32 @@ static TimingState pollTiming = TimingState(5000L);
 
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
+static bool dht_installed;
 static char CHAR_BUF[32];
 
-DHT *Sensors::searchDht() {
-    DHT *result = NULL;
+Sensors::Sensors() : dht(DHT_PIN, DHTTYPE) {
+}
+
+void Sensors::searchDht() {
     delay(500);
-    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
-        result = new DHT(IN_PINS[i], DHTTYPE);
-        result->begin();
-        float val = result->readHumidity();
-        if (!isnan(val)) {
-            Serial.print(F("DHT installed on pin:"));
-            Serial.println(IN_PINS[i]);
-            installed[i] = true;
-            return result;
-        } else {
-            pinMode(IN_PINS[i], INPUT_PULLUP);
-//            digitalWrite(IN_PINS[i], HIGH);
-            delete result;
+    dht.begin();
+    float val = dht.readHumidity();
+    if (!isnan(val)) {
+        Serial.print(F("DHT installed on pin:"));
+        Serial.println(DHT_PIN);
+        for(int i = 0; i < ARRAY_SIZE(IN_PINS); i++){
+            if (IN_PINS[i] == DHT_PIN){
+                installed[i] = true;
+            }
         }
+        dht_installed = true;
     }
-    return NULL;
 }
 
 void Sensors::updateTnH() {
     if (isDhtInstalled() && pollTiming.ping()) {
-        temp = dht->readTemperature();
-        humid = dht->readHumidity();
+        temp = dht.readTemperature();
+        humid = dht.readHumidity();
     }
 }
 
@@ -61,7 +60,7 @@ void Sensors::printInstalled(uint8_t pin) {
 }
 
 bool Sensors::checkInstalled(uint8_t pin, bool inst) {
-    bool sign = readPinLow(pin);
+    bool sign = digitalRead(pin) == LOW;
     if (!inst && sign) {
         printInstalled(pin);
     }
@@ -71,7 +70,7 @@ bool Sensors::checkInstalled(uint8_t pin, bool inst) {
 bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on) {
     bool sign = false;
     if (!inst) {
-        sign = hold_on.isTimeAfter(readPinLow(pin));
+        sign = hold_on.isTimeAfter(digitalRead(pin) == LOW);
         if (sign) {
             printInstalled(pin);
         }
@@ -80,10 +79,7 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
 }
 
 void Sensors::initSensors() {
-    dht = searchDht();
-    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
-//        hold_on[i].interval = INST_DELAY;
-    }
+    searchDht();
     pollTiming.reset();
 }
 
@@ -95,22 +91,21 @@ void Sensors::process() {
 void Sensors::checkInstalled() {
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
         installed[i] = checkInstalled(IN_PINS[i], installed[i]);
-//        installed[i] = checkInstalledWithDelay(IN_PINS[i], installed[i], hold_on[i]);
     }
 }
 
 bool Sensors::isDhtInstalled() {
-    return dht != NULL;
+    return dht_installed;
 }
 
 
 bool Sensors::isSensorOn(uint8_t index) {
-    return hold_on[index].isTimeAfter(readPinLow(IN_PINS[index]) && installed[index]);
+    return hold_on[index].isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
 }
 
 int Sensors::getSensorVal(uint8_t index) {
     if (installed[index]) {
-        return readPinVal(INA_PINS[index]);
+        return analogRead(INA_PINS[index]);
     } else {
         return -1;
     }

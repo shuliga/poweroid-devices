@@ -3,6 +3,7 @@
 
 #include "pin_io.h"
 #include "PoweroidSdk10.h"
+#include "poweroid_fan_3x1_dht_state.h"
 #include "poweroid_fan_3x1_dht_prop.h"
 
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
@@ -11,9 +12,14 @@ StateLight prev_state_light = SL_DISARM;
 StateHumid prev_state_humid = SH_DISARM;
 StateTemp prev_state_temp = ST_DISARM;
 
-Context CTX = Context{SIGNATURE, version, NULL, NULL, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
-                  state_count, printState, disarmState, false, false};
-Pwr *PWR;
+Context CTX = Context{SIGNATURE, version, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
+                  state_count, printState, disarmState};
+
+Commands CMD(CTX);
+Controller CTRL(CTX, CMD);
+Bt BT(CTX.id);
+
+Pwr PWR(CTX, CMD, CTRL, BT);
 
 void apply_timings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.RUNTIME[0];
@@ -149,21 +155,19 @@ void run_state_temp(bool temperature) {
 }
 
 void setup() {
-    Serial.begin(9600);
-    PWR = new Pwr(CTX);
-    PWR->begin();
+    PWR.begin();
 }
 
 void loop() {
 
     apply_timings();
 
-    PWR->processSensors();
+    PWR.processSensors();
 
-    bool light1 = PWR->SENS.isSensorOn(1);
-    bool light2 = PWR->SENS.isSensorOn(2);
-    bool humidity = PWR->SENS.isDhtInstalled() && PWR->SENS.getHumidity() > GET_PROP_NORM(3);
-    bool temperature = PWR->SENS.isDhtInstalled() && PWR->SENS.getTemperature() < GET_PROP_NORM(6);
+    bool light1 = PWR.SENS->isSensorOn(1);
+    bool light2 = PWR.SENS->isSensorOn(2);
+    bool humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
+    bool temperature = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
 
     run_state_light(light1 || light2);
     run_state_humid(humidity);
@@ -173,11 +177,11 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR->REL.power(0, fan_power);
-    PWR->REL.power(1, floor_power);
+    PWR.REL->power(0, fan_power);
+    PWR.REL->power(1, floor_power);
 
     led(LED_PIN, fan_power || floor_power);
 
-    PWR->run();
+    PWR.run();
 
 }

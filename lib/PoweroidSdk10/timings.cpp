@@ -17,23 +17,6 @@ bool TimingState::testInterval(unsigned long current) {
     return (current - mils - delta) >= interval + (suspended == 0 ? 0 : current - suspended);
 }
 
-bool TimingState::countdown(bool on, bool cancel) {
-    unsigned long current = getCurrent();
-    if (!state && !dirty && on) {
-        mils = current;
-        state = true;
-    }
-    if (dirty && !on) {
-        dirty = false;
-    }
-    if (state && (testInterval(current) || cancel)) {
-        mils = 0;
-        state = false;
-        dirty = on;
-    }
-    return state;
-}
-
 bool TimingState::countdown(bool on, bool suspend, bool cancel) {
     unsigned long current = getCurrent();
     if (!state && !dirty && on) {
@@ -77,7 +60,7 @@ void TimingState::flash(uint8_t pin, boolean on) {
         state = !state;
         mils = current;
     }
-    int out;
+    uint8_t out;
     if (state && on) {
         out = HIGH;
     } else {

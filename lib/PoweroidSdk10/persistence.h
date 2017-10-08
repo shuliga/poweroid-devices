@@ -4,19 +4,25 @@
 #include "properties.h"
 
 #define STORAGE_MAX_SIZE 64
-#define BASE 100
+#define BASE 20
 #define SIGNATURE_SIZE 4
 #define STATES_SIZE 1
-#define STATES_OFFSET (BASE + SIGNATURE_SIZE + sizeof(unsigned long))
-#define HEADER_OFFSET (STATES_OFFSET + STATES_SIZE)
-#define ADDR(x) HEADER_OFFSET + sizeof(long)*(x)
+#define MAPPINGS_SIZE 8
+#define HASH_OFFSET (BASE + SIGNATURE_SIZE)
+#define STATES_OFFSET (HASH_OFFSET + sizeof(unsigned long))
+#define MAPPINGS_OFFSET (STATES_OFFSET + STATES_SIZE)
+#define PROPS_OFFSET (MAPPINGS_OFFSET + MAPPINGS_SIZE)
+#define ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
+
+static const char *const ORIGIN = "EEPROM";
 
 struct Persistence {
 
-    int size;
+    uint8_t size;
+    uint8_t mappings_size;
     char signature[SIGNATURE_SIZE];
 
-    Persistence(String s, long *props_runtime, int props_size);
+    Persistence(String s, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz);
 
     void storeProperties(long *props);
 
@@ -29,6 +35,14 @@ struct Persistence {
     void loadProperties(long *prop);
 
     void checkFactoryReset(long *props_runtime);
+
+    void storeMapping(uint8_t id, int8_t mapped_id);
+
+    int8_t loadMapping(uint8_t id);
+
+    void storeMappings(uint8_t *mappings);
+
+    void loadMappings(uint8_t *mappings);
 };
 
 

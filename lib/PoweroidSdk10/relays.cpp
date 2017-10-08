@@ -5,21 +5,24 @@
 #include "relays.h"
 #include "pin_io.h"
 
-static bool powered[ARRAY_SIZE(OUT_PINS)];
+static bool powered[RELAYS];
 static char CHAR_BUF[32];
 
 void Relays::powerOn(uint8_t i) {
-    power(OUT_PINS[i], true);
+    return power(i, true);
 }
 
 void Relays::powerOff(uint8_t i) {
-    power(OUT_PINS[i], false);
+    return power(i, false);
 }
 
 void Relays::power(uint8_t i, bool _power) {
-    if (i < ARRAY_SIZE(OUT_PINS)){
-        pin_inv(OUT_PINS[i], _power);
-        powered[i] = _power;
+    if (i < RELAYS) {
+        if (i < ARRAY_SIZE(OUT_PINS) && powered[i] != _power) {
+            powered[i] = _power;
+            pin_inv(OUT_PINS[i], _power);
+            printRelay(i);
+        }
     }
 }
 
@@ -27,7 +30,7 @@ uint8_t Relays::size() {
     return ARRAY_SIZE(OUT_PINS);
 }
 
-const char* Relays::printRelay(uint8_t idx) {
-    sprintf(CHAR_BUF, "Relay[%i]: %s", idx, powered[idx] ? "powered" : "not powered");
-    return CHAR_BUF;
+void Relays::printRelay(uint8_t idx) {
+    sprintf(CHAR_BUF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+    Serial.println(CHAR_BUF);
 }

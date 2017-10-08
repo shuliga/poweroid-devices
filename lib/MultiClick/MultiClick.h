@@ -15,7 +15,7 @@ Long Hold
 #include <Arduino.h>
 
 enum McEvent{
-	NOTHING, PRESSED, CLICK, RELEASED, HOLD, LONG_HOLD
+	NOTHING, PRESSED, CLICK, DOUBLE_CLICK, RELEASED, HOLD, LONG_HOLD
 };
 
 struct MultiClick {
@@ -24,7 +24,7 @@ struct MultiClick {
 
 	// Button timing variables
 	int debounce = 20; // ms debounce period to prevent flickering when pressing or releasing the button
-	int DCgap = 200; // max ms between clicks for a double click event
+	int DCgap = 250; // max ms between clicks for a double click event
 	int holdTime = 1200; // ms hold period: how long to wait for press+hold event
 	int longHoldTime = 5400; // ms long hold period: how long to wait for press+hold event
 	

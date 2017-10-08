@@ -1,9 +1,11 @@
-#include "context.h"
+
 #include "commands.h"
 
 #define PREFIX(cmd) cmd + " -> "
 
-Commands::Commands(Context &_ctx, Persistence &_pers) : ctx(&_ctx), persist(&_pers) {
+static char BUFF[64];
+
+Commands::Commands(Context &_ctx) : ctx(&_ctx){
     cmd_str = {"get_ver",
                "get_dht",
                "get_state_",
@@ -21,13 +23,9 @@ Commands::Commands(Context &_ctx, Persistence &_pers) : ctx(&_ctx), persist(&_pe
     };
 }
 
-void Commands::printProperty(uint8_t i) {
-    Serial.print("[");
-    Serial.print(i);
-    Serial.print("] ");
-    Serial.print(ctx->FACTORY[i].desc);
-    Serial.print(" : ");
-    Serial.println(ctx->RUNTIME[i] / ctx->FACTORY[i].scale);
+char* Commands::printProperty(uint8_t i) {
+    sprintf(BUFF, "[%i] %s : %i", i, (char *) ctx->FACTORY[i].desc, (int) (ctx->RUNTIME[i] / ctx->FACTORY[i].scale));
+    return BUFF;
 }
 
 void Commands::listen() {
@@ -35,121 +33,123 @@ void Commands::listen() {
         String cmd = Serial.readString();
         cmd.replace("\n", "");
 
+        if (cmd.startsWith(REL_PREFIX)) {
+            uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1), (unsigned int) cmd.indexOf(']')).toInt();
+            int8_t i = getMappedFromVirtual(ri);
+            if (i >= 0) {
+                if (cmd.indexOf(REL_POWERED) > 0) {
+                    ctx->RELAYS.powerOn((uint8_t) i);
+                } else {
+                    ctx->RELAYS.powerOff((uint8_t) i);
+                }
+            }
+        }
+
         if (cmd.startsWith(cmd_str.CMD_GET_VER)) {
-            Serial.print(PREFIX(cmd));
+            printCmd(cmd, NULL);
             Serial.print(ctx->version);
             Serial.print("-");
-            Serial.print(BOARD_VERSION);
+            Serial.println(BOARD_VERSION);
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_DHT)) {
-            Serial.print(PREFIX(cmd));
-            Serial.println(ctx->SENS->printDht());
+            printCmd(cmd, ctx->SENS.printDht());
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_SENSOR_ALL)) {
-            for (uint8_t i = 0; i < ctx->SENS->size(); i++) {
-                Serial.print(PREFIX(cmd));
-                Serial.println(ctx->SENS->printSensor(i));
+            for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
+                printCmd(cmd, ctx->SENS.printSensor(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_RESET_PROPS)) {
-            Serial.print(PREFIX(cmd));
+            printCmd(cmd, NULL);
             for (uint8_t i = 0; i < ctx->props_size; i++) {
                 ctx->RUNTIME[i] = ctx->FACTORY[i].val;
             }
             ctx->refreshProps = true;
-            Serial.println(F("Properties reset to factory settings"));
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_PROP_LEN)) {
-            Serial.print(PREFIX(cmd));
-            Serial.println(ctx->props_size);
+            char num[5];
+            printCmd(cmd, itoa(ctx->props_size, num, 10));
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_PROP_ALL)) {
             for (uint8_t i = 0; i < ctx->props_size; i++) {
-                Serial.print(PREFIX(cmd));
-                printProperty(i);
+                printCmd(cmd, printProperty(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_LOAD_PROPS)) {
-            Serial.print(PREFIX(cmd));
-            persist->loadProperties(ctx->RUNTIME);
-            Serial.println(F("Properties loaded from EEPROM"));
+            printCmd(cmd, NULL);
+            ctx->PERS.loadProperties(ctx->RUNTIME);
+            ctx->refreshProps = true;
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_STORE_PROPS)) {
-            Serial.print(PREFIX(String(cmd_str.CMD_STORE_PROPS)));
+            printCmd(cmd_str.CMD_STORE_PROPS, NULL);
             storeProps();
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_PREF_GET_PROP)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(cmd_str.CMD_PREF_GET_PROP) - 1).toInt();
+            uint8_t i = getIndex(cmd);
             if (i < ctx->props_size) {
-                Serial.print(PREFIX(cmd));
-                printProperty(i);
+                printCmd(cmd, printProperty(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_PREF_SET_PROP)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(cmd_str.CMD_PREF_SET_PROP) - 1).toInt();
+            uint8_t i = getIndex(cmd);
             int8_t idx = cmd.lastIndexOf(':') + 1;
             if (i < ctx->props_size && idx > 0) {
-                long v = cmd.substring(idx).toInt();
+                long v = cmd.substring((unsigned int) idx).toInt();
                 ctx->RUNTIME[i] = v * ctx->FACTORY[i].scale;
                 ctx->refreshProps = true;
-                Serial.print(PREFIX(cmd));
-                printProperty(i);
+                printCmd(cmd, printProperty(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
             for (uint8_t i = 0; i < ctx->states_size; i++) {
-                Serial.print(PREFIX(cmd));
-                ctx->printState(i);
+                printCmd(cmd, ctx->printState(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_RELAY_ALL)) {
-            for (uint8_t i = 0; i < ctx->RELAYS->size(); i++) {
-                Serial.print(PREFIX(cmd));
-                Serial.println(ctx->RELAYS->printRelay(i));
+            for (uint8_t i = 0; i < ctx->RELAYS.size(); i++) {
+                printCmd(cmd, NULL);
+                ctx->RELAYS.printRelay(i);
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_PREF_GET_STATE)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(cmd_str.CMD_PREF_GET_STATE)).toInt();
+            uint8_t i = getIndex(cmd);
             if (i < ctx->states_size) {
-                Serial.print(PREFIX(cmd));
-                ctx->printState(i);
+                printCmd(cmd, ctx->printState(i));
             }
             return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_PREF_DISARM_STATE)) {
-            uint8_t i = (uint8_t) cmd.substring(sizeof(cmd_str.CMD_PREF_DISARM_STATE) - 1,
-                                                sizeof(cmd_str.CMD_PREF_DISARM_STATE)).toInt();
-            bool trigger = (bool) cmd.substring((cmd.lastIndexOf(':') + 1)).toInt();
+            uint8_t i = (uint8_t) getIndex(cmd);
+            bool trigger = (bool) cmd.substring((unsigned int) (cmd.lastIndexOf(':') + 1)).toInt();
             if (i < ctx->states_size) {
-                Serial.print(PREFIX(cmd));
                 ctx->disarmState(i, trigger);
-                persist->storeState(i, trigger);
-                ctx->printState(i);
+                ctx->PERS.storeState(i, trigger);
+                printCmd(cmd, ctx->printState(i));
             }
             return;
         }
@@ -157,8 +157,25 @@ void Commands::listen() {
 
 }
 
+void Commands::printCmd(const String &cmd, const char *suffix) const {
+    Serial.print(PREFIX(cmd));
+    if (suffix != NULL) Serial.println(suffix);
+}
+
+uint8_t Commands::getIndex(const String &cmd) const {
+    uint8_t li = (uint8_t) cmd.lastIndexOf(':');
+    return (uint8_t) cmd.substring((unsigned int) (cmd.lastIndexOf('_') + 1), li == -1 ? cmd.length() : li).toInt();
+}
+
 void Commands::storeProps() {
-    persist->storeProperties(ctx->RUNTIME);
-    Serial.println(F("Properties stored to EEPROM"));
+    ctx->PERS.storeProperties(ctx->RUNTIME);
     return;
+}
+
+int8_t Commands::getMappedFromVirtual(uint8_t i) {
+    for(uint8_t idx = 0; idx < VIRTUAL_RELAYS; idx ++){
+        int8_t mappedRelay = ctx->RELAYS.mappings[idx];
+        if (mappedRelay == i) return idx;
+    }
+    return -1;
 }

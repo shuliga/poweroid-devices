@@ -17,6 +17,8 @@ extern const uint8_t INA_PINS[];
 class Sensors {
 public:
 
+    Sensors();
+
     void updateTnH();
 
     float getTemperature() const;
@@ -52,11 +54,11 @@ private:
 
     float humid;
 
-    DHT *dht;
-
-    DHT *searchDht();
+    DHT dht;
 
     void printInstalled(uint8_t pin);
+
+    void searchDht();
 };
 
 
