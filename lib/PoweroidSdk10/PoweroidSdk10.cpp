@@ -16,16 +16,17 @@ void Pwr::begin() {
     CTX->PERS.begin();
 
     SENS->initSensors();
-    if (CTRL) {
-        CTRL->begin();
-    }
-
     loadDisarmedStates();
 
     if (BT){
         BT->begin();
         CTX->passive = BT->getPassive();
     }
+
+    if (CTRL) {
+        CTRL->begin();
+    }
+
 //    wdt_enable(WDTO_8S);
 }
 

@@ -20,9 +20,9 @@ public:
 
     Controller(Context &_ctx, Commands &_cmd);
 
-    void process();
-
     void begin();
+
+    void process();
 
 private:
     Context *ctx;
@@ -38,21 +38,15 @@ private:
 
     void outputPropVal(Property &_prop, uint16_t _prop_val, bool brackets, bool _measure);
 
-    void outputSleepScreen(bool dither);
-
     void outputTitle() const;
 
     void switchDisplay(boolean inverse) const;
-
-    void exitSleepOnClick(const McEvent &event) const;
 
     void detectDisplay();
 
     void updateProperty(uint8_t idx) const;
 
     void loadProperty(uint8_t idx) const;
-
-    bool testSerialConnection() const;
 
     void goToEditProp(uint8_t i) const;
 

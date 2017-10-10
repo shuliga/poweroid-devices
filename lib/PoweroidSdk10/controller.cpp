@@ -10,8 +10,8 @@
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
 
-#define DISPLAY_BASE 0
-#define DISPLAY_BOTTOM 6
+#define DISPLAY_BASE 1
+#define DISPLAY_BOTTOM 7
 
 static enum State {
     EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS, SUSPEND
@@ -72,8 +72,8 @@ void Controller::initDisplay() {
 
 void Controller::outputTitle() const {
     char _cbuff[17];
-    oled.setTextXY(DISPLAY_BOTTOM + 1, 0);
-    strlcpy(_cbuff, ctx->id, 17);
+    oled.setTextXY(0, 0);
+    strlcpy(_cbuff, ctx-> passive ? "PASSIVE MODE" : ctx->id, 17);
     oled.putString(_cbuff);
 }
 
@@ -229,14 +229,14 @@ void Controller::loadProperty(uint8_t idx) const {
         c_prop_idx = idx;
         sei();
     } else {
-        Serial.print(cmd->cmd_str.CMD_PREF_GET_PROP);
-        Serial.println(idx);
-        if (testSerialConnection()) {
-            String repl = Serial.readString();
-            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)) {
-                // TODO
-            }
-        };
+//        Serial.print(cmd->cmd_str.CMD_PREF_GET_PROP);
+//        Serial.println(idx);
+//        if (Serial.available()) {
+//            String repl = Serial.readString();
+//            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)) {
+//                // TODO
+//            }
+//        };
     }
 }
 
@@ -310,10 +310,6 @@ void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool bracket
 
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN
-
-bool Controller::testSerialConnection() const {
-    return false;
-}
 
 ISR(PCINT2_vect) {
     unsigned char result = encoder.process();

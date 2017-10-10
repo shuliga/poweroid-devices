@@ -2,6 +2,7 @@
 #define BT_H
 
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 #include <context.h>
 
 #define BT_VER_05 "+VERSION:hc01.comV2.1"
@@ -14,15 +15,18 @@
 class Bt {
 public:
   const char *name;
-  char result[32];
   bool on = false;
+#ifdef SSERIAL
+  SoftwareSerial SSerial = SoftwareSerial(8, 9);
+#endif
   Bt(const char *id);
 
   void begin();
 
   void getResult();
-  bool getConnected();
   bool getPassive();
+  bool isConnected();
+
 private:
     bool connected = false;
     bool passive = false;
@@ -31,6 +35,8 @@ private:
     String execBtAtCommand(const __FlashStringHelper *cmd);
 
     void applyBt05();
+
+    void execReset();
 };
 
-#endif
+#endif // BT_H

@@ -54,4 +54,4 @@ private:
     void loadDisarmedStates();
 };
 
-#endif
+#endif //POWEROID_SDK_10_H
