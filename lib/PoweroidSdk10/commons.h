@@ -6,7 +6,7 @@
 #define COMMONS_H
 
 #define PWR23
-// #define SSERIAL
+//#define SSERIAL
 
 #define LED_PIN 13
 #define FACTORY_RESET_PIN 10

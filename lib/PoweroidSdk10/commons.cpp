@@ -6,6 +6,8 @@
 SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
 
+static char buff[32];
+
 unsigned long hash(byte *data, unsigned long size) {
   unsigned long hash = 19;
   for (unsigned long i = 0; i < size; i++) {
@@ -19,7 +21,6 @@ unsigned long hash(byte *data, unsigned long size) {
 }
 
 void writeLog(const char level, const char *origin, const int code){
-  char buff[32];
   sprintf(buff, "%c [%s] %i", level, origin, code);
 #ifdef SSERIAL
     SSerial.println(buff);
@@ -29,7 +30,6 @@ void writeLog(const char level, const char *origin, const int code){
 }
 
 void writeLog(const char level, const char *origin, const int code, long result){
-  char buff[32];
   sprintf(buff, "%c [%s] %i (%li)", level, origin, code, result);
 #ifdef SSERIAL
     SSerial.println(buff);
@@ -39,7 +39,6 @@ void writeLog(const char level, const char *origin, const int code, long result)
 }
 
 void writeLog(const char level, const char *origin, const int code, char *result){
-  char buff[32];
   sprintf(buff, "%c [%s] %i '%s'", level, origin, code, result);
 #ifdef SSERIAL
     SSerial.println(buff);

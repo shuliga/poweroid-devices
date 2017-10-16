@@ -21,14 +21,12 @@ unsigned long hashProp(long *props, int size) {
 Persistence::Persistence(const String &_sign, long *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign(_sign), props_runtime(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
 
 void  Persistence::begin(){
-    delay(250);
+    delay(500);
     checkFactoryReset(props_runtime);
     EEPROM.get(BASE, signature);
     signature[SIGNATURE_SIZE - 1] = 0;
     String sign = String(signature);
-    delay(50);
     writeLog('I', ORIGIN, 100, signature);
-    delay(50);
     unsigned long eeprom_hash;
     EEPROM.get(HASH_OFFSET, eeprom_hash);
     writeLog('I', ORIGIN, 101, eeprom_hash);

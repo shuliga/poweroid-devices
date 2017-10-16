@@ -16,7 +16,9 @@ Context CTX = Context{SIGNATURE, version, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, 
                   state_count, printState, disarmState, FAN_PROPS.DEFAULT_PROPERTY};
 
 Commands CMD(CTX);
+#ifndef SSERIAL
 Controller CTRL(CTX, CMD);
+#endif
 Bt BT(CTX.id);
 
 Pwr PWR(CTX, &CMD, &CTRL, &BT);

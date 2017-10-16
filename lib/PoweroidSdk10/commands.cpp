@@ -23,12 +23,7 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx){
 }
 
 char* Commands::printProperty(uint8_t i) {
-//    String desc = String(ctx->FACTORY[i].desc);
-//    char char_array[desc.length() + 1];
-//    desc.toCharArray(char_array, sizeof(char_array));
-    const char *char_array = ":";
-
-    sprintf(BUFF, "[%i] %s : %i", i, char_array, (int) (ctx->RUNTIME[i] / ctx->FACTORY[i].scale));
+    sprintf(BUFF, "[%i] %s : %i", i, String(ctx->FACTORY[i].desc).c_str(), (int) (ctx->RUNTIME[i] / ctx->FACTORY[i].scale));
     return BUFF;
 }
 
