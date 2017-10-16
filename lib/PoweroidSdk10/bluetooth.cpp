@@ -1,49 +1,57 @@
 #include "bluetooth.h"
 
+static TimingState connection_check(CONNECTION_CHECK);
 
 Bt::Bt(const char *id) {
     name = id;
 }
 
 void Bt::begin() {
+    delay(1000);
+    Serial.print(F("AT+VERSION"));
+    String ver = Serial.readString();
+    if (ver.startsWith(BT_VER_06)) {
+        Serial.print(F("AT+NAME"));
+        Serial.print(name);
+        active = true;
+    } else {
+        Serial.end();
+        Serial.begin(38400);
 #ifdef SSERIAL
-    SSerial.begin(9600);
+        SSerial.println("Working at 38400");
 #endif
-    if (!on) {
-        delay(500);
-        Serial.print(F("AT+VERSION"));
-        String ver = Serial.readString();
-        if (ver.startsWith(BT_VER_06)) {
-            Serial.print(F("AT+NAME"));
-            Serial.print(name);
-            delay(500);
-            on = true;
-        } else {
-            Serial.end();
-            Serial.begin(38400);
-            passive = true;
-            if (!isConnected()) {
-                Serial.println("AT");
-                delay(200);
-                while (Serial.available()) { Serial.read(); } // Cleanup rotten UART buffer
+        if (!isConnected()) {
+            Serial.println("AT");
+            delay(200);
+            while (Serial.available()) { Serial.read(); } // Cleanup rotten UART buffer
 
-                ver = execBtAtCommand(F("AT+VERSION"));
+            ver = execBtAtCommand(F("AT+VERSION"));
 
-                if (ver.startsWith(BT_VER_05)) {
-                    applyBt05();
-                    on = true;
-                }
+            if (ver.startsWith(BT_VER_05)) {
+                applyBt05();
+            }
 // Keep working on 38400 for HC-05
 //                Serial.end();
 //                Serial.begin(9600);
-                Serial.println();
-            }
+            Serial.println();
+        } else {
+#ifdef SSERIAL
+            SSerial.println("Connected to peer");
+#endif
         }
     }
+    firstRun = false;
 }
 
 bool Bt::isConnected() {
-    connected = execBtAtCommand(F("get_ver"), 0, 500).startsWith("get_ver");
+    if (!active && (firstRun || connection_check.isTimeAfter(true))){
+        connected = execBtAtCommand(F("get_ver"), 0, 2000).startsWith("get_ver");
+        connection_check.reset();
+#ifdef SSERIAL
+        SSerial.print("Passive=");
+        SSerial.println(!active && connected);
+#endif
+    }
     return connected;
 }
 
@@ -76,13 +84,13 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
         delay(20);
     }
 #ifdef SSERIAL
-    SSerial.println(s);
+    SSerial.print(s);
 #endif
-    return s.substring(0, (unsigned int) s.lastIndexOf('\r'));
+    return s;
 }
 
 bool Bt::getPassive() {
-    return passive;
+    return !active && isConnected();
 }
 
 void Bt::applyBt05() {
@@ -94,12 +102,15 @@ void Bt::applyBt05() {
     execReset();
     execBtAtCommand(F("AT+CMODE=0")); // connect only to predefined address
     execBtAtCommand(F("AT+CLASS=1F00")); // iquire only devices with type 1F00
-    execBtAtCommand(F("AT+INQM=1,3,4")); // inquire rssi mode, 2 items, timeout 13 sec
+    execBtAtCommand(F("AT+INQM=1,2,4")); // inquire rssi mode, 2 items, timeout 5 sec
 
     String devices = execBtAtCommand(F("AT+INQ"), 0, 5100); // Inquire devices, until OK
 
-    long dp0 = 0;
-    long dp1 = (unsigned int) devices.indexOf('\r');
+    int dp0 = 0;
+    int dp1 = devices.indexOf('\r');
+    if (dp1 < 0)
+        return;
+
     String device = devices.substring((unsigned int) dp0, (unsigned int) dp1);
 
     while (device.startsWith("+INQ:")) {
@@ -108,13 +119,13 @@ void Bt::applyBt05() {
         peer_address.replace(':', ',');
 
         dp0 = devices.indexOf('+', (unsigned int) dp1);
-        dp1 = devices.indexOf('\r', (unsigned int) dp0);
+        dp1 = devices.indexOf('\n', (unsigned int) dp0);
         device = devices.substring((unsigned int) dp0, (unsigned int) dp1);
-
-        String peer_name = execBtAtCommand(F("AT+RNAME?"), peer_address.c_str(),
-                                           5000);// get pairing candidate name, sample address +INQ:2016:10:202848,1F00,FFA6
-
-        if (peer_name.startsWith("+RNAME:PWR-")) {
+//
+//        String peer_name = execBtAtCommand(F("AT+RNAME?"), peer_address.c_str(),
+//                                           5000);// get pairing candidate name, sample address +INQ:2016:10:202848,1F00,FFA6
+//
+//        if (peer_name.startsWith("+RNAME:PWR-")) {
             execBtAtCommand(F("AT+PSWD="), PASSWD, 0);
             execBtAtCommand(F("AT+BIND="), peer_address.c_str(), 0);
             execBtAtCommand(F("AT+POLAR=1,1")); // PIN09 output HIGH level indicates successful connection
@@ -123,7 +134,7 @@ void Bt::applyBt05() {
             connected = true;
             passive = true;
             break;
-        }
+//        }
     }
 
 }

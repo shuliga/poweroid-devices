@@ -40,16 +40,12 @@ public:
 
     void begin();
 
-    void processSensors();
-
     void run();
 
     void printVersion();
 
 private:
-    void init_outputs();
-
-    void init_inputs();
+    void init_pins();
 
     void loadDisarmedStates();
 };

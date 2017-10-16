@@ -2,10 +2,6 @@
 #include <SoftwareSerial.h>
 #include "PoweroidSdk10.h"
 
-#define TX_SS 2
-#define RX_SS 3
-
-
 static const char *name = "PWR-FLR-PASS-1";
 
 Bt BT(name);

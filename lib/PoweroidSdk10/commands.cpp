@@ -1,6 +1,5 @@
 
 #include "commands.h"
-
 #define PREFIX(cmd) cmd + " -> "
 
 static char BUFF[64];
@@ -35,18 +34,19 @@ char* Commands::printProperty(uint8_t i) {
 
 void Commands::listen() {
     if (Serial.available() > 0) {
-        String cmd = Serial.readString();
+        String cmd = Serial.readStringUntil('\n');
         cmd.replace("\n", "");
         if (ctx->passive && cmd.startsWith(REL_PREFIX)) {
             uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1), (unsigned int) cmd.indexOf(']')).toInt();
             int8_t i = getMappedFromVirtual(ri);
+#ifdef SSERIAL
+            SSerial.println(cmd);
+#endif
+
             if (i >= 0) {
-                if (cmd.indexOf(REL_POWERED) > 0) {
-                    ctx->RELAYS.powerOn((uint8_t) i);
-                } else {
-                    ctx->RELAYS.powerOff((uint8_t) i);
-                }
+                ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
             }
+            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_VER)) {

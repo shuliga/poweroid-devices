@@ -7,54 +7,59 @@ Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), 
 }
 
 void Pwr::begin() {
+
     Serial.begin(9600);
+#ifdef SSERIAL
+    SSerial.begin(9600);
+    SSerial.println("SSerial started");
+#endif
     printVersion();
 
-    init_outputs();
-    init_inputs();
+    init_pins();
 
     CTX->PERS.begin();
 
     SENS->initSensors();
+
     loadDisarmedStates();
 
     if (BT){
         BT->begin();
-        CTX->passive = BT->getPassive();
     }
-
+#ifndef SSERIAL
     if (CTRL) {
         CTRL->begin();
     }
-
+#endif
 //    wdt_enable(WDTO_8S);
 }
 
 void Pwr::run() {
 //    wdt_reset();
+    SENS->process();
+
+    if (BT){
+        CTX->passive = BT->getPassive();
+    }
+
     if (CMD) {
         CMD->listen();
     }
+#ifndef SSERIAL
     if (CTRL) {
         CTRL->process();
     }
-}
-
-void Pwr::processSensors() {
-    SENS->process();
+#endif
 }
 
 void Pwr::printVersion() {
     Serial.println(F(FULL_VERSION));
 }
 
-void Pwr::init_outputs() {
+void Pwr::init_pins() {
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
-}
-
-void Pwr::init_inputs() {
     for (uint8_t i = 0; i < SENS->size(); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }

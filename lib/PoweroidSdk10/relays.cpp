@@ -8,20 +8,17 @@
 static bool powered[RELAYS];
 static char CHAR_BUF[32];
 
-void Relays::powerOn(uint8_t i) {
-    return power(i, true);
-}
-
-void Relays::powerOff(uint8_t i) {
-    return power(i, false);
-}
-
-void Relays::power(uint8_t i, bool _power) {
+void Relays::power(uint8_t i, bool _power, bool mapped) {
     if (i < RELAYS) {
-        if (i < ARRAY_SIZE(OUT_PINS) && powered[i] != _power) {
+        if (i < size() && powered[i] != _power) {
             powered[i] = _power;
             pin_inv(OUT_PINS[i], _power);
             printRelay(i);
+            int8_t mappedIdx = mappings[i];
+            if (mapped &&  mappedIdx >= 0) {
+                powered[mappedIdx] = _power;
+                printRelay((uint8_t) mappedIdx);
+            }
         }
     }
 }

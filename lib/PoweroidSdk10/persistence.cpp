@@ -18,7 +18,7 @@ unsigned long hashProp(long *props, int size) {
     return hash((byte *) props, size * sizeof(long));
 }
 
-Persistence::Persistence(const String &_sign, long *_props_runtime, uint8_t props_size, uint8_t *_mappings, uint8_t msz): given_sign(_sign), props_runtime(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
+Persistence::Persistence(const String &_sign, long *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign(_sign), props_runtime(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
 
 void  Persistence::begin(){
     delay(250);
@@ -47,15 +47,16 @@ void  Persistence::begin(){
     }
 }
 
-void Persistence::storeMappings(uint8_t *mappings) {
+void Persistence::storeMappings(int8_t *mappings) {
     for (uint8_t i = 0; i < mappings_size; i++) {
-        storeMapping(i, mappings[i]);
+        EEPROM.put(MAPPINGS_OFFSET + i, mappings[i]);
+
     }
 }
 
-void Persistence::loadMappings(uint8_t *mappings) {
+void Persistence::loadMappings(int8_t *mappings) {
     for (uint8_t i = 0; i < mappings_size; i++) {
-        mappings[i] = (uint8_t) loadMapping(i);
+        mappings[i] = (i < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + i) :  -1;
     }
 }
 
@@ -99,15 +100,5 @@ void Persistence::storeState(uint8_t id, bool state) {
     if (id < 8) {
         EEPROM.put(STATES_OFFSET,
                    state ? EEPROM.read(STATES_OFFSET) | (1 << id) :  EEPROM.read(STATES_OFFSET) & (~(1 << id)));
-    }
-}
-
-int8_t Persistence::loadMapping(uint8_t id) {
-    return (id < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + id) :  -1;
-}
-
-void Persistence::storeMapping(uint8_t id, int8_t mapped_id) {
-    if (id < MAPPINGS_SIZE) {
-        EEPROM.put(MAPPINGS_OFFSET + id, mapped_id);
     }
 }

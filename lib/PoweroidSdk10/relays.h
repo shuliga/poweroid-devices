@@ -15,16 +15,14 @@ const char *const REL_POWERED = "ON";
 const char *const REL_NOT_POWERED = "OFF";
 
 const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
-static const uint8_t VIRTUAL_RELAYS = 3;
+static const uint8_t VIRTUAL_RELAYS = 2;
 static const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 
 class Relays {
 public:
-    uint8_t mappings[VIRTUAL_RELAYS] = {3, 4, 5};
+    int8_t mappings[VIRTUAL_RELAYS] = {2, 3};
 
-    void powerOn(uint8_t i);
-    void powerOff(uint8_t i);
-    void power(uint8_t i, bool _power);
+    void power(uint8_t i, bool _power, bool mapped);
 
     uint8_t size();
 

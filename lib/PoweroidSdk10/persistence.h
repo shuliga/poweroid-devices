@@ -23,9 +23,9 @@ struct Persistence {
     char signature[SIGNATURE_SIZE];
     String given_sign;
     long *props_runtime;
-    uint8_t *mappings;
+    int8_t *mappings;
 
-    Persistence(const String &_sign, long *props_runtime, uint8_t props_size, uint8_t *mappings, uint8_t msz);
+    Persistence(const String &_sign, long *props_runtime, uint8_t props_size, int8_t *mappings, uint8_t msz);
 
     void storeProperties(long *props);
 
@@ -39,13 +39,9 @@ struct Persistence {
 
     void checkFactoryReset(long *props_runtime);
 
-    void storeMapping(uint8_t id, int8_t mapped_id);
+    void storeMappings(int8_t *mappings);
 
-    int8_t loadMapping(uint8_t id);
-
-    void storeMappings(uint8_t *mappings);
-
-    void loadMappings(uint8_t *mappings);
+    void loadMappings(int8_t *mappings);
 
     void begin();
 };

@@ -1,5 +1,10 @@
 #include <Arduino.h>
+#include <src/SoftwareSerial.h>
 #include "commons.h"
+
+#ifdef SSERIAL
+SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
+#endif
 
 unsigned long hash(byte *data, unsigned long size) {
   unsigned long hash = 19;
@@ -16,17 +21,29 @@ unsigned long hash(byte *data, unsigned long size) {
 void writeLog(const char level, const char *origin, const int code){
   char buff[32];
   sprintf(buff, "%c [%s] %i", level, origin, code);
-  Serial.println(buff);
+#ifdef SSERIAL
+    SSerial.println(buff);
+#else
+    Serial.println(buff);
+#endif
 }
 
 void writeLog(const char level, const char *origin, const int code, long result){
   char buff[32];
   sprintf(buff, "%c [%s] %i (%li)", level, origin, code, result);
-  Serial.println(buff);
+#ifdef SSERIAL
+    SSerial.println(buff);
+#else
+    Serial.println(buff);
+#endif
 }
 
 void writeLog(const char level, const char *origin, const int code, char *result){
   char buff[32];
   sprintf(buff, "%c [%s] %i '%s'", level, origin, code, result);
-  Serial.println(buff);
+#ifdef SSERIAL
+    SSerial.println(buff);
+#else
+    Serial.println(buff);
+#endif
 }

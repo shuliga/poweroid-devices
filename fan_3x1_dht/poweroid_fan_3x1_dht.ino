@@ -84,29 +84,20 @@ void run_state_light(bool light) {
         }
 
     }
-
-    if (prev_state_light != state_light) {
-        printState(0);
-    }
+    printChangedState(prev_state_light, state_light, 0);
 }
 
 void run_state_humid(bool humidity) {
     switch (state_humid) {
         case SH_OFF: {
             prev_state_humid = SH_OFF;
-            if (humidity) {
-                state_humid = AH;
-            }
+            if (humidity) state_humid = AH;
             break;
         }
         case AH: {
             prev_state_humid = AH;
-            if (timings.humidity_delay.isTimeAfter(humidity)) {
-                state_humid = SH_POWER;
-            }
-            if (!humidity) {
-                state_humid = SH_OFF;
-            }
+            if (timings.humidity_delay.isTimeAfter(humidity)) state_humid =  SH_POWER;
+            if (!humidity) state_humid = SH_OFF;
             break;
         }
         case SH_POWER: {
@@ -123,25 +114,19 @@ void run_state_humid(bool humidity) {
             break;
         }
     }
-    if (prev_state_humid != state_humid) {
-        printState(1);
-    }
+    printChangedState(prev_state_humid, state_humid, 1);
 }
 
 void run_state_temp(bool temperature) {
     switch (state_temp) {
         case ST_OFF: {
             prev_state_temp = ST_OFF;
-            if (timings.temperature_delay.isTimeAfter(temperature)) {
-                state_temp = ST_POWER;
-            }
+            if (timings.temperature_delay.isTimeAfter(temperature))state_temp = ST_POWER;
             break;
         }
         case ST_POWER: {
             prev_state_temp = ST_POWER;
-            if (timings.temperature_delay.isTimeAfter(!temperature)) {
-                state_temp = ST_OFF;
-            }
+            if (timings.temperature_delay.isTimeAfter(!temperature)) state_temp =  ST_OFF;
             break;
         }
         case ST_DISARM: {
@@ -149,9 +134,7 @@ void run_state_temp(bool temperature) {
             break;
         }
     }
-    if (prev_state_temp != state_temp) {
-        printState(2);
-    }
+    printChangedState(prev_state_temp, state_temp, 2);
 }
 
 void setup() {
@@ -162,7 +145,7 @@ void loop() {
 
     apply_timings();
 
-    PWR.processSensors();
+    PWR.run();
 
     bool light1 = PWR.SENS->isSensorOn(1);
     bool light2 = PWR.SENS->isSensorOn(2);
@@ -177,11 +160,9 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR.REL->power(0, fan_power);
-    PWR.REL->power(1, floor_power);
+    PWR.REL->power(0, fan_power, true);
+    PWR.REL->power(1, floor_power, true);
 
 //    led(LED_PIN, fan_power || floor_power);
-
-    PWR.run();
 
 }

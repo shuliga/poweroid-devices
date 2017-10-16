@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <context.h>
+#include "commons.h"
+
+#define CONNECTION_CHECK 60000L
 
 #define BT_VER_05 "+VERSION:hc01.comV2.1"
 #define BT_VER_06 "hc01.comV2.0"
@@ -15,10 +18,8 @@
 class Bt {
 public:
   const char *name;
-  bool on = false;
-#ifdef SSERIAL
-  SoftwareSerial SSerial = SoftwareSerial(8, 9);
-#endif
+  bool firstRun = true;
+  bool active = false;
   Bt(const char *id);
 
   void begin();

@@ -2,13 +2,14 @@
 // Created by SHL on 20.03.2017.
 //
 
-
 #define INCR(val, max) val < max ? val++ : val
 #define DECR(val, min) val > min ? val-- : val
 
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
+
+#ifndef SSERIAL
 
 #define DISPLAY_BASE 1
 #define DISPLAY_BOTTOM 7
@@ -330,3 +331,5 @@ ISR(PCINT2_vect) {
 
 #endif
 #endif
+
+#endif // SSERIAL

@@ -57,4 +57,11 @@ static void disarmState(uint8_t i, bool _disarm) {
         }
     }
 }
+
+static void printChangedState(bool prev_state, bool state, uint8_t id){
+    if (prev_state != state) {
+        printState(id);
+    }
+}
+
 #endif

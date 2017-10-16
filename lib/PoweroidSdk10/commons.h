@@ -5,17 +5,19 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
-#define PWR21
+#define PWR23
+// #define SSERIAL
 
 #define LED_PIN 13
-#define FACTORY_RESET_PIN 9
+#define FACTORY_RESET_PIN 10
 
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 #include "properties.h"
 
-#ifdef PWR21
+#ifdef PWR23
 
-#define BOARD_VERSION "PWR21"
+#define BOARD_VERSION "PWR23"
 
 #define DHT_PIN 5
 
@@ -34,7 +36,7 @@
 #define PWR1_PIN 8
 #define PWR2_PIN 9
 
-#endif // PWR21
+#endif // PWR23
 
 #ifdef PWR20
 
@@ -58,6 +60,13 @@
 #endif // PWR20
 
 #define DEBOUNCE_DELAY 500L
+
+#define RX_SS 8
+#define TX_SS 9
+
+#ifdef SSERIAL
+extern SoftwareSerial SSerial;
+#endif
 
 unsigned long hash(byte *data, unsigned long size);
 void writeLog(const char level, const char *origin, const int code);

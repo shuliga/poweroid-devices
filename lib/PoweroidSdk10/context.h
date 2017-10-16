@@ -40,8 +40,4 @@ typedef struct Context {
     bool passive;
 };
 
-//typedef struct Context {
-//    bool passive;
-//};
-
 #endif //POWEROID_10_CONTEXT_H
