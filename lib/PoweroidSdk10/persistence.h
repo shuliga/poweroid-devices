@@ -4,7 +4,7 @@
 #include "properties.h"
 
 #define STORAGE_MAX_SIZE 64
-#define BASE 20
+#define BASE 0
 #define SIGNATURE_SIZE 4
 #define STATES_SIZE 1
 #define MAPPINGS_SIZE 8
@@ -20,14 +20,14 @@ struct Persistence {
     const char *const ORIGIN = "EEPROM";
     uint8_t size;
     uint8_t mappings_size;
-    char signature[SIGNATURE_SIZE];
-    String given_sign;
-    long *props_runtime;
+        char signature[SIGNATURE_SIZE];
+    const char *given_sign_chr;
+    Property *props;
     int8_t *mappings;
 
-    Persistence(const String &_sign, long *props_runtime, uint8_t props_size, int8_t *mappings, uint8_t msz);
+    Persistence(const char *_sign, Property *props, uint8_t props_size, int8_t *mappings, uint8_t msz);
 
-    void storeProperties(long *props);
+    void storeProperties(Property *props);
 
     void storeState(uint8_t id, bool state);
 
@@ -35,9 +35,9 @@ struct Persistence {
 
     bool loadState(uint8_t id);
 
-    void loadProperties(long *prop);
+    void loadProperties(Property *prop);
 
-    void checkFactoryReset(long *props_runtime);
+    void checkFactoryReset(Property *props);
 
     void storeMappings(int8_t *mappings);
 

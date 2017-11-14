@@ -97,7 +97,6 @@ class ACROBOTIC_SSD1306 {
     void setBrightness(unsigned char Brightness);
     bool putChar(unsigned char c);
     void putString(const char *string);
-    void putString(String string);
     unsigned char putNumber(long n);
     unsigned char putFloat(float floatNumber,unsigned char decimal);
     unsigned char putFloat(float floatNumber);
@@ -116,7 +115,7 @@ class ACROBOTIC_SSD1306 {
     void setFont(const uint8_t* font);
 
     bool getConnected();
-    bool isConnected();
+    bool checkConnected();
     bool checkAndInit(bool flip);
     GFXfont *gfxfont;
 

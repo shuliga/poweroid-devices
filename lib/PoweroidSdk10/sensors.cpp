@@ -9,10 +9,10 @@
 
 // Console output codes
 // 100 -
-// 201 - Sensor installed
-// 501 - Sensor not installed
-// 200 - DHT installed
+// 200 - DHT installed (pin)
+// 201 - Sensor installed (pin)
 // 500 - DHT not installed
+// 501 - Sensor not installed (pin)
 
 
 const long INST_DELAY = 50L;

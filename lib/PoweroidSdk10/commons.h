@@ -1,12 +1,17 @@
 #if !defined(ARRAY_SIZE)
-#define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
+    #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
 #ifndef COMMONS_H
 #define COMMONS_H
 
+//#define DEBUG
 #define PWR23
-//#define SSERIAL
+
+#ifdef DEBUG
+    #define SSERIAL
+    #define NO_CONTROLLER
+#endif
 
 #define LED_PIN 13
 #define FACTORY_RESET_PIN 10
@@ -70,8 +75,8 @@ extern SoftwareSerial SSerial;
 
 unsigned long hash(byte *data, unsigned long size);
 void writeLog(const char level, const char *origin, const int code);
-void writeLog(const char level, const char *origin, const int code, long result);
-void writeLog(const char level, const char *origin, const int code, char *result);
+void writeLog(const char level, const char *origin, const int code, unsigned long result);
+void writeLog(const char level, const char *origin, const int code, const char *result);
 
 #endif
 

@@ -24,8 +24,7 @@
 
 #define FULL_VERSION VERSION "-" BOARD_VERSION
 
-static char SIGNATURE[] = "PWR";
-static char version[] = VERSION;
+const char SIGNATURE[] = "PWR";
 
 class Pwr {
 public:

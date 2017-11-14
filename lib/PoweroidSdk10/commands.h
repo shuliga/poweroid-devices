@@ -8,11 +8,12 @@
 struct CommandsStr {
     const char* CMD_GET_VER;
     const char* CMD_GET_DHT;
-    const char* CMD_PREF_GET_STATE;
-    const char* CMD_PREF_DISARM_STATE;
+    const char* CMD_GET_STATE;
+    const char* CMD_DISARM_STATE;
     const char* CMD_GET_STATE_ALL;
-    const char* CMD_PREF_GET_PROP;
-    const char* CMD_PREF_SET_PROP;
+    const char* CMD_GET_PROP;
+    const char* CMD_GET_BIN_PROP;
+    const char* CMD_SET_PROP;
     const char* CMD_GET_PROP_ALL;
     const char* CMD_GET_PROP_LEN;
     const char* CMD_LOAD_PROPS;
@@ -39,14 +40,13 @@ private:
 
     char * printProperty(uint8_t i);
 
-    void execute();
-
     int8_t getMappedFromVirtual(uint8_t i);
 
     uint8_t getIndex(const String &cmd) const;
 
     void printCmd(const String &cmd, const char *suffix) const;
 
+    void printBinProperty(uint8_t i);
 };
 
 #endif // COMMANDS_H

@@ -8,28 +8,26 @@
 
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
 
-StateLight prev_state_light = SL_DISARM;
-StateHumid prev_state_humid = SH_DISARM;
-StateTemp prev_state_temp = ST_DISARM;
-
-Context CTX = Context{SIGNATURE, version, FAN_PROPS.FACTORY, FAN_PROPS.RUNTIME, FAN_PROPS.props_size, ID,
-                  state_count, printState, disarmState, FAN_PROPS.DEFAULT_PROPERTY};
+Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
+                  state_count, printState, disarmState, FAN_PROPS.DEFAULT_PROPERTY);
 
 Commands CMD(CTX);
-#ifndef SSERIAL
-Controller CTRL(CTX, CMD);
-#endif
 Bt BT(CTX.id);
 
+#if !defined(NO_CONTROLLER)
+Controller CTRL(CTX, CMD);
 Pwr PWR(CTX, &CMD, &CTRL, &BT);
+#else
+Pwr PWR(CTX, &CMD, NULL, &BT);
+#endif
 
 void apply_timings() {
-    timings.countdown_power.interval = (unsigned long) FAN_PROPS.RUNTIME[0];
-    timings.delay_power.interval = (unsigned long) FAN_PROPS.RUNTIME[1];
-    timings.light1_standby.interval = (unsigned long) FAN_PROPS.RUNTIME[2];
-    timings.humidity_runtime.interval = (unsigned long) FAN_PROPS.RUNTIME[4];
-    timings.humidity_delay.interval = (unsigned long) FAN_PROPS.RUNTIME[5];
-    timings.temperature_delay.interval = (unsigned long) FAN_PROPS.RUNTIME[7];
+    timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
+    timings.delay_power.interval = (unsigned long) FAN_PROPS.FACTORY[1].runtime;
+    timings.light1_standby.interval = (unsigned long) FAN_PROPS.FACTORY[2].runtime;
+    timings.humidity_runtime.interval = (unsigned long) FAN_PROPS.FACTORY[4].runtime;
+    timings.humidity_delay.interval = (unsigned long) FAN_PROPS.FACTORY[5].runtime;
+    timings.temperature_delay.interval = (unsigned long) FAN_PROPS.FACTORY[7].runtime;
 }
 
 

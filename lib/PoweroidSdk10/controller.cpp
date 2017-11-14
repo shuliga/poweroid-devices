@@ -9,7 +9,7 @@
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
 
-#ifndef SSERIAL
+#ifndef NO_CONTROLLER
 
 #define DISPLAY_BASE 1
 #define DISPLAY_BOTTOM 7
@@ -25,6 +25,9 @@ static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
 static volatile long prop_value;
 
+static Property remoteProperty;
+static char remotePropertyDesc[48];
+
 static int8_t c_prop_idx = -1;
 static long c_prop_value = -1;
 static long old_prop_value;
@@ -34,10 +37,8 @@ static bool dither = false;
 static volatile long prop_min;
 static volatile long prop_max;
 
-#ifdef ENC1_PIN
-#ifdef ENC2_PIN
+#if defined(ENC1_PIN) && defined(ENC2_PIN)
 Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
-#endif
 #endif
 
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
@@ -49,10 +50,8 @@ Controller::Controller(Context &_ctx, Commands &_cmd) : cmd(&_cmd), ctx(&_ctx) {
 
 void Controller::begin() {
     initDisplay();
-#ifdef ENC1_PIN
-#ifdef ENC2_PIN
+#if defined(ENC1_PIN) && defined(ENC2_PIN)
     initEncoderInterrupts();
-#endif
 #endif
 }
 
@@ -85,16 +84,14 @@ void Controller::process() {
 
     switch (state) {
         case EDIT_PROP: {
-            if (firstRun() || control_touched){
-                autoComplete_timer.reset();
-                control_touched = false;
-                outputTitle();
-            }
+
+            testControl(autoComplete_timer);
+
             if (c_prop_value != prop_value || ctx->refreshProps) {
                 updateProperty(prop_idx);
                 outputPropDescr((uint8_t) prop_idx);
-                outputPropVal(ctx->FACTORY[prop_idx], (int16_t) prop_value, true, true);
-                outputStatus(F("edit value:"), old_prop_value);
+                outputPropVal(ctx->PROPERTIES[prop_idx], (int16_t) prop_value, true, true);
+                outputStatus(F("Edit value:"), old_prop_value);
             }
             if (event == CLICK || autoComplete_timer.isTimeAfter(true)) {
                 goToBrowse();
@@ -110,17 +107,14 @@ void Controller::process() {
             break;
         }
         case BROWSE: {
-            if (control_touched || firstRun()) {
-                sleep_timer.reset();
-                control_touched = false;
-                outputTitle();
-            }
+
+            testControl(sleep_timer);
 
             if (c_prop_idx != prop_idx || ctx->refreshProps) {
                 loadProperty(prop_idx);
 
                 outputPropDescr(prop_idx);
-                outputPropVal(ctx->FACTORY[prop_idx], prop_value, false, true);
+                outputPropVal(ctx->PROPERTIES[prop_idx], prop_value, false, true);
                 outputStatus(F("Property:  "), prop_idx);
                 prop_changed = false;
             }
@@ -138,7 +132,7 @@ void Controller::process() {
         case STORE: {
             firstRun();
             cmd->storeProps();
-            outputStatus(F("<storing..>"), prop_value);
+            outputStatus(F("<Storing...>"), prop_value);
             delay(500);
             goToBrowse();
             break;
@@ -201,6 +195,14 @@ void Controller::process() {
     detectDisplay();
 }
 
+void Controller::testControl(TimingState &timer) const {
+    if (firstRun() || control_touched){
+                timer.reset();
+                control_touched = false;
+                outputTitle();
+            }
+}
+
 void Controller::goToBrowse() const {
     c_prop_idx = -1; // invalidate cache;
     c_prop_value = -1; // invalidate cache;
@@ -223,32 +225,39 @@ void Controller::goToEditProp(uint8_t i) const {
 void Controller::loadProperty(uint8_t idx) const {
     if (!passive) {
         cli();
-        long scale = ctx->FACTORY[idx].scale;
-        prop_value = (ctx->RUNTIME[idx] / scale);
-        prop_min = (ctx->FACTORY[idx].minv / scale);
-        prop_max = (ctx->FACTORY[idx].maxv / scale);
+        update(ctx->PROPERTIES[idx]);
         c_prop_idx = idx;
         sei();
     } else {
-//        Serial.print(cmd->cmd_str.CMD_PREF_GET_PROP);
-//        Serial.println(idx);
-//        if (Serial.available()) {
-//            String repl = Serial.readString();
-//            if (repl.startsWith(cmd->cmd_str.CMD_PREF_GET_PROP)) {
-//                // TODO
-//            }
-//        };
+        Serial.print(cmd->cmd_str.CMD_GET_PROP);
+        Serial.println(idx);
+        delay(500);
+        if (Serial.available()) {
+            Serial.readBytesUntil('\n', remotePropertyDesc, 64);
+            Serial.readBytes((uint8_t *)&remoteProperty, sizeof(Property));
+            cli();
+            update(remoteProperty);
+            c_prop_idx = idx;
+            sei();
+        };
     }
+}
+
+void Controller::update(Property &prop) const {
+    long scale = prop.scale;
+    prop_value = (prop.runtime / scale);
+    prop_min = (prop.minv / scale);
+    prop_max = (prop.maxv / scale);
 }
 
 void Controller::updateProperty(uint8_t idx) const {
     if (!passive) {
         cli();
-        ctx->RUNTIME[idx] = prop_value * ctx->FACTORY[idx].scale;
+        ctx->PROPERTIES[idx].runtime = prop_value * ctx->PROPERTIES[idx].scale;
         c_prop_value = prop_value;
         sei();
     } else {
-        Serial.print(cmd->cmd_str.CMD_PREF_SET_PROP);
+        Serial.print(cmd->cmd_str.CMD_SET_PROP);
         Serial.print(idx);
         Serial.print(':');
         Serial.println(prop_value);
@@ -271,14 +280,14 @@ void Controller::detectDisplay() {
 void Controller::outputPropDescr(uint8_t _idx) {
     if (oled.getConnected()) {
         oled.setTextXY(DISPLAY_BASE, 0);
-        oled.putString(ctx->FACTORY[_idx].desc);
-        oled.putString(F("      "));
+        oled.putString(String(ctx->PROPERTIES[_idx].desc).c_str());
+        oled.putString("      ");
     }
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.setTextXY(DISPLAY_BOTTOM, 0);
-    oled.putString(txt);
+    oled.putString(String(txt).c_str());
     oled.setTextXY(DISPLAY_BOTTOM, 12);
     oled.putNumber(val);
     oled.putString("  ");
@@ -286,25 +295,10 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
 
 void Controller::outputPropVal(Property &_prop, uint16_t _prop_val, bool brackets, bool _measure) {
     char str_text[12];
-    char measure_c[6];
     const char *fmt =
             brackets && _measure ? "[%i]%s" : (brackets & !_measure ? "[%i]" : (!brackets && _measure ? "%i%s"
                                                                                                       : "%i"));
-    PGM_P p = reinterpret_cast<PGM_P>(_prop.desc);
-    size_t n = 0;
-    uint8_t i = 0;
-    bool start = false;
-    while (i < 11) {
-        unsigned char c = (unsigned char) pgm_read_byte(p++);
-        if (c == ')') break;
-        if (start) {
-            measure_c[i] = c;
-            i++;
-        }
-        if (c == '(') start = true;
-    }
-    measure_c[i] = 0;
-    sprintf(str_text, fmt, _prop_val, measure_c);
+    sprintf(str_text, fmt, _prop_val, _prop.measure);
     oled.outputTextXY(DISPLAY_BASE + 2, 64, str_text, true, false);
 }
 
@@ -332,4 +326,4 @@ ISR(PCINT2_vect) {
 #endif
 #endif
 
-#endif // SSERIAL
+#endif // NO_CONTROLLER

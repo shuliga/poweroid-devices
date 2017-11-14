@@ -53,6 +53,10 @@ private:
     bool firstRun() const;
 
     void goToBrowse() const;
+
+    void update(Property &prop) const;
+
+    void testControl(TimingState &timer) const;
 };
 
 

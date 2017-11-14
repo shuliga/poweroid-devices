@@ -10,37 +10,32 @@
 // 200 - Factory reset
 // 201 - Properties stored in EEPROM.
 // 202 - Properties loaded from EEPROM
+// 301 - Hash differs from factory.
 // 501 - Not a native EEPROM. Overwriting signature.
-// 502 - Hash differs from factory.
 
-
-unsigned long hashProp(long *props, int size) {
-    return hash((byte *) props, size * sizeof(long));
+unsigned long hashProp(Property *props, int size) {
+    return hash((byte *) props, size * sizeof(Property));
 }
 
-Persistence::Persistence(const String &_sign, long *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign(_sign), props_runtime(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
+Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign_chr(_sign), props(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
 
 void  Persistence::begin(){
-    delay(500);
-    checkFactoryReset(props_runtime);
+    checkFactoryReset(props);
     EEPROM.get(BASE, signature);
-    signature[SIGNATURE_SIZE - 1] = 0;
-    String sign = String(signature);
-    writeLog('I', ORIGIN, 100, signature);
+    signature[SIGNATURE_SIZE - 1] = '\0';
+    writeLog('I', ORIGIN, 100, isprint(signature[0]) ? signature : "___");
     unsigned long eeprom_hash;
     EEPROM.get(HASH_OFFSET, eeprom_hash);
     writeLog('I', ORIGIN, 101, eeprom_hash);
-    if (sign != given_sign) {
-        given_sign.toCharArray(signature, SIGNATURE_SIZE);
-        writeLog('W', ORIGIN, 510, signature);
+    if (strcmp(given_sign_chr, signature) != 0) {
+        strcpy(signature, given_sign_chr);
+        writeLog('W', ORIGIN, 501, signature);
         EEPROM.put(BASE, signature);
-        storeProperties(props_runtime);
+        storeProperties(props);
         storeMappings(mappings);
-        return;
-    }
-    if (eeprom_hash != hashProp(props_runtime, size)) {
-        writeLog('W', ORIGIN, 502);
-        loadProperties(props_runtime);
+    } else if (eeprom_hash != hashProp(props, size)) {
+        writeLog('W', ORIGIN, 301);
+        loadProperties(props);
         loadMappings(mappings);
     }
 }
@@ -58,9 +53,9 @@ void Persistence::loadMappings(int8_t *mappings) {
     }
 }
 
-void Persistence::storeProperties(long *props) {
+void Persistence::storeProperties(Property *props) {
     for (uint8_t i = 0; i < size; i++) {
-        storeValue(i, props[i]);
+        storeValue(i, props[i].runtime);
     }
     unsigned long hash = hashProp(props, size);
     writeLog('I', ORIGIN, 201, size);
@@ -74,18 +69,18 @@ void Persistence::storeValue(uint8_t i, long val) {
     }
 }
 
-void Persistence::loadProperties(long *props) {
+void Persistence::loadProperties(Property *props) {
     for (uint8_t i = 0; i < size; i++) {
-        EEPROM.get(ADDR(i), props[i]);
+        EEPROM.get(ADDR(i), props[i].runtime);
     }
     writeLog('I', ORIGIN, 202, size);
 }
 
-void Persistence::checkFactoryReset(long *props_runtime) {
+void Persistence::checkFactoryReset(Property *props) {
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
     if (digitalRead(FACTORY_RESET_PIN) == LOW) {
         writeLog('I', ORIGIN, 200);
-        storeProperties(props_runtime);
+        storeProperties(props);
         EEPROM.put(STATES_OFFSET, 0); // Clear state DISARM flags
     }
 }

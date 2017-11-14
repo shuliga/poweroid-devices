@@ -26,7 +26,7 @@ void Pwr::begin() {
     if (BT){
         BT->begin();
     }
-#ifndef SSERIAL
+#ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->begin();
     }
@@ -45,7 +45,7 @@ void Pwr::run() {
     if (CMD) {
         CMD->listen();
     }
-#ifndef SSERIAL
+#ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->process();
     }
@@ -53,7 +53,7 @@ void Pwr::run() {
 }
 
 void Pwr::printVersion() {
-    Serial.println(F(FULL_VERSION));
+    Serial.println(CTX->version);
 }
 
 void Pwr::init_pins() {

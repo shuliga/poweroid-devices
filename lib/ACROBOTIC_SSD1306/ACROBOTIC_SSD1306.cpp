@@ -75,8 +75,7 @@ void ACROBOTIC_SSD1306::init(bool flip) {
 }
 
 bool ACROBOTIC_SSD1306::checkAndInit(bool flip) {
-    if (!connected && isConnected()) {
-//        Serial.println(F("I2C display init"));
+    if (!connected && checkConnected()) {
         oled.setGfxFont(&FreeSans12pt7b);
         init(flip);
         return true;
@@ -85,7 +84,7 @@ bool ACROBOTIC_SSD1306::checkAndInit(bool flip) {
     }
 }
 
-bool ACROBOTIC_SSD1306::isConnected() {
+bool ACROBOTIC_SSD1306::checkConnected() {
     connected = I2c.check(SSD1306_Address);
     return connected;
 }
@@ -289,12 +288,6 @@ void ACROBOTIC_SSD1306::putString(const char *string) {
         putChar(string[i]);
         i++;
     }
-}
-
-void ACROBOTIC_SSD1306::putString(String string) {
-    char char_array[string.length() + 1];
-    string.toCharArray(char_array, sizeof(char_array));
-    putString(char_array);
 }
 
 unsigned char ACROBOTIC_SSD1306::putNumber(long long_num) {

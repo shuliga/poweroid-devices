@@ -11,6 +11,7 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx){
                "disarm_state_",
                "get_state_all",
                "get_prop_",
+               "get_bin_prop_",
                "set_prop_",
                "get_prop_all",
                "get_prop_len",
@@ -23,8 +24,15 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx){
 }
 
 char* Commands::printProperty(uint8_t i) {
-    sprintf(BUFF, "[%i] %s : %i", i, String(ctx->FACTORY[i].desc).c_str(), (int) (ctx->RUNTIME[i] / ctx->FACTORY[i].scale));
+    sprintf(BUFF, "[%i] %s : %i", i, String(ctx->PROPERTIES[i].desc).c_str(), (int) (ctx->PROPERTIES[i].runtime / ctx->PROPERTIES[i].scale));
     return BUFF;
+}
+
+void Commands::printBinProperty(uint8_t i) {
+    Serial.println(ctx->PROPERTIES[i].desc);
+    for(uint8_t j = 0; j < sizeof(Property); j++ ){
+        Serial.write(*((uint8_t *)ctx->PROPERTIES + j));
+    }
 }
 
 void Commands::listen() {
@@ -45,10 +53,7 @@ void Commands::listen() {
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_VER)) {
-            printCmd(cmd, NULL);
-            Serial.print(ctx->version);
-            Serial.print("-");
-            Serial.println(BOARD_VERSION);
+            printCmd(cmd, ctx->version);
             return;
         }
 
@@ -67,7 +72,7 @@ void Commands::listen() {
         if (cmd.startsWith(cmd_str.CMD_RESET_PROPS)) {
             printCmd(cmd, NULL);
             for (uint8_t i = 0; i < ctx->props_size; i++) {
-                ctx->RUNTIME[i] = ctx->FACTORY[i].val;
+                ctx->PROPERTIES[i].runtime = ctx->PROPERTIES[i].val;
             }
             ctx->refreshProps = true;
             return;
@@ -88,7 +93,7 @@ void Commands::listen() {
 
         if (cmd.startsWith(cmd_str.CMD_LOAD_PROPS)) {
             printCmd(cmd, NULL);
-            ctx->PERS.loadProperties(ctx->RUNTIME);
+            ctx->PERS.loadProperties(ctx->PROPERTIES);
             ctx->refreshProps = true;
             return;
         }
@@ -99,7 +104,7 @@ void Commands::listen() {
             return;
         }
 
-        if (cmd.startsWith(cmd_str.CMD_PREF_GET_PROP)) {
+        if (cmd.startsWith(cmd_str.CMD_GET_PROP)) {
             uint8_t i = getIndex(cmd);
             if (i < ctx->props_size) {
                 printCmd(cmd, printProperty(i));
@@ -107,12 +112,20 @@ void Commands::listen() {
             return;
         }
 
-        if (cmd.startsWith(cmd_str.CMD_PREF_SET_PROP)) {
+        if (cmd.startsWith(cmd_str.CMD_GET_BIN_PROP)) {
+            uint8_t i = getIndex(cmd);
+            if (i < ctx->props_size) {
+                printBinProperty(i);
+            }
+            return;
+        }
+
+        if (cmd.startsWith(cmd_str.CMD_SET_PROP)) {
             uint8_t i = getIndex(cmd);
             int8_t idx = cmd.lastIndexOf(':') + 1;
             if (i < ctx->props_size && idx > 0) {
                 long v = cmd.substring((unsigned int) idx).toInt();
-                ctx->RUNTIME[i] = v * ctx->FACTORY[i].scale;
+                ctx->PROPERTIES[i].runtime = v * ctx->PROPERTIES[i].scale;
                 ctx->refreshProps = true;
                 printCmd(cmd, printProperty(i));
             }
@@ -134,7 +147,7 @@ void Commands::listen() {
             return;
         }
 
-        if (cmd.startsWith(cmd_str.CMD_PREF_GET_STATE)) {
+        if (cmd.startsWith(cmd_str.CMD_GET_STATE)) {
             uint8_t i = getIndex(cmd);
             if (i < ctx->states_size) {
                 printCmd(cmd, ctx->printState(i));
@@ -142,7 +155,7 @@ void Commands::listen() {
             return;
         }
 
-        if (cmd.startsWith(cmd_str.CMD_PREF_DISARM_STATE)) {
+        if (cmd.startsWith(cmd_str.CMD_DISARM_STATE)) {
             uint8_t i = (uint8_t) getIndex(cmd);
             bool trigger = (bool) cmd.substring((unsigned int) (cmd.lastIndexOf(':') + 1)).toInt();
             if (i < ctx->states_size) {
@@ -167,7 +180,7 @@ uint8_t Commands::getIndex(const String &cmd) const {
 }
 
 void Commands::storeProps() {
-    ctx->PERS.storeProperties(ctx->RUNTIME);
+    ctx->PERS.storeProperties(ctx->PROPERTIES);
     return;
 }
 
