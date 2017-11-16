@@ -6,13 +6,14 @@
 #define STORAGE_MAX_SIZE 64
 #define BASE 0
 #define SIGNATURE_SIZE 4
+#define HASH_SIZE sizeof(unsigned long)
 #define STATES_SIZE 1
 #define MAPPINGS_SIZE 8
 #define HASH_OFFSET (BASE + SIGNATURE_SIZE)
-#define STATES_OFFSET (HASH_OFFSET + sizeof(unsigned long))
+#define STATES_OFFSET (HASH_OFFSET + HASH_SIZE)
 #define MAPPINGS_OFFSET (STATES_OFFSET + STATES_SIZE)
 #define PROPS_OFFSET (MAPPINGS_OFFSET + MAPPINGS_SIZE)
-#define ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
+#define PROP_ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
 
 
 struct Persistence {

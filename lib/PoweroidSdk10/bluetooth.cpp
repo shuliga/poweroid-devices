@@ -14,11 +14,14 @@ void Bt::begin() {
         Serial.print(F("AT+NAME"));
         Serial.print(name);
         active = true;
+#ifdef SSERIAL
+        SSerial.println("BT: Server mode");
+#endif
     } else {
         Serial.end();
         Serial.begin(38400);
 #ifdef SSERIAL
-        SSerial.println("Working at 38400");
+        SSerial.println("BT: Client mode at 38400");
 #endif
         if (!isConnected()) {
             Serial.println("AT");

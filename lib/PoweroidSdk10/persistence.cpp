@@ -8,13 +8,17 @@
 // 100 - Signature
 // 101 - Hash
 // 200 - Factory reset
-// 201 - Properties stored in EEPROM.
-// 202 - Properties loaded from EEPROM
+// 220 - Properties stored in EEPROM.
+// 210 - Properties loaded from EEPROM
 // 301 - Hash differs from factory.
 // 501 - Not a native EEPROM. Overwriting signature.
 
 unsigned long hashProp(Property *props, int size) {
-    return hash((byte *) props, size * sizeof(Property));
+    unsigned long result = 19;
+    for(uint8_t i = 0; i < size; i++){
+        result += hash((byte *) props[i].runtime, size * sizeof(long));
+    }
+    return result;
 }
 
 Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign_chr(_sign), props(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
@@ -58,22 +62,22 @@ void Persistence::storeProperties(Property *props) {
         storeValue(i, props[i].runtime);
     }
     unsigned long hash = hashProp(props, size);
-    writeLog('I', ORIGIN, 201, size);
+    writeLog('I', ORIGIN, 220, size);
     writeLog('I', ORIGIN, 101, hash);
     EEPROM.put(HASH_OFFSET, hash);
 }
 
 void Persistence::storeValue(uint8_t i, long val) {
     if (i <= size) {
-        EEPROM.put(ADDR(i), val);
+        EEPROM.put(PROP_ADDR(i), val);
     }
 }
 
 void Persistence::loadProperties(Property *props) {
     for (uint8_t i = 0; i < size; i++) {
-        EEPROM.get(ADDR(i), props[i].runtime);
+        EEPROM.get(PROP_ADDR(i), props[i].runtime);
     }
-    writeLog('I', ORIGIN, 202, size);
+    writeLog('I', ORIGIN, 210, size);
 }
 
 void Persistence::checkFactoryReset(Property *props) {

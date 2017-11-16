@@ -77,6 +77,6 @@ unsigned long hash(byte *data, unsigned long size);
 void writeLog(const char level, const char *origin, const int code);
 void writeLog(const char level, const char *origin, const int code, unsigned long result);
 void writeLog(const char level, const char *origin, const int code, const char *result);
-
+uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
 #endif
 
