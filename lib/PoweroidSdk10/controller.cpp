@@ -5,6 +5,7 @@
 #define INCR(val, max) val < max ? val++ : val
 #define DECR(val, min) val > min ? val-- : val
 
+#include "global.h"
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
@@ -26,7 +27,6 @@ static volatile uint8_t prop_idx = 0;
 static volatile long prop_value;
 
 static Property remoteProperty;
-static char CHAR_BUFF[48];
 
 static int8_t c_prop_idx = -1;
 static long c_prop_value = -1;
@@ -233,7 +233,7 @@ void Controller::loadProperty(uint8_t idx) const {
         Serial.println(idx);
         delay(500);
         if (Serial.available()) {
-            Serial.readBytesUntil('\n', CHAR_BUFF, 64);
+            Serial.readBytesUntil('\n', BUFF, 64);
             Serial.readBytes((uint8_t *)&remoteProperty, sizeof(Property));
             cli();
             update(remoteProperty);
@@ -280,16 +280,16 @@ void Controller::detectDisplay() {
 void Controller::outputPropDescr(uint8_t _idx) {
     if (oled.getConnected()) {
         oled.setTextXY(DISPLAY_BASE, 0);
-        flashStringHelperToChar(ctx->PROPERTIES[_idx].desc, CHAR_BUFF);
-        oled.putString(CHAR_BUFF);
+        flashStringHelperToChar(ctx->PROPERTIES[_idx].desc, BUFF);
+        oled.putString(BUFF);
         oled.putString("      ");
     }
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
-    flashStringHelperToChar(txt, CHAR_BUFF);
+    flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
-    oled.putString(CHAR_BUFF);
+    oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 12);
     oled.putNumber(val);
     oled.putString("   ");

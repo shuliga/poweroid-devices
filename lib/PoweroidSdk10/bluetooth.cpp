@@ -10,19 +10,9 @@ void Bt::begin() {
     delay(1000);
     Serial.print(F("AT+VERSION"));
     String ver = Serial.readString();
-    if (ver.startsWith(BT_VER_06)) {
-        Serial.print(F("AT+NAME"));
-        Serial.print(name);
-        active = true;
-#ifdef SSERIAL
-        SSerial.println("BT: Server mode");
-#endif
-    } else {
+    if (!ver.startsWith(BT_VER_06)) {
         Serial.end();
         Serial.begin(38400);
-#ifdef SSERIAL
-        SSerial.println("BT: Client mode at 38400");
-#endif
         if (!isConnected()) {
             Serial.println("AT");
             delay(200);
@@ -32,6 +22,16 @@ void Bt::begin() {
 
             if (ver.startsWith(BT_VER_05)) {
                 applyBt05();
+#ifdef SSERIAL
+                SSerial.println("BT: Client mode at 38400");
+#endif
+            } else{
+                Serial.end();
+                Serial.begin(9600);
+                active = true;
+#ifdef SSERIAL
+                SSerial.println("BT: Server mode");
+#endif
             }
 // Keep working on 38400 for HC-05
 //                Serial.end();
@@ -39,9 +39,17 @@ void Bt::begin() {
             Serial.println();
         } else {
 #ifdef SSERIAL
+            SSerial.println("BT: Client mode at 38400");
             SSerial.println("Connected to peer");
 #endif
         }
+    } else {
+        Serial.print(F("AT+NAME"));
+        Serial.print(name);
+        active = true;
+#ifdef SSERIAL
+        SSerial.println("BT: Server mode");
+#endif
     }
     firstRun = false;
 }

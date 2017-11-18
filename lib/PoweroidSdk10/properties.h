@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+static const char* MEASURES[] = {"min", "sec", "~C", "%", "times"};
+
 typedef struct Property {
 
     const __FlashStringHelper *desc;

@@ -5,8 +5,8 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
-//#define DEBUG
 #define PWR23
+//#define DEBUG
 
 #ifdef DEBUG
     #define SSERIAL

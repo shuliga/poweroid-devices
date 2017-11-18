@@ -33,21 +33,21 @@ static struct Properties {
     Properties() {
         factoryReset();
         FACTORY[0].desc = F("Fan run time");
-        FACTORY[0].measure = "min";
+        FACTORY[0].measure = MEASURES[0];
         FACTORY[1].desc = F("Fan delay");
-        FACTORY[1].measure = "sec";
+        FACTORY[1].measure = MEASURES[1];
         FACTORY[2].desc = F("Light stand-by");
-        FACTORY[2].measure = "sec";
+        FACTORY[2].measure = MEASURES[1];
         FACTORY[3].desc = F("Humidity threshold");
-        FACTORY[3].measure = "%";
+        FACTORY[3].measure = MEASURES[3];
         FACTORY[4].desc = F("Humidity fan run time");
-        FACTORY[4].measure = "min";
+        FACTORY[4].measure = MEASURES[0];
         FACTORY[5].desc = F("Humidity delay");
-        FACTORY[5].measure = "min";
+        FACTORY[5].measure = MEASURES[0];
         FACTORY[6].desc = F("Temperature threshold");
-        FACTORY[6].measure = "~C";
+        FACTORY[6].measure = MEASURES[2];
         FACTORY[7].desc = F("Temperature delay");
-        FACTORY[7].measure = "min";
+        FACTORY[7].measure = MEASURES[0];
     }
 
     void factoryReset() {

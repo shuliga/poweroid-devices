@@ -1,6 +1,7 @@
 
 #define ID "PWR-FAN-FLR-32-DHT"
 
+#include "global.h"
 #include "pin_io.h"
 #include "PoweroidSdk10.h"
 #include "poweroid_fan_3x1_dht_state.h"
@@ -84,7 +85,7 @@ void run_state_light(bool light) {
         }
 
     }
-    printChangedState(prev_state_light, state_light, 0);
+    printChangedState(prev_state_light, state_light, 0, BUFF);
 }
 
 void run_state_humid(bool humidity) {
@@ -114,7 +115,7 @@ void run_state_humid(bool humidity) {
             break;
         }
     }
-    printChangedState(prev_state_humid, state_humid, 1);
+    printChangedState(prev_state_humid, state_humid, 1, BUFF);
 }
 
 void run_state_temp(bool temperature) {
@@ -134,7 +135,7 @@ void run_state_temp(bool temperature) {
             break;
         }
     }
-    printChangedState(prev_state_temp, state_temp, 2);
+    printChangedState(prev_state_temp, state_temp, 2, BUFF);
 }
 
 void setup() {

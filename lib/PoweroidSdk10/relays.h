@@ -7,7 +7,6 @@
 
 #include "commons.h"
 
-
 #define REL_PREFIX "Rel["
 #define REL_FMT REL_PREFIX "%i]: %s"
 

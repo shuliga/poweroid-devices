@@ -1,10 +1,10 @@
 
+#include "global.h"
 #include "commands.h"
+
 #define PREFIX(cmd) cmd + " -> "
 
-static char BUFF[64];
-
-Commands::Commands(Context &_ctx) : ctx(&_ctx){
+Commands::Commands(Context &_ctx) : ctx(&_ctx) {
     cmd_str = {"get_ver",
                "get_dht",
                "get_state_",
@@ -23,24 +23,39 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx){
     };
 }
 
-char* Commands::printProperty(uint8_t i) {
-    sprintf(BUFF, "[%i] %s : %i", i, String(ctx->PROPERTIES[i].desc).c_str(), (int) (ctx->PROPERTIES[i].runtime / ctx->PROPERTIES[i].scale));
+char *Commands::printProperty(uint8_t i) {
+    char _desc[64];
+    flashStringHelperToChar(ctx->PROPERTIES[i].desc, _desc);
+    sprintf(BUFF, "[%i] %s : %i", i, _desc,
+            (int) (ctx->PROPERTIES[i].runtime / ctx->PROPERTIES[i].scale));
     return BUFF;
 }
 
 void Commands::printBinProperty(uint8_t i) {
     Serial.println(ctx->PROPERTIES[i].desc);
-    for(uint8_t j = 0; j < sizeof(Property); j++ ){
-        Serial.write(*((uint8_t *)ctx->PROPERTIES + j));
+    for (uint8_t j = 0; j < sizeof(Property); j++) {
+        Serial.write(*((uint8_t *) ctx->PROPERTIES + j));
     }
 }
 
 void Commands::listen() {
     if (Serial.available() > 0) {
-        String cmd = Serial.readStringUntil('\n');
-        cmd.replace("\n", "");
+        char *_buff = BUFF;
+        char c = (char) Serial.read();
+        while (c != 0xA ){
+            if (Serial.available()) {
+                *_buff = c == '\r' ? '\0' : c;
+                _buff++;
+                c = (char) Serial.read();
+            }
+        }
+        String cmd(BUFF);
+#ifdef DEBUG
+        writeLog('I', "CMD", 100, cmd.c_str());
+#endif
         if (ctx->passive && cmd.startsWith(REL_PREFIX)) {
-            uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1), (unsigned int) cmd.indexOf(']')).toInt();
+            uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
+                                                 (unsigned int) cmd.indexOf(']')).toInt();
             int8_t i = getMappedFromVirtual(ri);
 #ifdef SSERIAL
             SSerial.println(cmd);
@@ -134,7 +149,7 @@ void Commands::listen() {
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
             for (uint8_t i = 0; i < ctx->states_size; i++) {
-                printCmd(cmd, ctx->printState(i));
+                printCmd(cmd, ctx->printState(i, BUFF));
             }
             return;
         }
@@ -150,7 +165,7 @@ void Commands::listen() {
         if (cmd.startsWith(cmd_str.CMD_GET_STATE)) {
             uint8_t i = getIndex(cmd);
             if (i < ctx->states_size) {
-                printCmd(cmd, ctx->printState(i));
+                printCmd(cmd, ctx->printState(i, BUFF));
             }
             return;
         }
@@ -161,7 +176,7 @@ void Commands::listen() {
             if (i < ctx->states_size) {
                 ctx->disarmState(i, trigger);
                 ctx->PERS.storeState(i, trigger);
-                printCmd(cmd, ctx->printState(i));
+                printCmd(cmd, ctx->printState(i, BUFF));
             }
             return;
         }
@@ -171,7 +186,7 @@ void Commands::listen() {
 
 void Commands::printCmd(const String &cmd, const char *suffix) const {
     Serial.print(PREFIX(cmd));
-    if (suffix != NULL) Serial.println(suffix);
+    if (suffix != NULL) Serial.println(suffix); else Serial.println();
 }
 
 uint8_t Commands::getIndex(const String &cmd) const {
@@ -185,7 +200,7 @@ void Commands::storeProps() {
 }
 
 int8_t Commands::getMappedFromVirtual(uint8_t i) {
-    for(uint8_t idx = 0; idx < VIRTUAL_RELAYS; idx ++){
+    for (uint8_t idx = 0; idx < VIRTUAL_RELAYS; idx++) {
         int8_t mappedRelay = ctx->RELAYS.mappings[idx];
         if (mappedRelay == i) return idx;
     }

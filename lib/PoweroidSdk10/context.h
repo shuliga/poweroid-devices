@@ -11,7 +11,7 @@
 
 typedef struct Context {
     Context(const char *_signature, const char *_version, Property *_factory, const uint8_t _props_size,
-            const char *_id, const uint8_t _states_size, char *(*_printState)(uint8_t i),
+            const char *_id, const uint8_t _states_size, char *(*_printState)(uint8_t i, char *buff),
             void (*_disarmState)(uint8_t i, bool _disarm), int8_t _defaultPropIdx)
             : signature(_signature), version(_version), PROPERTIES(_factory), SENS(), RELAYS(),
               props_size(_props_size), id(_id), states_size(_states_size), PERS(Persistence(_signature, _factory, _props_size, RELAYS.mappings, VIRTUAL_RELAYS)),
@@ -30,7 +30,7 @@ typedef struct Context {
 
     Persistence PERS;
 
-    char *(*printState)(uint8_t i);
+    char *(*printState)(uint8_t i, char *buff);
 
     void (*disarmState)(uint8_t i, bool _disarm);
 

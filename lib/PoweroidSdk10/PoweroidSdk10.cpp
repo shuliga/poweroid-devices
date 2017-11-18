@@ -1,3 +1,4 @@
+#include "global.h"
 #include <avr/wdt.h>
 #include "PoweroidSdk10.h"
 
@@ -38,13 +39,14 @@ void Pwr::run() {
 //    wdt_reset();
     SENS->process();
 
+    if (CMD) {
+        CMD->listen();
+    }
+
     if (BT){
         CTX->passive = BT->getPassive();
     }
 
-    if (CMD) {
-        CMD->listen();
-    }
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->process();
@@ -70,7 +72,7 @@ void Pwr::loadDisarmedStates() {
         bool disarm = CTX->PERS.loadState(i);
         CTX->disarmState(i, disarm);
         if (disarm) {
-            Serial.println(CTX->printState(i));
+            Serial.println(CTX->printState(i, BUFF));
         }
     }
 }

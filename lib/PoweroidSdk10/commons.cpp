@@ -1,12 +1,11 @@
 #include <Arduino.h>
 #include <src/SoftwareSerial.h>
 #include "commons.h"
+#include "global.h"
 
 #ifdef SSERIAL
 SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
-
-static char buff[48];
 
 unsigned long hash(byte *data, unsigned long size) {
     unsigned long hash = 19;
@@ -21,29 +20,29 @@ unsigned long hash(byte *data, unsigned long size) {
 }
 
 void writeLog(const char level, const char *origin, const int code) {
-    sprintf(buff, "%c [%s] %i", level, origin, code);
+    sprintf(BUFF, "%c [%s] %i", level, origin, code);
 #ifdef SSERIAL
-    SSerial.println(buff);
+    SSerial.println(BUFF);
 #else
-    Serial.println(buff);
+    Serial.println(BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, unsigned long result) {
-    sprintf(buff, "%c [%s] %i (%lu)", level, origin, code, result);
+    sprintf(BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
 #ifdef SSERIAL
-    SSerial.println(buff);
+    SSerial.println(BUFF);
 #else
-    Serial.println(buff);
+    Serial.println(BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, const char *result) {
-    sprintf(buff, "%c [%s] %i '%s'", level, origin, code, result);
+    sprintf(BUFF, "%c [%s] %i '%s'", level, origin, code, result);
 #ifdef SSERIAL
-    SSerial.println(buff);
+    SSerial.println(BUFF);
 #else
-    Serial.println(buff);
+    Serial.println(BUFF);
 #endif
 }
 
