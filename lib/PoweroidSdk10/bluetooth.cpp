@@ -1,6 +1,17 @@
 #include "bluetooth.h"
 
+/*
+ * Log codes
+ *
+ * 100 Command echo
+ * 200 Server mode
+ * 210 Client mode (speed)
+ * 211 Connected to peer
+ * 300 Passive
+*/
 static TimingState connection_check(CONNECTION_CHECK);
+
+const char *ORIGIN = "BT";
 
 Bt::Bt(const char *id) {
     name = id;
@@ -22,34 +33,27 @@ void Bt::begin() {
 
             if (ver.startsWith(BT_VER_05)) {
                 applyBt05();
-#ifdef SSERIAL
-                SSerial.println("BT: Client mode at 38400");
-#endif
+                writeLog('I', ORIGIN, 210, 38400);
             } else{
                 Serial.end();
                 Serial.begin(9600);
                 active = true;
-#ifdef SSERIAL
-                SSerial.println("BT: Server mode");
-#endif
+                Serial.println();
+                writeLog('I', ORIGIN, 200);
             }
 // Keep working on 38400 for HC-05
 //                Serial.end();
 //                Serial.begin(9600);
             Serial.println();
         } else {
-#ifdef SSERIAL
-            SSerial.println("BT: Client mode at 38400");
-            SSerial.println("Connected to peer");
-#endif
+            writeLog('I', ORIGIN, 210, 38400);
+            writeLog('I', ORIGIN, 211);
         }
     } else {
         Serial.print(F("AT+NAME"));
         Serial.print(name);
         active = true;
-#ifdef SSERIAL
-        SSerial.println("BT: Server mode");
-#endif
+        writeLog('I', ORIGIN, 201);
     }
     firstRun = false;
 }
@@ -58,10 +62,7 @@ bool Bt::isConnected() {
     if (!active && (firstRun || connection_check.isTimeAfter(true))){
         connected = execBtAtCommand(F("get_ver"), 0, 2000).startsWith("get_ver");
         connection_check.reset();
-#ifdef SSERIAL
-        SSerial.print("Passive=");
-        SSerial.println(!active && connected);
-#endif
+        writeLog('I', ORIGIN, 300, (unsigned long) (!active && connected));
     }
     return connected;
 }
@@ -94,7 +95,7 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
         _delay += 20;
         delay(20);
     }
-#ifdef SSERIAL
+#if defined(SSERIAL) and defined(DEBUG)
     SSerial.print(s);
 #endif
     return s;

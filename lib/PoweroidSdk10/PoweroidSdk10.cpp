@@ -32,11 +32,11 @@ void Pwr::begin() {
         CTRL->begin();
     }
 #endif
-//    wdt_enable(WDTO_8S);
+    wdt_enable(WDTO_8S);
 }
 
 void Pwr::run() {
-//    wdt_reset();
+    wdt_reset();
     SENS->process();
 
     if (CMD) {
@@ -52,6 +52,10 @@ void Pwr::run() {
         CTRL->process();
     }
 #endif
+    if (firstRun) {
+        writeLog('I', SIGNATURE, 101);
+        firstRun = false;
+    }
 }
 
 void Pwr::printVersion() {

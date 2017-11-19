@@ -84,6 +84,7 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
 }
 
 void Sensors::initSensors() {
+    delay(1000L);
     searchDht();
     pollTiming.reset();
 }

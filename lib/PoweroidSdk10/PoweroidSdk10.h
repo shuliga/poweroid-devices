@@ -44,6 +44,9 @@ public:
     void printVersion();
 
 private:
+
+    bool firstRun = true;
+
     void init_pins();
 
     void loadDisarmedStates();
