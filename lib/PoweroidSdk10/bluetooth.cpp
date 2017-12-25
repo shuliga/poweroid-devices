@@ -1,13 +1,14 @@
 #include "bluetooth.h"
 
+static const long HC_05_BAUD = 38400;
 /*
  * Log codes
  *
  * 100 Command echo
  * 200 Server mode
  * 210 Client mode (speed)
- * 211 Connected to peer
- * 300 Passive
+ * 211 Connected to server
+ * 410 Disconnected
 */
 static TimingState connection_check(CONNECTION_CHECK);
 
@@ -21,10 +22,19 @@ void Bt::begin() {
     delay(1000);
     Serial.print(F("AT+VERSION"));
     String ver = Serial.readString();
-    if (!ver.startsWith(BT_VER_06)) {
-        Serial.end();
-        Serial.begin(38400);
-        if (!isConnected()) {
+    server = true;
+    if (ver.startsWith(BT_VER_06)) {
+        Serial.print(F("AT+NAME"));
+        Serial.print(name);
+    } else {
+        if (!checkPeerType(ASK_CLIENT)) {
+            server = false;
+            Serial.end();
+            delay(3000);
+            Serial.begin(HC_05_BAUD);
+
+            writeLog('I', ORIGIN, 210, HC_05_BAUD);
+
             Serial.println("AT");
             delay(200);
             while (Serial.available()) { Serial.read(); } // Cleanup rotten UART buffer
@@ -33,36 +43,33 @@ void Bt::begin() {
 
             if (ver.startsWith(BT_VER_05)) {
                 applyBt05();
-                writeLog('I', ORIGIN, 210, 38400);
-            } else{
-                Serial.end();
-                Serial.begin(9600);
-                active = true;
-                Serial.println();
-                writeLog('I', ORIGIN, 200);
+                connected = true;
+            } else {
+                if (checkPeerType(ASK_SERVER)) {
+                    writeLog('I', ORIGIN, 211);
+                    connected = true;
+                }
             }
-// Keep working on 38400 for HC-05
-//                Serial.end();
-//                Serial.begin(9600);
-            Serial.println();
-        } else {
-            writeLog('I', ORIGIN, 210, 38400);
-            writeLog('I', ORIGIN, 211);
         }
-    } else {
-        Serial.print(F("AT+NAME"));
-        Serial.print(name);
-        active = true;
-        writeLog('I', ORIGIN, 201);
     }
+
     firstRun = false;
+    if (server) {
+        writeLog('I', ORIGIN, 200);
+        digitalWrite(LED_PIN, HIGH);
+    }
+
 }
 
-bool Bt::isConnected() {
-    if (!active && (firstRun || connection_check.isTimeAfter(true))){
-        connected = execBtAtCommand(F("get_ver"), 0, 2000).startsWith("get_ver");
+bool Bt::isConnectedToServer() {
+    if (firstRun || !server && connection_check.isTimeAfter(true)) {
+        connected = checkPeerType(ASK_SERVER);
         connection_check.reset();
-        writeLog('I', ORIGIN, 300, (unsigned long) (!active && connected));
+#ifdef DEBUG
+        if (!server && !connected) {
+            writeLog('W', ORIGIN, 410);
+        }
+#endif
     }
     return connected;
 }
@@ -102,7 +109,7 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
 }
 
 bool Bt::getPassive() {
-    return !active && isConnected();
+    return !server && isConnectedToServer();
 }
 
 void Bt::applyBt05() {
@@ -138,14 +145,12 @@ void Bt::applyBt05() {
 //                                           5000);// get pairing candidate name, sample address +INQ:2016:10:202848,1F00,FFA6
 //
 //        if (peer_name.startsWith("+RNAME:PWR-")) {
-            execBtAtCommand(F("AT+PSWD="), PASSWD, 0);
-            execBtAtCommand(F("AT+BIND="), peer_address.c_str(), 0);
-            execBtAtCommand(F("AT+POLAR=1,1")); // PIN09 output HIGH level indicates successful connection
-            execReset();
-            execBtAtCommand(F("AT+POLAR=1,0")); // PIN09 output LOW level indicates successful connection
-            connected = true;
-            passive = true;
-            break;
+        execBtAtCommand(F("AT+PSWD="), PASSWD, 0);
+        execBtAtCommand(F("AT+BIND="), peer_address.c_str(), 0);
+        execBtAtCommand(F("AT+POLAR=1,1")); // PIN09 output HIGH level indicates successful connection
+        execReset();
+        execBtAtCommand(F("AT+POLAR=1,0")); // PIN09 output LOW level indicates successful connection
+        break;
 //        }
     }
 
@@ -155,4 +160,8 @@ void Bt::execReset() {
     execBtAtCommand(F("AT+RESET"));
     delay(1000);
     execBtAtCommand(F("AT+INIT"));
+}
+
+bool Bt::checkPeerType(const char *conn_type) {
+    return execBtAtCommand(F("ask"), 0, 500).indexOf(conn_type) >= 0;
 }

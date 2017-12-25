@@ -12,7 +12,9 @@ void Relays::power(uint8_t i, bool _power, bool mapped) {
     if (i < RELAYS) {
         if (i < size() && powered[i] != _power) {
             powered[i] = _power;
+#ifndef DEBUG
             pin_inv(OUT_PINS[i], _power);
+#endif
             printRelay(i);
             int8_t mappedIdx = mappings[i];
             if (mapped &&  mappedIdx >= 0) {
@@ -29,5 +31,9 @@ uint8_t Relays::size() {
 
 void Relays::printRelay(uint8_t idx) {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+#ifdef SSERIAL
+    SSerial.println(BUFF);
+#else
     Serial.println(BUFF);
+#endif
 }

@@ -8,11 +8,10 @@ Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), 
 }
 
 void Pwr::begin() {
-
-    Serial.begin(9600);
+    Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
-    SSerial.begin(9600);
-    SSerial.println("SSerial started");
+    SSerial.begin(DEFAULT_BAUD);
+    SSerial.println("SSerial-started");
 #endif
     printVersion();
 
@@ -32,11 +31,15 @@ void Pwr::begin() {
         CTRL->begin();
     }
 #endif
+#ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
+#endif
 }
 
 void Pwr::run() {
+#ifdef WATCH_DOG
     wdt_reset();
+#endif
     SENS->process();
 
     if (CMD) {

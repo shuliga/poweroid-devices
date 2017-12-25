@@ -6,7 +6,8 @@
 #define COMMONS_H
 
 #define PWR23
-//#define DEBUG
+#define DEBUG
+//#define WATCH_DOG
 
 #ifdef DEBUG
     #define SSERIAL
@@ -68,6 +69,9 @@
 
 #define RX_SS 8
 #define TX_SS 9
+
+#define ASK_SERVER "server"
+#define ASK_CLIENT "client"
 
 #ifdef SSERIAL
 extern SoftwareSerial SSerial;

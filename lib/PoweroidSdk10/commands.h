@@ -21,6 +21,7 @@ struct CommandsStr {
     const char* CMD_RESET_PROPS;
     const char* CMD_GET_SENSOR_ALL;
     const char* CMD_GET_RELAY_ALL;
+    const char* ASK;
 };
 
 class Commands {

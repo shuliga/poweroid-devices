@@ -19,7 +19,8 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx) {
                "store_props",
                "reset_props",
                "get_sensor_all",
-               "get_relay_all"
+               "get_relay_all",
+               "ask"
     };
 }
 
@@ -44,7 +45,7 @@ void Commands::listen() {
         char c = (char) Serial.read();
         while (c != 0xA ){
             if (Serial.available()) {
-                *_buff = c == '\r' ? '\0' : c;
+                *_buff = (char) (c == '\r' ? '\0' : c);
                 _buff++;
                 c = (char) Serial.read();
             }
@@ -53,17 +54,24 @@ void Commands::listen() {
 #ifdef DEBUG
         writeLog('I', "CMD", 100, cmd.c_str());
 #endif
-        if (ctx->passive && cmd.startsWith(REL_PREFIX)) {
-            uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
-                                                 (unsigned int) cmd.indexOf(']')).toInt();
-            int8_t i = getMappedFromVirtual(ri);
+        if (ctx->passive) {
+            if (cmd.startsWith(REL_PREFIX)) {
+                uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
+                                                     (unsigned int) cmd.indexOf(']')).toInt();
+                int8_t i = getMappedFromVirtual(ri);
 #ifdef SSERIAL
-            SSerial.println(cmd);
+                SSerial.println(cmd);
 #endif
 
-            if (i >= 0) {
-                ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
+                if (i >= 0) {
+                    ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
+                }
+                return;
             }
+        }
+
+        if (cmd.startsWith(cmd_str.ASK)) {
+            printCmd(cmd, ctx->passive ? ASK_CLIENT : ASK_SERVER);
             return;
         }
 

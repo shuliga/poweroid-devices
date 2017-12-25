@@ -50,7 +50,7 @@ uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst) {
     PGM_P p = reinterpret_cast<PGM_P>(ifsh);
     uint8_t n = 0;
     while (1) {
-        unsigned char c = pgm_read_byte(p++);
+        unsigned char c = (unsigned char) pgm_read_byte(p++);
         dst[n++] = c;
         if (c == 0) break;
     }

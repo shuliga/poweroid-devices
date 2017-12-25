@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <context.h>
-#include "commons.h"
 
 #define CONNECTION_CHECK 60000L
 
@@ -19,18 +18,16 @@ class Bt {
 public:
   const char *name;
   bool firstRun = true;
-  bool active = false;
+  bool server = false;
   Bt(const char *id);
 
   void begin();
 
-  void getResult();
   bool getPassive();
-  bool isConnected();
+  bool isConnectedToServer();
 
 private:
     bool connected = false;
-    bool passive = false;
 
     String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout);
     String execBtAtCommand(const __FlashStringHelper *cmd);
@@ -38,6 +35,8 @@ private:
     void applyBt05();
 
     void execReset();
+
+    bool checkPeerType(const char *conn_type);
 };
 
 #endif // BT_H
