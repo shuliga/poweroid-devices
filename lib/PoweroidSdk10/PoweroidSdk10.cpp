@@ -83,3 +83,7 @@ void Pwr::loadDisarmedStates() {
         }
     }
 }
+
+void Pwr::power(uint8_t i, bool power) {
+    REL->power(i, power, !CTX->passive);
+}

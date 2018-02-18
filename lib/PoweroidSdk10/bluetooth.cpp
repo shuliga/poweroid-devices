@@ -1,6 +1,7 @@
 #include "bluetooth.h"
 
-static const long HC_05_BAUD = 38400;
+static const long HC_05_AT_BAUD = 38400;
+static const long HC_06_BAUD = 115200;
 /*
  * Log codes
  *
@@ -20,9 +21,15 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
     delay(1000);
-    Serial.print(F("AT+VERSION"));
-    String ver = Serial.readString();
+    String ver = getVerHC06();
     server = true;
+    if (ver.startsWith(BT_VER_06)) {
+        Serial.print(F("AT+BAUD8"));
+        cleanSerial();
+    }
+    Serial.end();
+    Serial.begin(HC_06_BAUD);
+    ver = getVerHC06();
     if (ver.startsWith(BT_VER_06)) {
         Serial.print(F("AT+NAME"));
         Serial.print(name);
@@ -31,13 +38,13 @@ void Bt::begin() {
             server = false;
             Serial.end();
             delay(3000);
-            Serial.begin(HC_05_BAUD);
+            Serial.begin(HC_05_AT_BAUD);
 
-            writeLog('I', ORIGIN, 210, HC_05_BAUD);
+            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD);
 
             Serial.println("AT");
             delay(200);
-            while (Serial.available()) { Serial.read(); } // Cleanup rotten UART buffer
+            cleanSerial();
 
             ver = execBtAtCommand(F("AT+VERSION"));
 
@@ -56,9 +63,21 @@ void Bt::begin() {
     firstRun = false;
     if (server) {
         writeLog('I', ORIGIN, 200);
+        pinMode(LED_PIN, OUTPUT);
         digitalWrite(LED_PIN, HIGH);
     }
 
+}
+
+void Bt::cleanSerial() const {
+    while (Serial.available()) { Serial.read(); } // Cleanup rotten UART buffer
+
+}
+
+String Bt::getVerHC06() const {
+    Serial.print(F("AT+VERSION"));
+    String ver = Serial.readString();
+    return ver;
 }
 
 bool Bt::isConnectedToServer() {

@@ -45,6 +45,8 @@ public:
 
     void printVersion();
 
+    void power(uint8_t i, bool i1);
+
 private:
 
     bool firstRun = true;

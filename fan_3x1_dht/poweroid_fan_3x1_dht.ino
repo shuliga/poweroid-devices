@@ -161,8 +161,8 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR.REL->power(0, fan_power, true);
-    PWR.REL->power(1, floor_power, true);
+    PWR.power(0, fan_power);
+    PWR.power(1, floor_power);
 
 //    led(LED_PIN, fan_power || floor_power);
 

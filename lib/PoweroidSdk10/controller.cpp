@@ -223,7 +223,7 @@ void Controller::goToEditProp(uint8_t i) const {
 }
 
 void Controller::loadProperty(uint8_t idx) const {
-    if (!passive) {
+    if (!ctx->passive) {
         cli();
         update(ctx->PROPERTIES[idx]);
         c_prop_idx = idx;
@@ -251,7 +251,7 @@ void Controller::update(Property &prop) const {
 }
 
 void Controller::updateProperty(uint8_t idx) const {
-    if (!passive) {
+    if (!ctx->passive) {
         cli();
         ctx->PROPERTIES[idx].runtime = prop_value * ctx->PROPERTIES[idx].scale;
         c_prop_value = prop_value;

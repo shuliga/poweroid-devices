@@ -37,6 +37,10 @@ private:
     void execReset();
 
     bool checkPeerType(const char *conn_type);
+
+    String getVerHC06() const;
+
+    void cleanSerial() const;
 };
 
 #endif // BT_H

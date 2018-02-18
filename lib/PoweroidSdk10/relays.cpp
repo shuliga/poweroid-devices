@@ -12,7 +12,7 @@ void Relays::power(uint8_t i, bool _power, bool mapped) {
     if (i < RELAYS) {
         if (i < size() && powered[i] != _power) {
             powered[i] = _power;
-#ifndef DEBUG
+#ifndef SSERIAL
             pin_inv(OUT_PINS[i], _power);
 #endif
             printRelay(i);

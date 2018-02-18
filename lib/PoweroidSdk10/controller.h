@@ -16,7 +16,6 @@ static volatile int props_idx_max = 0;
 
 class Controller {
 public:
-    bool passive = false;
 
     Controller(Context &_ctx, Commands &_cmd);
 
