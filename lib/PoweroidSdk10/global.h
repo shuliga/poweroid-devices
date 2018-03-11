@@ -11,6 +11,8 @@
     #define EXTERN extern
 #endif
 
-EXTERN char BUFF[64];
+#define BUFF_SIZE 65
+
+EXTERN char BUFF[BUFF_SIZE];
 
 #endif //POWEROID_10_GLOBAL_H_H

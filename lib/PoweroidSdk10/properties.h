@@ -3,12 +3,12 @@
 
 #include <Arduino.h>
 
-static const char* MEASURES[] = {"min", "sec", "~C", "%", "times"};
+static const char* MEASURES[] = {"times", "day", "hour", "min", "sec", "~C", "%"};
 
 typedef struct Property {
 
     const __FlashStringHelper *desc;
-    const char *measure;
+    uint8_t measure;
     long runtime;
 
     long val;

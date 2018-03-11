@@ -7,6 +7,10 @@
 
 #define FLIP_DISPLAY 1
 
+static const int ONE_LINE = 16;
+
+static const int PROP_SIZE = 4;
+
 #include <MultiClick.h>
 #include "commons.h"
 #include "context.h"
@@ -31,11 +35,11 @@ private:
 
     void initDisplay();
 
-    void outputPropDescr(uint8_t _idx);
+    void outputPropDescr(char * _buff);
 
     void outputStatus(const __FlashStringHelper *txt, const long val);
 
-    void outputPropVal(Property &_prop, uint16_t _prop_val, bool brackets, bool _measure);
+    void outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure);
 
     void outputTitle() const;
 
@@ -55,7 +59,13 @@ private:
 
     void update(Property &prop) const;
 
-    void testControl(TimingState &timer) const;
+    bool testControl(TimingState &timer) const;
+
+    void clearBuff(int i)const;
+
+    void copyProperty(Property &prop, uint8_t idx) const;
+
+    uint8_t getNumberOfDigits(long i);
 };
 
 

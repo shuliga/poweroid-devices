@@ -37,6 +37,7 @@ typedef struct Context {
     int8_t defaultPropertyIdx;
     bool refreshProps;
     bool passive;
+    bool connected;
 };
 
 #endif //POWEROID_10_CONTEXT_H

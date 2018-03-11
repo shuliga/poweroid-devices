@@ -14,6 +14,8 @@
 
 #define HISPEED 115200
 
+static const int TIMEOUT_STEP = 100;
+
 class Bt {
 public:
   const char *name;
@@ -23,7 +25,7 @@ public:
 
   void begin();
 
-  bool getPassive();
+  bool getConnected();
   bool isConnectedToServer();
 
 private:

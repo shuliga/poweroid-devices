@@ -6,6 +6,7 @@
 #define COMMONS_H
 
 #define PWR23
+
 //#define DEBUG
 //#define WATCH_DOG
 

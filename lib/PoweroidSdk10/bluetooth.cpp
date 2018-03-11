@@ -25,9 +25,10 @@ void Bt::begin() {
     server = true;
     if (ver.startsWith(BT_VER_06)) {
         Serial.print(F("AT+BAUD8"));
-        cleanSerial();
     }
+    cleanSerial();
     Serial.end();
+    delay(1000);
     Serial.begin(HC_06_BAUD);
     ver = getVerHC06();
     if (ver.startsWith(BT_VER_06)) {
@@ -65,6 +66,7 @@ void Bt::begin() {
         writeLog('I', ORIGIN, 200);
         pinMode(LED_PIN, OUTPUT);
         digitalWrite(LED_PIN, HIGH);
+        Serial.setTimeout(100);
     }
 
 }
@@ -112,8 +114,8 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
     long active_timeout = (timeout > 0) ? timeout : Serial.getTimeout();
     uint16_t _delay = 0;
     while (!Serial.available() && active_timeout > _delay) {
-        _delay += 100;
-        delay(100);
+        _delay += TIMEOUT_STEP;
+        delay(TIMEOUT_STEP);
     }
     while ((Serial.available() || active_timeout > _delay) && !s.endsWith("OK\r\n") && !s.endsWith("ERROR")) {
         char c = (char) Serial.read();
@@ -127,7 +129,7 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
     return s;
 }
 
-bool Bt::getPassive() {
+bool Bt::getConnected() {
     return !server && isConnectedToServer();
 }
 

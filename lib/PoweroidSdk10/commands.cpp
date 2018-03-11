@@ -35,34 +35,24 @@ char *Commands::printProperty(uint8_t i) {
 void Commands::printBinProperty(uint8_t i) {
     Serial.println(ctx->PROPERTIES[i].desc);
     for (uint8_t j = 0; j < sizeof(Property); j++) {
-        Serial.write(*((uint8_t *) ctx->PROPERTIES + j));
+        Serial.write(*((uint8_t*) &ctx->PROPERTIES[i] + j));
     }
 }
 
 void Commands::listen() {
     if (Serial.available() > 0) {
-        char *_buff = BUFF;
-        char c = (char) Serial.read();
-        while (c != 0xA ){
-            if (Serial.available()) {
-                *_buff = (char) (c == '\r' ? '\0' : c);
-                _buff++;
-                c = (char) Serial.read();
-            }
-        }
-        String cmd(BUFF);
+        String cmd = Serial.readStringUntil('\n');
 #ifdef DEBUG
         writeLog('I', "CMD", 100, cmd.c_str());
 #endif
         if (ctx->passive) {
+#ifdef SSERIAL
+            SSerial.println(cmd);
+#endif
             if (cmd.startsWith(REL_PREFIX)) {
                 uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
                                                      (unsigned int) cmd.indexOf(']')).toInt();
                 int8_t i = getMappedFromVirtual(ri);
-#ifdef SSERIAL
-                SSerial.println(cmd);
-#endif
-
                 if (i >= 0) {
                     ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
                 }

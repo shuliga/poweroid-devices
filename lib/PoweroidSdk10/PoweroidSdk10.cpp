@@ -47,7 +47,8 @@ void Pwr::run() {
     }
 
     if (BT){
-        CTX->passive = BT->getPassive();
+        CTX->passive = !BT->server;
+        CTX->connected = BT->getConnected();
     }
 
 #ifndef NO_CONTROLLER
