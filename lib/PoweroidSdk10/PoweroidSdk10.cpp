@@ -48,7 +48,9 @@ void Pwr::run() {
 
     if (BT){
         CTX->passive = !BT->server;
-        CTX->connected = BT->getConnected();
+        bool newConnected = BT->getConnected();
+        CTX->refreshState = newConnected != CTX->connected;
+        CTX->connected = newConnected;
     }
 
 #ifndef NO_CONTROLLER
@@ -86,5 +88,6 @@ void Pwr::loadDisarmedStates() {
 }
 
 void Pwr::power(uint8_t i, bool power) {
+    CTX->refreshState = true;
     REL->power(i, power, !CTX->passive);
 }

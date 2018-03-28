@@ -26,6 +26,8 @@ public:
     uint8_t size();
 
     void printRelay(uint8_t idx);
+
+    char *relStatus();
 };
 
 

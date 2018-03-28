@@ -45,7 +45,7 @@ private:
 
     void switchDisplay(boolean inverse) const;
 
-    void detectDisplay();
+//    void detectDisplay();
 
     void updateProperty(uint8_t idx) const;
 
@@ -61,11 +61,13 @@ private:
 
     bool testControl(TimingState &timer) const;
 
-    void clearBuff(int i)const;
-
     void copyProperty(Property &prop, uint8_t idx) const;
 
-    uint8_t getNumberOfDigits(long i);
+    static uint8_t getNumberOfDigits(long i);
+
+    static void padLine(char *_buff, uint8_t lines, uint8_t tail);
+
+    void outputState() const;
 };
 
 

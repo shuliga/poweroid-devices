@@ -12,6 +12,7 @@
 #endif
 
 #define BUFF_SIZE 65
+#define LINE_SIZE 16
 
 EXTERN char BUFF[BUFF_SIZE];
 

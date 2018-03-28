@@ -43,7 +43,6 @@ Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
 
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
-TimingState displaySearchTiming = TimingState(2000L);
 
 
 Controller::Controller(Context &_ctx, Commands &_cmd) : cmd(&_cmd), ctx(&_ctx) {}
@@ -72,11 +71,19 @@ void Controller::initDisplay() {
 
 void Controller::outputTitle() const {
     oled.setTextXY(0, 0);
-    clearBuff(ONE_LINE);
-    strlcpy(BUFF, ctx->passive ? "PASSIVE MODE    " : ctx->id, ONE_LINE);
+    strlcpy(BUFF, ctx->passive ? "PASSIVE" : ctx->id, ONE_LINE + 1);
+    padLine(BUFF, 1, ctx->passive ? 3 : 0);
     oled.putString(BUFF);
 }
 
+void Controller::outputState() const {
+    if (ctx->passive && ctx->refreshState) {
+        oled.setTextXY(0, 11);
+        oled.putString(ctx->RELAYS.relStatus());
+        oled.putString(ctx->connected ? "|" : ":");
+        ctx->refreshState = false;
+    }
+}
 
 void Controller::process() {
 
@@ -131,7 +138,11 @@ void Controller::process() {
         }
         case STORE: {
             firstRun();
-            cmd->storeProps();
+            if (!ctx->passive) {
+                cmd->storeProps();
+            } else {
+                Serial.println(cmd->cmd_str.CMD_STORE_PROPS);
+            }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
             goToBrowse();
@@ -191,7 +202,8 @@ void Controller::process() {
         }
     }
     ctx->refreshProps = false;
-    detectDisplay();
+//    detectDisplay();
+    outputState();
 }
 
 bool Controller::testControl(TimingState &timer) const {
@@ -224,16 +236,17 @@ void Controller::goToEditProp(uint8_t i) const {
 }
 
 void Controller::loadProperty(uint8_t idx) const {
-    clearBuff(64);
     if (!ctx->passive) {
         flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
         copyProperty(ctx->PROPERTIES[idx], idx);
     } else {
-        Serial.print(cmd->cmd_str.CMD_GET_BIN_PROP);
-        Serial.println(idx);
-        Serial.readBytesUntil('\n', BUFF, BUFF_SIZE);
-        Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
-        copyProperty(remoteProperty, idx);
+        if (ctx->connected) {
+            Serial.print(cmd->cmd_str.CMD_GET_BIN_PROP);
+            Serial.println(idx);
+            BUFF[Serial.readBytesUntil('\n', BUFF, BUFF_SIZE)] = 0;
+            Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
+            copyProperty(remoteProperty, idx);
+        }
     }
 }
 
@@ -243,12 +256,6 @@ void Controller::copyProperty(Property &prop, uint8_t idx) const {
     c_prop_idx = idx;
     sei();
 }
-
-void Controller::clearBuff(int i)const {
-    memset(BUFF, ' ', BUFF_SIZE);
-    BUFF[i] = 0;
-}
-
 
 void Controller::update(Property &prop) const {
     long scale = prop.scale;
@@ -265,10 +272,13 @@ void Controller::updateProperty(uint8_t idx) const {
         c_prop_value = prop_value;
         sei();
     } else {
-        Serial.print(cmd->cmd_str.CMD_SET_PROP);
-        Serial.print(idx);
-        Serial.print(':');
-        Serial.println(prop_value);
+        if (ctx->connected) {
+            Serial.print(cmd->cmd_str.CMD_SET_PROP);
+            Serial.print(idx);
+            Serial.print(':');
+            Serial.println(prop_value);
+            Serial.readBytesUntil('\n', BUFF, BUFF_SIZE);
+        }
     }
 }
 
@@ -279,43 +289,42 @@ void Controller::switchDisplay(boolean inverse) const {
     oled.displayOn();
 }
 
-void Controller::detectDisplay() {
-    if (displaySearchTiming.ping() && !oled.getConnected()) {
-        initDisplay();
-    }
-}
+//void Controller::detectDisplay() {
+//    if (displaySearchTiming.ping() && !oled.getConnected()) {
+//        initDisplay();
+//    }
+//}
 
 void Controller::outputPropDescr(char *_buff) {
-    if (oled.getConnected()) {
-        oled.setTextXY(DISPLAY_BASE, 0);
-        oled.putString(_buff);
-    }
+    oled.setTextXY(DISPLAY_BASE, 0);
+    padLine(BUFF, 2, 0);
+    oled.putString(_buff);
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
-    clearBuff(32);
     flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
+    padLine(BUFF, 1, getNumberOfDigits(val));
     oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, (unsigned char) (16 - PROP_SIZE));
-    for(uint8_t i = 0; i < (PROP_SIZE - getNumberOfDigits(val)); i++){
-        oled.putString(" ");
-    }
     oled.putNumber(val);
 }
 
-uint8_t Controller::getNumberOfDigits(long i)
-{
-    return i > 0 ? (uint8_t) log10 ((double) i) + 1 : 1;
+
+void inline Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
+    strncat(_buff, SPACE_BUFF, LINE_SIZE * lines - strlen(_buff) - tail);
+}
+
+uint8_t inline Controller::getNumberOfDigits(long i) {
+    return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
 }
 
 void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure) {
-    char str_text[12];
     const char *fmt =
             brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s"
                                                                                                    : "%i"));
-    sprintf(str_text, fmt, _prop_val, MEASURES[measure_idx]);
-    oled.outputTextXY(DISPLAY_BASE + 2, 64, str_text, true, false);
+    sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
+    oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }
 
 

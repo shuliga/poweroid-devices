@@ -13,7 +13,7 @@ static struct Properties {
 
     Property FACTORY[8] = {
 
-            //desc  measure   minV    maxV        scale
+            //val      minV     maxV       scale
             {600000L,  60000L,  36000000L, 60000L},
             {5000L,    1000L,   3600000L,  1000L},
             {60000L,   1000L,   3600000L,  1000L},

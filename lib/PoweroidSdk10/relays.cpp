@@ -6,7 +6,8 @@
 #include "relays.h"
 #include "pin_io.h"
 
-static bool powered[RELAYS];
+bool powered[RELAYS];
+char *status = (char *) "....";
 
 void Relays::power(uint8_t i, bool _power, bool mapped) {
     if (i < RELAYS) {
@@ -28,6 +29,14 @@ void Relays::power(uint8_t i, bool _power, bool mapped) {
 uint8_t Relays::size() {
     return ARRAY_SIZE(OUT_PINS);
 }
+
+char * Relays::relStatus() {
+    for(uint8_t i=0; i < RELAYS; i++){
+        status[i] = powered[i] ? '@' : '0';
+    }
+    return status;
+}
+
 
 void Relays::printRelay(uint8_t idx) {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);

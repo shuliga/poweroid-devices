@@ -7,6 +7,8 @@
 SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
 
+const char *SPACE_BUFF = "                                ";
+
 unsigned long hash(byte *data, unsigned long size) {
     unsigned long hash = 19;
     for (unsigned long i = 0; i < size; i++) {

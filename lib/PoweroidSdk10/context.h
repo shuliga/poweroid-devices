@@ -36,6 +36,7 @@ typedef struct Context {
 
     int8_t defaultPropertyIdx;
     bool refreshProps;
+    bool refreshState;
     bool passive;
     bool connected;
 };

@@ -54,6 +54,7 @@ void Commands::listen() {
                                                      (unsigned int) cmd.indexOf(']')).toInt();
                 int8_t i = getMappedFromVirtual(ri);
                 if (i >= 0) {
+                    ctx->refreshState = true;
                     ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
                 }
                 return;
