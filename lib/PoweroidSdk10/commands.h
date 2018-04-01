@@ -35,6 +35,8 @@ public:
 
     void storeProps();
 
+    void printChangedState(bool prev_state, bool state, uint8_t id, char *buff);
+
 private:
 
     Context *ctx;

@@ -10,7 +10,7 @@
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
-                  state_count, printState, disarmState, FAN_PROPS.DEFAULT_PROPERTY);
+                  FAN_PROPS.DEFAULT_PROPERTY);
 
 Commands CMD(CTX);
 Bt BT(CTX.id);
@@ -85,7 +85,7 @@ void run_state_light(bool light) {
         }
 
     }
-    printChangedState(prev_state_light, state_light, 0, BUFF);
+    CMD.printChangedState(prev_state_light, state_light, 0, BUFF);
 }
 
 void run_state_humid(bool humidity) {
@@ -115,7 +115,7 @@ void run_state_humid(bool humidity) {
             break;
         }
     }
-    printChangedState(prev_state_humid, state_humid, 1, BUFF);
+    CMD.printChangedState(prev_state_humid, state_humid, 1, BUFF);
 }
 
 void run_state_temp(bool temperature) {
@@ -135,7 +135,7 @@ void run_state_temp(bool temperature) {
             break;
         }
     }
-    printChangedState(prev_state_temp, state_temp, 2, BUFF);
+    CMD.printChangedState(prev_state_temp, state_temp, 2, BUFF);
 }
 
 void setup() {
@@ -163,7 +163,5 @@ void loop() {
 
     PWR.power(0, fan_power);
     PWR.power(1, floor_power);
-
-//    led(LED_PIN, fan_power || floor_power);
 
 }

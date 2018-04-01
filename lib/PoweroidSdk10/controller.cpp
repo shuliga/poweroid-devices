@@ -2,8 +2,8 @@
 // Created by SHL on 20.03.2017.
 //
 
-#define INCR(val, max) val < max ? val++ : val
-#define DECR(val, min) val > min ? val-- : val
+#define INCR(val, max) val < (max) ? (val)++ : val
+#define DECR(val, min) val > (min) ? (val)-- : val
 
 #include "global.h"
 #include <Rotary.h>
@@ -16,7 +16,7 @@
 #define DISPLAY_BOTTOM 7
 
 static enum State {
-    EDIT_PROP, BROWSE, STORE, SLEEP, SENSORS, SUSPEND
+    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
@@ -24,11 +24,17 @@ static TimingState autoComplete_timer = TimingState(6000L);
 
 static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
+static volatile uint8_t state_idx = 0;
 static volatile long prop_value;
+
+static volatile int props_idx_max = 0;
+static volatile int state_idx_max = 0;
+
 
 static Property remoteProperty;
 
 static int8_t c_prop_idx = -1;
+static int8_t c_state_idx = -1;
 static long c_prop_value = -1;
 static long old_prop_value;
 static bool dither = false;
@@ -59,30 +65,22 @@ void Controller::initEncoderInterrupts() {
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
     sei();
     props_idx_max = ctx->props_size - 1;
+    state_idx_max = state_count -1;
 }
 
 void Controller::initDisplay() {
     if (oled.checkAndInit(FLIP_DISPLAY)) {
         oled.clearDisplay();
         oled.setBrightness(0);
-        outputTitle();
     };
 }
 
-void Controller::outputTitle() const {
-    oled.setTextXY(0, 0);
-    strlcpy(BUFF, ctx->passive ? "PASSIVE" : ctx->id, ONE_LINE + 1);
-    padLine(BUFF, 1, ctx->passive ? 3 : 0);
-    oled.putString(BUFF);
-}
-
 void Controller::outputState() const {
-    if (ctx->passive && ctx->refreshState) {
-        oled.setTextXY(0, 11);
-        oled.putString(ctx->RELAYS.relStatus());
-        oled.putString(ctx->connected ? "|" : ":");
-        ctx->refreshState = false;
-    }
+    strcpy(BUFF, (const char *) ctx->RELAYS.relStatus());
+    padLine(BUFF, 1, 0);
+    BUFF[15] = (unsigned char) ((ctx->connected ? 130 : 129) + (ctx-> passive ? 0 : 2));
+    oled.setTextXY(0, 0);
+    oled.putString(BUFF);
 }
 
 void Controller::process() {
@@ -134,14 +132,42 @@ void Controller::process() {
                 state = SLEEP;
             };
 
+            if (event == DOUBLE_CLICK) {
+                state = STATES;
+            };
+
             break;
         }
+        case STATES: {
+            testControl(sleep_timer);
+
+            if (c_state_idx != state_idx) {
+                strcpy(BUFF, getState(state_idx)->name);
+                outputPropDescr(BUFF);
+                strcpy(BUFF, getState(state_idx)->state);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
+                outputStatus(F("State:"), state_idx );
+                c_state_idx = state_idx;
+            }
+
+            if (event == HOLD) {
+                disarmState(state_idx, strcmp(getState(state_idx)->state, "DISARM") != 0);
+            };
+
+            if (event == CLICK || sleep_timer.isTimeAfter(true)) {
+                state = BROWSE;
+            };
+
+            break;
+        }
+
         case STORE: {
             firstRun();
             if (!ctx->passive) {
                 cmd->storeProps();
             } else {
                 Serial.println(cmd->cmd_str.CMD_STORE_PROPS);
+                consumeSerial();
             }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
@@ -187,6 +213,7 @@ void Controller::process() {
 
             break;
         }
+
         case SUSPEND: {
             if (firstRun()) {
                 oled.displayOff();
@@ -203,7 +230,10 @@ void Controller::process() {
     }
     ctx->refreshProps = false;
 //    detectDisplay();
-    outputState();
+    if (ctx->refreshState) {
+        outputState();
+        ctx->refreshState = false;
+    }
 }
 
 bool Controller::testControl(TimingState &timer) const {
@@ -211,7 +241,8 @@ bool Controller::testControl(TimingState &timer) const {
     if (fr || control_touched) {
         timer.reset();
         control_touched = false;
-        outputTitle();
+//        outputTitle();
+        outputState();
     }
     return fr;
 }
@@ -277,10 +308,12 @@ void Controller::updateProperty(uint8_t idx) const {
             Serial.print(idx);
             Serial.print(':');
             Serial.println(prop_value);
-            Serial.readBytesUntil('\n', BUFF, BUFF_SIZE);
+            consumeSerial();
         }
     }
 }
+
+void Controller::consumeSerial() const { Serial.readBytesUntil('\n', BUFF, BUFF_SIZE); }
 
 void Controller::switchDisplay(boolean inverse) const {
     oled.displayOff();
@@ -342,6 +375,10 @@ ISR(PCINT2_vect) {
             }
             case BROWSE: {
                 result == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
+                break;
+            }
+            case STATES: {
+                result == DIR_CW ? DECR(state_idx, 0) : INCR(state_idx, state_idx_max);
                 break;
             }
         }

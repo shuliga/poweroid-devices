@@ -9,13 +9,28 @@
 #include "relays.h"
 #include "persistence.h"
 
+typedef struct RunState {
+    RunState() = default;
+
+    uint8_t idx;
+    char *name;
+    char *state;
+
+};
+
+extern uint8_t state_count;
+
+RunState *getState(uint8_t i);
+void disarmState(uint8_t i, bool _disarm);
+char *printState(uint8_t i, char *buff);
+
 typedef struct Context {
     Context(const char *_signature, const char *_version, Property *_factory, const uint8_t _props_size,
-            const char *_id, const uint8_t _states_size, char *(*_printState)(uint8_t i, char *buff),
-            void (*_disarmState)(uint8_t i, bool _disarm), int8_t _defaultPropIdx)
+            const char *_id, int8_t _defaultPropIdx)
             : signature(_signature), version(_version), PROPERTIES(_factory), SENS(), RELAYS(),
-              props_size(_props_size), id(_id), states_size(_states_size), PERS(Persistence(_signature, _factory, _props_size, RELAYS.mappings, VIRTUAL_RELAYS)),
-              printState(_printState), disarmState(_disarmState), defaultPropertyIdx(_defaultPropIdx) {}
+              props_size(_props_size), id(_id),
+              PERS(Persistence(_signature, _factory, _props_size, RELAYS.mappings, VIRTUAL_RELAYS)),
+              defaultPropertyIdx(_defaultPropIdx) {}
 
     const char *signature;
     const char *version;
@@ -26,13 +41,8 @@ typedef struct Context {
     Property *PROPERTIES;
     const uint8_t props_size;
     const char *id;
-    const uint8_t states_size;
 
     Persistence PERS;
-
-    char *(*printState)(uint8_t i, char *buff);
-
-    void (*disarmState)(uint8_t i, bool _disarm);
 
     int8_t defaultPropertyIdx;
     bool refreshProps;

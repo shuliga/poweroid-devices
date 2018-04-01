@@ -14,7 +14,7 @@
 
 #define HISPEED 115200
 
-static const int TIMEOUT_STEP = 100;
+const int TIMEOUT_STEP = 100;
 
 class Bt {
 public:

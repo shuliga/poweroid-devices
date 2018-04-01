@@ -16,8 +16,6 @@ static const int PROP_SIZE = 4;
 #include "context.h"
 #include "commands.h"
 
-static volatile int props_idx_max = 0;
-
 class Controller {
 public:
 
@@ -41,11 +39,7 @@ private:
 
     void outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure);
 
-    void outputTitle() const;
-
     void switchDisplay(boolean inverse) const;
-
-//    void detectDisplay();
 
     void updateProperty(uint8_t idx) const;
 
@@ -68,6 +62,8 @@ private:
     static void padLine(char *_buff, uint8_t lines, uint8_t tail);
 
     void outputState() const;
+
+    void consumeSerial() const;
 };
 
 

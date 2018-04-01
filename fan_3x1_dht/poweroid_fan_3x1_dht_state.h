@@ -22,18 +22,22 @@ enum StateTemp {
 
 uint8_t state_count = 3;
 
-char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
-char *STATE_FORMAT_BUFF = {"[%i] StateLight: %s\0[%i] StateHumid: %s\0[%i] StateTemp: %s"}; // OFFSETS:0, 20, 40
+const char *STATE_NAME_BUFF[] = {"Lightning", "Humidity", "Temperature"};
+const char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
 
-char * printState(uint8_t i, char * buff) {
+RunState run_state;
+
+RunState *getState(uint8_t i) {
     uint8_t offset = 0;
     switch (i) {
         case 0: {offset = state_light;break;}
         case 1: {offset = state_humid;break;}
         case 2: {offset = state_temp;break;}
     }
-    sprintf(buff, STATE_FORMAT_BUFF + i * 20, i, STATE_BUFF + offset);
-    return buff;
+    run_state.idx = i;
+    run_state.name = (char *) STATE_NAME_BUFF[i];
+    run_state.state = (char *) STATE_BUFF + offset;
+    return &run_state;
 }
 
 void disarmState(uint8_t i, bool _disarm) {
@@ -53,10 +57,5 @@ void disarmState(uint8_t i, bool _disarm) {
     }
 }
 
-void printChangedState(bool prev_state, bool state, uint8_t id, char * buff){
-    if (prev_state != state) {
-        printState(id, buff);
-    }
-}
 
 #endif

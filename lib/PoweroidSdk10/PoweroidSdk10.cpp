@@ -48,6 +48,7 @@ void Pwr::run() {
 
     if (BT){
         CTX->passive = !BT->server;
+        REL->mapped = !CTX->passive;
         bool newConnected = BT->getConnected();
         CTX->refreshState = newConnected != CTX->connected;
         CTX->connected = newConnected;
@@ -72,22 +73,24 @@ void Pwr::init_pins() {
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
+    REL->reset();
+
     for (uint8_t i = 0; i < SENS->size(); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
 }
 
 void Pwr::loadDisarmedStates() {
-    for (uint8_t i = 0; i < CTX->states_size; i++) {
+    for (uint8_t i = 0; i < state_count; i++) {
         bool disarm = CTX->PERS.loadState(i);
-        CTX->disarmState(i, disarm);
+        disarmState(i, disarm);
         if (disarm) {
-            Serial.println(CTX->printState(i, BUFF));
+            Serial.println(printState(i, BUFF));
         }
     }
 }
 
 void Pwr::power(uint8_t i, bool power) {
     CTX->refreshState = true;
-    REL->power(i, power, !CTX->passive);
+    REL->power(i, power);
 }

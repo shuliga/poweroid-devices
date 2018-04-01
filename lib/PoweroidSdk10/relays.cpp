@@ -6,10 +6,10 @@
 #include "relays.h"
 #include "pin_io.h"
 
-bool powered[RELAYS];
-char *status = (char *) "....";
+static bool powered[RELAYS];
+static unsigned char *status = (unsigned char *) "....";
 
-void Relays::power(uint8_t i, bool _power, bool mapped) {
+void Relays::power(uint8_t i, bool _power) {
     if (i < RELAYS) {
         if (i < size() && powered[i] != _power) {
             powered[i] = _power;
@@ -30,13 +30,18 @@ uint8_t Relays::size() {
     return ARRAY_SIZE(OUT_PINS);
 }
 
-char * Relays::relStatus() {
-    for(uint8_t i=0; i < RELAYS; i++){
-        status[i] = powered[i] ? '@' : '0';
+unsigned char * Relays::relStatus() {
+    for(uint8_t i=0; i < (mapped ? RELAYS : size()); i++){
+        status[i] = (unsigned char) (powered[i] ? 128 : 127);
     }
     return status;
 }
 
+void Relays::reset(){
+    for(uint8_t i=0; i < size(); i++){
+        pin_inv(OUT_PINS[i], false);
+    }
+}
 
 void Relays::printRelay(uint8_t idx) {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);

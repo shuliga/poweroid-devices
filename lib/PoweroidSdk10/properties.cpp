@@ -3,4 +3,5 @@
 //
 #include "properties.h"
 
+const char* MEASURES[] = {"times", "day", "hour", "min", "sec", "~C", "%"};
 

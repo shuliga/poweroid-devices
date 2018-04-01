@@ -26,7 +26,7 @@
 
 const char SIGNATURE[] = "PWR";
 
-static const int DEFAULT_BAUD = 9600;
+const int DEFAULT_BAUD = 9600;
 
 class Pwr {
 public:

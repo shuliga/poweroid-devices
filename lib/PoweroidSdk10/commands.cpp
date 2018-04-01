@@ -2,8 +2,6 @@
 #include "global.h"
 #include "commands.h"
 
-#define PREFIX(cmd) cmd + " -> "
-
 Commands::Commands(Context &_ctx) : ctx(&_ctx) {
     cmd_str = {"get_ver",
                "get_dht",
@@ -23,6 +21,9 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx) {
                "ask"
     };
 }
+
+const char * _cmd = " -> ";
+const char *STATE_FORMAT_BUFF = {"[%i] State %s: %s"};
 
 char *Commands::printProperty(uint8_t i) {
     char _desc[64];
@@ -55,7 +56,7 @@ void Commands::listen() {
                 int8_t i = getMappedFromVirtual(ri);
                 if (i >= 0) {
                     ctx->refreshState = true;
-                    ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0, false);
+                    ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0);
                 }
                 return;
             }
@@ -147,8 +148,8 @@ void Commands::listen() {
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
-            for (uint8_t i = 0; i < ctx->states_size; i++) {
-                printCmd(cmd, ctx->printState(i, BUFF));
+            for (uint8_t i = 0; i < state_count; i++) {
+                printCmd(cmd, printState(i, BUFF));
             }
             return;
         }
@@ -163,8 +164,8 @@ void Commands::listen() {
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE)) {
             uint8_t i = getIndex(cmd);
-            if (i < ctx->states_size) {
-                printCmd(cmd, ctx->printState(i, BUFF));
+            if (i < state_count) {
+                printCmd(cmd, printState(i, BUFF));
             }
             return;
         }
@@ -172,10 +173,10 @@ void Commands::listen() {
         if (cmd.startsWith(cmd_str.CMD_DISARM_STATE)) {
             uint8_t i = (uint8_t) getIndex(cmd);
             bool trigger = (bool) cmd.substring((unsigned int) (cmd.lastIndexOf(':') + 1)).toInt();
-            if (i < ctx->states_size) {
-                ctx->disarmState(i, trigger);
+            if (i < state_count) {
+                disarmState(i, trigger);
                 ctx->PERS.storeState(i, trigger);
-                printCmd(cmd, ctx->printState(i, BUFF));
+                printCmd(cmd, printState(i, BUFF));
             }
             return;
         }
@@ -184,7 +185,8 @@ void Commands::listen() {
 }
 
 void Commands::printCmd(const String &cmd, const char *suffix) const {
-    Serial.print(PREFIX(cmd));
+    Serial.print(cmd);
+    Serial.print(_cmd);
     if (suffix != NULL) Serial.println(suffix); else Serial.println();
 }
 
@@ -205,3 +207,17 @@ int8_t Commands::getMappedFromVirtual(uint8_t i) {
     }
     return -1;
 }
+
+char * printState(uint8_t i, char * buff) {
+    sprintf(buff, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
+    return buff;
+}
+
+void Commands::printChangedState(bool prev_state, bool state, uint8_t id, char * buff){
+    if (prev_state != state) {
+        printState(id, buff);
+    }
+}
+
+
+

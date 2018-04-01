@@ -273,7 +273,7 @@ bool ACROBOTIC_SSD1306::putChar(unsigned char ch) {
     if (!m_font) return 0;
     //Ignore non-printable ASCII characters. This can be modified for
     //multilingual font.  
-    if (ch < 32 || ch > 127) {
+    if (ch < 32 || ch > 131) {
         ch = ' ';
     }
     for (unsigned char i = 0; i < m_font_width; i++) {

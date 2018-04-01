@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-static const char* MEASURES[] = {"times", "day", "hour", "min", "sec", "~C", "%"};
+extern const char* MEASURES[];
 
 typedef struct Property {
 
