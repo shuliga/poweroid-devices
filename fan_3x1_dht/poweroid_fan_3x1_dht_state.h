@@ -56,6 +56,4 @@ void disarmState(uint8_t i, bool _disarm) {
         }
     }
 }
-
-
 #endif

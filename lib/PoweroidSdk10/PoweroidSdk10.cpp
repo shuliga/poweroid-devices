@@ -85,7 +85,7 @@ void Pwr::loadDisarmedStates() {
         bool disarm = CTX->PERS.loadState(i);
         disarmState(i, disarm);
         if (disarm) {
-            Serial.println(printState(i, BUFF));
+            Serial.println(printState(i));
         }
     }
 }

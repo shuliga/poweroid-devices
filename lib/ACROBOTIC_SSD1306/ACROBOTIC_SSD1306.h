@@ -40,7 +40,6 @@
 
 #include "gfxfont.h"
 #include "fonts/font8x8.h"
-//#include "fonts/font5x7.h"
 #include "fonts/FreeSans12pt7b.h"
 
 #define SSD1306_Max_X                 127    //128 Pixels

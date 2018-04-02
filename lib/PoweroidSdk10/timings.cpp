@@ -1,7 +1,5 @@
 #include "timings.h"
 
-#include <Arduino.h>
-
 unsigned long TimingState::getCurrent() {
     unsigned long current = millis();
     if (current < mils) {

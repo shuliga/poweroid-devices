@@ -5,7 +5,7 @@
 #include "persistence.h"
 #include "context.h"
 
-struct CommandsStr {
+typedef struct CommandsStr {
     const char* CMD_GET_VER;
     const char* CMD_GET_DHT;
     const char* CMD_GET_STATE;
@@ -28,6 +28,7 @@ class Commands {
 public:
 
     CommandsStr cmd_str;
+    String cmd;
 
     Commands(Context &_ctx);
 
@@ -35,13 +36,13 @@ public:
 
     void storeProps();
 
-    void printChangedState(bool prev_state, bool state, uint8_t id, char *buff);
+    void printChangedState(bool prev_state, bool state, uint8_t id);
 
 private:
 
     Context *ctx;
 
-    char * printProperty(uint8_t i);
+    const char * printProperty(uint8_t i);
 
     int8_t getMappedFromVirtual(uint8_t i);
 
@@ -50,6 +51,12 @@ private:
     void printCmd(const String &cmd, const char *suffix) const;
 
     void printBinProperty(uint8_t i);
+
+    bool execCommand(const char *prefix, const char *val);
+
+    bool execCommandLoop(const char *prefix, uint8_t cnt, const char *(* val)(uint8_t i));
+
+    const char *printSensor(uint8_t i);
 };
 
 #endif // COMMANDS_H
