@@ -85,7 +85,7 @@ void run_state_light(bool light) {
         }
 
     }
-    CMD.printChangedState(prev_state_light, state_light, 0, BUFF);
+    CMD.printChangedState(prev_state_light, state_light, 0);
 }
 
 void run_state_humid(bool humidity) {
@@ -115,7 +115,7 @@ void run_state_humid(bool humidity) {
             break;
         }
     }
-    CMD.printChangedState(prev_state_humid, state_humid, 1, BUFF);
+    CMD.printChangedState(prev_state_humid, state_humid, 1);
 }
 
 void run_state_temp(bool temperature) {
@@ -135,7 +135,7 @@ void run_state_temp(bool temperature) {
             break;
         }
     }
-    CMD.printChangedState(prev_state_temp, state_temp, 2, BUFF);
+    CMD.printChangedState(prev_state_temp, state_temp, 2);
 }
 
 void setup() {

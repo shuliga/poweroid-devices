@@ -115,9 +115,7 @@ void Controller::process() {
         }
         case BROWSE: {
 
-            testControl(sleep_timer);
-
-            if (c_prop_idx != prop_idx || ctx->refreshProps) {
+            if (testControl(sleep_timer) || c_prop_idx != prop_idx || ctx->refreshProps) {
                 loadProperty(prop_idx);
                 outputPropDescr(BUFF);
                 outputPropVal(prop_measure, (int16_t) prop_value, false, true);
@@ -132,16 +130,14 @@ void Controller::process() {
                 state = SLEEP;
             };
 
-            if (event == DOUBLE_CLICK) {
+            if (event == DOUBLE_CLICK && !ctx->passive) {
                 state = STATES;
             };
 
             break;
         }
         case STATES: {
-            testControl(sleep_timer);
-
-            if (c_state_idx != state_idx) {
+            if (testControl(sleep_timer) || c_state_idx != state_idx) {
                 strcpy(BUFF, getState(state_idx)->name);
                 outputPropDescr(BUFF);
                 strcpy(BUFF, getState(state_idx)->state);
@@ -152,6 +148,7 @@ void Controller::process() {
 
             if (event == HOLD) {
                 disarmState(state_idx, strcmp(getState(state_idx)->state, "DISARM") != 0);
+                c_state_idx = -1;
             };
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
