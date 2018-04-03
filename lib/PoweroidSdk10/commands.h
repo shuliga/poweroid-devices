@@ -56,7 +56,6 @@ private:
 
     bool execCommandLoop(const char *prefix, uint8_t cnt, const char *(* val)(uint8_t i));
 
-    const char *printSensor(uint8_t i);
 };
 
 #endif // COMMANDS_H

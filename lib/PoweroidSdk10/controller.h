@@ -51,8 +51,6 @@ private:
 
     void goToBrowse() const;
 
-    void update(Property &prop) const;
-
     bool testControl(TimingState &timer) const;
 
     void copyProperty(Property &prop, uint8_t idx) const;
@@ -64,6 +62,10 @@ private:
     void outputState() const;
 
     void consumeSerial() const;
+
+    const char *printDht() const;
+
+    void consumeSerialToBuff() const;
 };
 
 

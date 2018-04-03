@@ -1,6 +1,5 @@
 
 #include <EEPROM.h>
-#include "pin_io.h"
 #include "commons.h"
 #include "persistence.h"
 
@@ -15,30 +14,38 @@
 
 unsigned long hashProp(Property *props, int size) {
     unsigned long result = 19;
-    for(uint8_t i = 0; i < size; i++){
+    for (uint8_t i = 0; i < size; i++) {
         result += hash((byte *) props[i].runtime, size * sizeof(long));
     }
     return result;
 }
 
-Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size, int8_t *_mappings, uint8_t msz): given_sign_chr(_sign), props(_props_runtime), size(props_size), mappings(_mappings), mappings_size(msz) {}
+Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size, int8_t *_mappings,
+                         uint8_t msz) : given_sign_chr(_sign), props(_props_runtime), size(props_size),
+                                        mappings(_mappings), mappings_size(msz) {}
 
-void  Persistence::begin(){
+void Persistence::begin() {
     checkFactoryReset(props);
     EEPROM.get(BASE, signature);
     signature[SIGNATURE_SIZE - 1] = '\0';
+#ifdef DEBUG
     writeLog('I', ORIGIN, 100, isprint(signature[0]) ? signature : "___");
+#endif
     unsigned long eeprom_hash;
     EEPROM.get(HASH_OFFSET, eeprom_hash);
+#ifdef DEBUG
     writeLog('I', ORIGIN, 101, eeprom_hash);
+#endif
     if (strcmp(given_sign_chr, signature) != 0) {
         strcpy(signature, given_sign_chr);
+#ifdef DEBUG
         writeLog('W', ORIGIN, 501, signature);
+#endif
         EEPROM.put(BASE, signature);
         storeProperties(props);
         storeMappings(mappings);
     } else if (eeprom_hash != hashProp(props, size)) {
-        writeLog('W', ORIGIN, 301);
+//        writeLog('W', ORIGIN, 301);
         loadProperties(props);
         loadMappings(mappings);
     }
@@ -53,7 +60,7 @@ void Persistence::storeMappings(int8_t *mappings) {
 
 void Persistence::loadMappings(int8_t *mappings) {
     for (uint8_t i = 0; i < mappings_size; i++) {
-        mappings[i] = (i < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + i) :  -1;
+        mappings[i] = (i < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + i) : -1;
     }
 }
 
@@ -62,40 +69,42 @@ void Persistence::storeProperties(Property *props) {
         storeValue(i, props[i].runtime);
     }
     unsigned long hash = hashProp(props, size);
+#ifdef DEBUG
     writeLog('I', ORIGIN, 220, size);
     writeLog('I', ORIGIN, 101, hash);
+#endif
     EEPROM.put(HASH_OFFSET, hash);
 }
 
 void Persistence::storeValue(uint8_t i, long val) {
-    if (i <= size) {
-        EEPROM.put(PROP_ADDR(i), val);
-    }
+    EEPROM.put(PROP_ADDR(i), val);
 }
 
 void Persistence::loadProperties(Property *props) {
     for (uint8_t i = 0; i < size; i++) {
         EEPROM.get(PROP_ADDR(i), props[i].runtime);
     }
+#ifdef DEBUG
     writeLog('I', ORIGIN, 210, size);
+#endif
 }
 
 void Persistence::checkFactoryReset(Property *props) {
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
     if (digitalRead(FACTORY_RESET_PIN) == LOW) {
+#ifdef DEBUG
         writeLog('I', ORIGIN, 200);
+#endif
         storeProperties(props);
         EEPROM.put(STATES_OFFSET, 0); // Clear state DISARM flags
     }
 }
 
 bool Persistence::loadState(uint8_t id) {
-    return id < 8 ? (bool) ((EEPROM.read(STATES_OFFSET) & (1 << id)) >> id) : false;
+    return (bool) ((EEPROM.read(STATES_OFFSET) & (1 << id)) >> id);
 }
 
 void Persistence::storeState(uint8_t id, bool state) {
-    if (id < 8) {
-        EEPROM.put(STATES_OFFSET,
-                   state ? EEPROM.read(STATES_OFFSET) | (1 << id) :  EEPROM.read(STATES_OFFSET) & (~(1 << id)));
-    }
+    EEPROM.put(STATES_OFFSET,
+               state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & (~(1 << id)));
 }

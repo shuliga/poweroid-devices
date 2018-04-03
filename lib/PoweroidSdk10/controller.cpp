@@ -192,7 +192,7 @@ void Controller::process() {
 
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
-                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS.printDht(), true, dither);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, printDht(), true, dither);
             }
 
             // Exit SLEEP state on event
@@ -226,19 +226,29 @@ void Controller::process() {
         }
     }
     ctx->refreshProps = false;
-//    detectDisplay();
     if (ctx->refreshState) {
         outputState();
         ctx->refreshState = false;
     }
 }
 
+const char *Controller::printDht() const {
+    if (ctx->passive){
+        Serial.println(cmd->cmd_str.CMD_GET_DHT);
+        consumeSerialToBuff();
+        return strchr(BUFF, '>');
+    } else {
+        return ctx->SENS.printDht();
+    }
+}
+
+void Controller::consumeSerialToBuff() const { BUFF[Serial.readBytesUntil('\n', BUFF, BUFF_SIZE)] = 0; }
+
 bool Controller::testControl(TimingState &timer) const {
     bool fr = firstRun();
     if (fr || control_touched) {
         timer.reset();
         control_touched = false;
-//        outputTitle();
         outputState();
     }
     return fr;
@@ -271,7 +281,7 @@ void Controller::loadProperty(uint8_t idx) const {
         if (ctx->connected) {
             Serial.print(cmd->cmd_str.CMD_GET_BIN_PROP);
             Serial.println(idx);
-            BUFF[Serial.readBytesUntil('\n', BUFF, BUFF_SIZE)] = 0;
+            consumeSerialToBuff();
             Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
             copyProperty(remoteProperty, idx);
         }
@@ -280,17 +290,13 @@ void Controller::loadProperty(uint8_t idx) const {
 
 void Controller::copyProperty(Property &prop, uint8_t idx) const {
     cli();
-    update(prop);
-    c_prop_idx = idx;
-    sei();
-}
-
-void Controller::update(Property &prop) const {
     long scale = prop.scale;
     prop_value = (prop.runtime / scale);
     prop_min = (prop.minv / scale);
     prop_max = (prop.maxv / scale);
     prop_measure = prop.measure;
+    c_prop_idx = idx;
+    sei();
 }
 
 void Controller::updateProperty(uint8_t idx) const {
@@ -319,12 +325,6 @@ void Controller::switchDisplay(boolean inverse) const {
     oled.displayOn();
 }
 
-//void Controller::detectDisplay() {
-//    if (displaySearchTiming.ping() && !oled.getConnected()) {
-//        initDisplay();
-//    }
-//}
-
 void Controller::outputPropDescr(char *_buff) {
     oled.setTextXY(DISPLAY_BASE, 0);
     padLine(BUFF, 2, 0);
@@ -345,7 +345,7 @@ void inline Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
     strncat(_buff, SPACE_BUFF, LINE_SIZE * lines - strlen(_buff) - tail);
 }
 
-uint8_t inline Controller::getNumberOfDigits(long i) {
+uint8_t Controller::getNumberOfDigits(long i) {
     return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
 }
 

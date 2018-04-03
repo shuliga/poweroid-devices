@@ -2,9 +2,7 @@
 // Created by SHL on 20.03.2017.
 //
 
-#include "pin_io.h"
-#include "commons.h"
-#include "timings.h"
+#include "global.h"
 #include "sensors.h"
 
 // Console output codes
@@ -26,7 +24,6 @@ static TimingState pollTiming = TimingState(5000L);
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
 static bool dht_installed;
-static char CHAR_BUF[32];
 
 Sensors::Sensors() : dht(DHT_PIN, DHTTYPE) {
 }
@@ -35,7 +32,9 @@ void Sensors::searchDht() {
     dht.begin();
     float val = dht.readHumidity();
     if (!isnan(val)) {
+#ifdef DEBUG
         writeLog('I', ORIGIN, 200, DHT_PIN);
+#endif
         for(int i = 0; i < ARRAY_SIZE(IN_PINS); i++){
             if (IN_PINS[i] == DHT_PIN){
                 installed[i] = true;
@@ -130,7 +129,7 @@ uint8_t Sensors::size() {
 }
 
 const char *Sensors::printDht() {
-    sprintf(CHAR_BUF, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
-    return CHAR_BUF;
+    sprintf(BUFF, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
+    return BUFF;
 }
 

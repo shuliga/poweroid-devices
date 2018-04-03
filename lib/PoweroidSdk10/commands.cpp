@@ -44,9 +44,6 @@ void Commands::printBinProperty(uint8_t i) {
 
 void Commands::listen() {
 
-    Index_fn_ptr printProperty_ptr = &Commands::printProperty;
-    Index_fn_ptr printSensor_ptr = &Commands::printSensor;
-
     if (Serial.available() > 0) {
         cmd = Serial.readStringUntil('\n');
 #ifdef DEBUG
@@ -214,11 +211,6 @@ void Commands::listen() {
     }
 
 }
-
-const char * Commands::printSensor(uint8_t i){
-    return ctx->SENS.printSensor(i);
-}
-
 
 void Commands::printCmd(const String &cmd, const char *suffix) const {
     Serial.print(cmd);

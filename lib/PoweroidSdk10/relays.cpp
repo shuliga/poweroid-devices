@@ -4,21 +4,23 @@
 
 #include "global.h"
 #include "relays.h"
-#include "pin_io.h"
 
 static bool powered[RELAYS];
-static unsigned char *status = (unsigned char *) "....";
+static unsigned char status[5] = {'.', '.', '.', '.', '\0'};
 
 void Relays::power(uint8_t i, bool _power) {
-    if (i < RELAYS) {
-        if (i < size() && powered[i] != _power) {
+    if (i < RELAYS)
+    {
+        if (i < size() && powered[i] != _power)
+        {
             powered[i] = _power;
 #ifndef SSERIAL
-            pin_inv(OUT_PINS[i], _power);
+            digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
 #endif
             printRelay(i);
             int8_t mappedIdx = mappings[i];
-            if (mapped &&  mappedIdx >= 0) {
+            if (mapped &&  mappedIdx >= 0)
+            {
                 powered[mappedIdx] = _power;
                 printRelay((uint8_t) mappedIdx);
             }
@@ -31,15 +33,17 @@ uint8_t Relays::size() {
 }
 
 unsigned char * Relays::relStatus() {
-    for(uint8_t i=0; i < (mapped ? RELAYS : size()); i++){
-        status[i] = (unsigned char) (powered[i] ? 128 : 127);
+    const uint8_t r_size = mapped ? RELAYS : size();
+    for(uint8_t i = 0; i < r_size; ++i)
+    {
+        status[i] = (powered[i] ? (unsigned char) 128 : (unsigned char)127);
     }
     return status;
 }
 
 void Relays::reset(){
-    for(uint8_t i=0; i < size(); i++){
-        pin_inv(OUT_PINS[i], false);
+    for(uint8_t i=0; i < size(); ++i){
+        digitalWrite(OUT_PINS[i], HIGH);
     }
 }
 
