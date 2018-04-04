@@ -5,7 +5,7 @@
 #include <SoftwareSerial.h>
 #include <context.h>
 
-#define CONNECTION_CHECK 60000L
+#define CONNECTION_CHECK 10000L
 
 #define BT_VER_05 "+VERSION:hc01.comV2.1"
 #define BT_VER_06 "hc01.comV2.0"
@@ -26,7 +26,7 @@ public:
   void begin();
 
   bool getConnected();
-  bool isConnectedToServer();
+  bool isConnected();
 
 private:
     bool connected = false;

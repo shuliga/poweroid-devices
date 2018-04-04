@@ -36,7 +36,8 @@ void Persistence::begin() {
 #ifdef DEBUG
     writeLog('I', ORIGIN, 101, eeprom_hash);
 #endif
-    if (strcmp(given_sign_chr, signature) != 0) {
+    if (strcmp(given_sign_chr, signature) != 0)
+    {
         strcpy(signature, given_sign_chr);
 #ifdef DEBUG
         writeLog('W', ORIGIN, 501, signature);
@@ -44,22 +45,27 @@ void Persistence::begin() {
         EEPROM.put(BASE, signature);
         storeProperties(props);
         storeMappings(mappings);
-    } else if (eeprom_hash != hashProp(props, size)) {
+    } else
+        if (eeprom_hash != hashProp(props, size))
+    {
 //        writeLog('W', ORIGIN, 301);
         loadProperties(props);
         loadMappings(mappings);
     }
 }
 
-void Persistence::storeMappings(int8_t *mappings) {
+void Persistence::storeMappings(int8_t *mappings)
+{
     for (uint8_t i = 0; i < mappings_size; i++) {
         EEPROM.put(MAPPINGS_OFFSET + i, mappings[i]);
 
     }
 }
 
-void Persistence::loadMappings(int8_t *mappings) {
-    for (uint8_t i = 0; i < mappings_size; i++) {
+void Persistence::loadMappings(int8_t *mappings)
+{
+    for (uint8_t i = 0; i < mappings_size; i++)
+    {
         mappings[i] = (i < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + i) : -1;
     }
 }

@@ -82,9 +82,9 @@ String Bt::getVerHC06() const {
     return ver;
 }
 
-bool Bt::isConnectedToServer() {
-    if (firstRun || !server && connection_check.isTimeAfter(true)) {
-        connected = checkPeerType(ASK_SERVER);
+bool Bt::isConnected() {
+    if (firstRun || connection_check.isTimeAfter(true)) {
+        connected = server ? checkPeerType(ASK_CLIENT) : checkPeerType(ASK_SERVER);
         connection_check.reset();
 #ifdef DEBUG
         if (!server && !connected) {
@@ -130,7 +130,7 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
 }
 
 bool Bt::getConnected() {
-    return !server && isConnectedToServer();
+    return isConnected();
 }
 
 void Bt::applyBt05() {

@@ -50,7 +50,7 @@ void Pwr::run() {
         CTX->passive = !BT->server;
         REL->mapped = !CTX->passive;
         bool newConnected = BT->getConnected();
-        CTX->refreshState = newConnected != CTX->connected;
+        CTX->refreshState = CTX->refreshState || newConnected != CTX->connected;
         CTX->connected = newConnected;
     }
 
@@ -91,6 +91,6 @@ void Pwr::loadDisarmedStates() {
 }
 
 void Pwr::power(uint8_t i, bool power) {
-    CTX->refreshState = true;
     REL->power(i, power);
+    CTX->refreshState = true;
 }

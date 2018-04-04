@@ -226,7 +226,7 @@ void Controller::process() {
         }
     }
     ctx->refreshProps = false;
-    if (ctx->refreshState) {
+    if (ctx->refreshState && state != SUSPEND && state != SLEEP) {
         outputState();
         ctx->refreshState = false;
     }
