@@ -22,13 +22,14 @@ void Relays::power(uint8_t i, bool _power)
 #ifndef SSERIAL
             digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
 #endif
+            printRelay(i);
+
             int8_t mappedIdx = mappings[i];
             if (mapped &&  mappedIdx >= 0)
             {
                 powered[mappedIdx] = _power;
                 printRelay((uint8_t) mappedIdx);
             }
-            printRelay(i);
         }
     }
 }

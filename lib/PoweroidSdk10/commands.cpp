@@ -43,20 +43,25 @@ void Commands::printBinProperty(uint8_t i) {
 }
 
 void Commands::listen() {
-
-    if (Serial.available() > 0) {
-        cmd = Serial.readStringUntil('\n');
+    uint8_t l = 0;
+    while (Serial.available()) {
+//        cmd = Serial.readStringUntil('\n');
+        cmd = Serial.readString();
 #ifdef DEBUG
         writeLog('I', "CMD", 100, cmd.c_str());
 #endif
+        l++;
         if (ctx->passive) {
 #ifdef SSERIAL
             SSerial.println(cmd);
 #endif
-            if (cmd.startsWith(REL_PREFIX)) {
+            if (cmd.indexOf(REL_PREFIX) >=0 ) {
                 uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
                                                      (unsigned int) cmd.indexOf(']')).toInt();
                 int8_t i = getMappedFromVirtual(ri);
+//                ctx->RELAYS.status[2] = ri + 48;
+//                ctx->RELAYS.status[3] = cmd.length() + 48;
+                ctx->refreshState = true;
                 if (i >= 0) {
                     ctx->refreshState = true;
                     ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0);
@@ -67,26 +72,9 @@ void Commands::listen() {
 
         execCommand(cmd_str.ASK, ctx->passive ? ASK_CLIENT : ASK_SERVER);
 
-//        if (cmd.startsWith(cmd_str.ASK)) {
-//            printCmd(cmd, ctx->passive ? ASK_CLIENT : ASK_SERVER);
-//            return;
-//        }
-
         execCommand(cmd_str.CMD_GET_VER, ctx->version);
 
-//        if (cmd.startsWith(cmd_str.CMD_GET_VER)) {
-//            printCmd(cmd, ctx->version);
-//            return;
-//        }
-
         execCommand(cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
-
-//        if (cmd.startsWith(cmd_str.CMD_GET_DHT)) {
-//            printCmd(cmd, ctx->SENS.printDht());
-//            return;
-//        }
-
-//        execCommandLoop(cmd_str.CMD_GET_SENSOR_ALL, ctx->SENS.size(), *this.*printSensor_ptr);
 
         if (cmd.startsWith(cmd_str.CMD_GET_SENSOR_ALL)) {
             for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
@@ -107,14 +95,6 @@ void Commands::listen() {
         char num[5];
         execCommand(cmd_str.CMD_GET_PROP_LEN, itoa(ctx->props_size, num, 10));
 
-//        if (cmd.startsWith(cmd_str.CMD_GET_PROP_LEN)) {
-//            char num[5];
-//            printCmd(cmd, itoa(ctx->props_size, num, 10));
-//            return;
-//        }
-
-//        execCommandLoop(cmd_str.CMD_GET_PROP_ALL, ctx->props_size, (*this).*(printProperty_ptr));
-
         if (cmd.startsWith(cmd_str.CMD_GET_PROP_ALL)) {
             for (uint8_t i = 0; i < ctx->props_size; i++) {
                 printCmd(cmd, printProperty(i));
@@ -128,22 +108,9 @@ void Commands::listen() {
             ctx->refreshProps = true;
         }
 
-//        if (cmd.startsWith(cmd_str.CMD_LOAD_PROPS)) {
-//            printCmd(cmd, NULL);
-//            ctx->PERS.loadProperties(ctx->PROPERTIES);
-//            ctx->refreshProps = true;
-//            return;
-//        }
-
         if (execCommand(cmd_str.CMD_STORE_PROPS, NULL)) {
             storeProps();
         }
-
-//        if (cmd.startsWith(cmd_str.CMD_STORE_PROPS)) {
-//            printCmd(cmd, NULL);
-//            storeProps();
-//            return;
-//        }
 
         if (cmd.startsWith(cmd_str.CMD_GET_PROP)) {
             uint8_t i = getIndex(cmd);
@@ -172,8 +139,6 @@ void Commands::listen() {
             }
             return;
         }
-
-//        execCommandLoop(cmd_str.CMD_GET_STATE_ALL, state_count, &printState);
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
             for (uint8_t i = 0; i < state_count; i++) {
@@ -253,15 +218,5 @@ bool Commands::execCommand(const char * prefix, const char * val){
     }
     return false;
 }
-
-//bool Commands::execCommandLoop(const char * prefix, uint8_t  cnt, const char *(* val)(uint8_t i)){
-//    if (cmd.startsWith(prefix)) {
-//        for (uint8_t i = 0; i < cnt; i++) {
-//            printCmd(cmd, val(i));
-//        }
-//        return true;
-//    }
-//    return false;
-//}
 
 
