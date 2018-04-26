@@ -8,6 +8,9 @@ Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), 
 }
 
 void Pwr::begin() {
+#ifdef WATCH_DOG
+    wdt_enable(WDTO_8S);
+#endif
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
@@ -32,7 +35,7 @@ void Pwr::begin() {
     }
 #endif
 #ifdef WATCH_DOG
-    wdt_enable(WDTO_8S);
+    wdt_enable(WDTO_1S);
 #endif
 }
 
