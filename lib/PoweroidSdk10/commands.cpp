@@ -24,7 +24,7 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx) {
 
 typedef const char *(Commands::*Index_fn_ptr)(uint8_t i);
 
-const char * _cmd = " -> ";
+const char *_cmd = " -> ";
 const char *STATE_FORMAT_BUFF = {"[%i] State %s: %s"};
 
 const char *Commands::printProperty(uint8_t i) {
@@ -38,24 +38,22 @@ const char *Commands::printProperty(uint8_t i) {
 void Commands::printBinProperty(uint8_t i) {
     Serial.println(ctx->PROPERTIES[i].desc);
     for (uint8_t j = 0; j < sizeof(Property); j++) {
-        Serial.write(*((uint8_t*) &ctx->PROPERTIES[i] + j));
+        Serial.write(*((uint8_t *) &ctx->PROPERTIES[i] + j));
     }
 }
 
 void Commands::listen() {
     uint8_t l = 0;
     while (Serial.available()) {
-//        cmd = Serial.readStringUntil('\n');
-        cmd = Serial.readString();
+        cmd = Serial.readStringUntil('\n');
+        if (cmd.indexOf("->") >= 0) { continue; }
+//        cmd = Serial.readString();
 #ifdef DEBUG
         writeLog('I', "CMD", 100, cmd.c_str());
 #endif
         l++;
         if (ctx->passive) {
-#ifdef SSERIAL
-            SSerial.println(cmd);
-#endif
-            if (cmd.indexOf(REL_PREFIX) >=0 ) {
+            if (cmd.indexOf(REL_PREFIX) >= 0) {
                 uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
                                                      (unsigned int) cmd.indexOf(']')).toInt();
                 int8_t i = getMappedFromVirtual(ri);
@@ -70,11 +68,11 @@ void Commands::listen() {
             }
         }
 
-        execCommand(cmd_str.ASK, ctx->passive ? ASK_CLIENT : ASK_SERVER);
+        castCommand(cmd_str.ASK, ctx->passive ? ASK_CLIENT : ASK_SERVER);
 
-        execCommand(cmd_str.CMD_GET_VER, ctx->version);
+        castCommand(cmd_str.CMD_GET_VER, ctx->version);
 
-        execCommand(cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
+        castCommand(cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
         if (cmd.startsWith(cmd_str.CMD_GET_SENSOR_ALL)) {
             for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
@@ -93,7 +91,7 @@ void Commands::listen() {
         }
 
         char num[5];
-        execCommand(cmd_str.CMD_GET_PROP_LEN, itoa(ctx->props_size, num, 10));
+        castCommand(cmd_str.CMD_GET_PROP_LEN, itoa(ctx->props_size, num, 10));
 
         if (cmd.startsWith(cmd_str.CMD_GET_PROP_ALL)) {
             for (uint8_t i = 0; i < ctx->props_size; i++) {
@@ -102,13 +100,12 @@ void Commands::listen() {
             return;
         }
 
-
-        if (execCommand(cmd_str.CMD_LOAD_PROPS, NULL)) {
+        if (castCommand(cmd_str.CMD_LOAD_PROPS, NULL)) {
             ctx->PERS.loadProperties(ctx->PROPERTIES);
             ctx->refreshProps = true;
         }
 
-        if (execCommand(cmd_str.CMD_STORE_PROPS, NULL)) {
+        if (castCommand(cmd_str.CMD_STORE_PROPS, NULL)) {
             storeProps();
         }
 
@@ -200,18 +197,18 @@ int8_t Commands::getMappedFromVirtual(uint8_t i) {
     return -1;
 }
 
-const char * printState(uint8_t i) {
+const char *printState(uint8_t i) {
     sprintf(BUFF, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
     return BUFF;
 }
 
-void Commands::printChangedState(bool prev_state, bool state, uint8_t id){
+void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
     if (prev_state != state) {
         printState(id);
     }
 }
 
-bool Commands::execCommand(const char * prefix, const char * val){
+bool Commands::castCommand(const char *prefix, const char *val) {
     if (cmd.startsWith(prefix)) {
         printCmd(cmd, val);
         return true;

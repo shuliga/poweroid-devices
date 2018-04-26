@@ -8,7 +8,7 @@
 #include "commons.h"
 
 #define REL_PREFIX "Rel["
-#define REL_FMT REL_PREFIX "%i]: %s"
+#define REL_FMT "Rel[%i]: %s"
 
 const char *const REL_POWERED = "ON";
 const char *const REL_NOT_POWERED = "OFF";
@@ -35,6 +35,8 @@ public:
     unsigned char * relStatus();
 
     void reset();
+
+    void printRelays();
 };
 
 

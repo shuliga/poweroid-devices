@@ -57,6 +57,14 @@ void Relays::reset()
     }
 }
 
+void Relays::printRelays(){
+    const uint8_t r_size = mapped ? RELAYS : size();
+    for(uint8_t i = 0; i < r_size; ++i) {
+        printRelay(i);
+    }
+}
+
+
 void Relays::printRelay(uint8_t idx)
 {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);

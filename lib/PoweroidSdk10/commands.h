@@ -52,7 +52,7 @@ private:
 
     void printBinProperty(uint8_t i);
 
-    bool execCommand(const char *prefix, const char *val);
+    bool castCommand(const char *prefix, const char *val);
 
     bool execCommandLoop(const char *prefix, uint8_t cnt, const char *(* val)(uint8_t i));
 

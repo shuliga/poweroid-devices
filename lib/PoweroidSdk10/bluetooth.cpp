@@ -1,7 +1,5 @@
 #include "bluetooth.h"
 
-static const long HC_05_AT_BAUD = 38400;
-static const long HC_06_BAUD = 115200;
 /*
  * Log codes
  *
@@ -184,5 +182,6 @@ void Bt::execReset() {
 }
 
 bool Bt::checkPeerType(const char *conn_type) {
-    return execBtAtCommand(F("ask"), 0, 500).indexOf(conn_type) >= 0;
+    Serial.println(F("ask"));
+    return Serial.readStringUntil('\n').indexOf(conn_type) >= 0;
 }

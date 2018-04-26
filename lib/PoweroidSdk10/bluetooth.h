@@ -7,6 +7,10 @@
 
 #define CONNECTION_CHECK 10000L
 
+#define HC_05_AT_BAUD 38400
+#define HC_06_BAUD 115200
+
+
 #define BT_VER_05 "+VERSION:hc01.comV2.1"
 #define BT_VER_06 "hc01.comV2.0"
 #define PASSWD "1234"

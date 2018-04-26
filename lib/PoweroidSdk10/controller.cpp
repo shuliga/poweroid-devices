@@ -284,6 +284,8 @@ void Controller::loadProperty(uint8_t idx) const {
             consumeSerialToBuff();
             Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
             copyProperty(remoteProperty, idx);
+        } else {
+            BUFF[0] = 0;
         }
     }
 }
@@ -353,7 +355,11 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
     const char *fmt =
             brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s"
                                                                                                    : "%i"));
-    sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
+    if (ctx->passive && !ctx->connected){
+        strcpy(BUFF,"--");
+    } else {
+        sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
+    }
     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }
 
