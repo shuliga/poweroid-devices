@@ -15,7 +15,7 @@ typedef struct CommandsStr {
     const char* CMD_GET_BIN_PROP;
     const char* CMD_SET_PROP;
     const char* CMD_GET_PROP_ALL;
-    const char* CMD_GET_PROP_LEN;
+    const char* CMD_GET_PROP_LEN_BIN;
     const char* CMD_LOAD_PROPS;
     const char* CMD_STORE_PROPS;
     const char* CMD_RESET_PROPS;
@@ -27,10 +27,9 @@ typedef struct CommandsStr {
 class Commands {
 public:
 
-    CommandsStr cmd_str;
-    String cmd;
-
     Commands(Context &_ctx);
+
+    CommandsStr cmd_str;
 
     void listen();
 
@@ -38,7 +37,15 @@ public:
 
     void printChangedState(bool prev_state, bool state, uint8_t id);
 
+    void executeCmd(const char *cmd, const char *suffix);
+
+    bool isConnected();
+
 private:
+
+    String cmd;
+
+    bool connected = false;
 
     Context *ctx;
 
@@ -48,14 +55,19 @@ private:
 
     uint8_t getIndex(const String &cmd) const;
 
-    void printCmd(const String &cmd, const char *suffix) const;
+    void printCmdResponse(const String &cmd, const char *suffix) const;
 
     void printBinProperty(uint8_t i);
 
     bool castCommand(const char *prefix, const char *val);
 
-    bool execCommandLoop(const char *prefix, uint8_t cnt, const char *(* val)(uint8_t i));
+    void printCmd(const char *cmd, const char *suffix) const;
 
+    bool isResponse(const char *c) const;
+
+    void consumeSerialToBuff() const;
+
+    bool checkPeerType(const char *type);
 };
 
 #endif // COMMANDS_H

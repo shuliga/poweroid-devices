@@ -1,17 +1,18 @@
+#include <avr/wdt.h>
 #include "bluetooth.h"
+#include "commons.h"
 
 /*
  * Log codes
  *
  * 100 Command echo
+ * 101 Command echo, passive mode
  * 200 Server mode
  * 210 Client mode (speed)
  * 211 Connected to server
  * 410 Disconnected
 */
-static TimingState connection_check(CONNECTION_CHECK);
-
-const char *ORIGIN = "BT";
+static const char *ORIGIN = "BT";
 
 Bt::Bt(const char *id) {
     name = id;
@@ -36,7 +37,7 @@ void Bt::begin() {
         if (!checkPeerType(ASK_CLIENT)) {
             server = false;
             Serial.end();
-            delay(3000);
+            delay(2000);
             Serial.begin(HC_05_AT_BAUD);
 
             writeLog('I', ORIGIN, 210, HC_05_AT_BAUD);
@@ -46,6 +47,9 @@ void Bt::begin() {
             cleanSerial();
 
             ver = execBtAtCommand(F("AT+VERSION"));
+#ifdef WATCH_DOG
+            wdt_reset();
+#endif
 
             if (ver.startsWith(BT_VER_05)) {
                 applyBt05();
@@ -59,12 +63,10 @@ void Bt::begin() {
         }
     }
 
-    firstRun = false;
     if (server) {
         writeLog('I', ORIGIN, 200);
         pinMode(LED_PIN, OUTPUT);
         digitalWrite(LED_PIN, HIGH);
-        Serial.setTimeout(100);
     }
 
 }
@@ -76,21 +78,7 @@ void Bt::cleanSerial() const {
 
 String Bt::getVerHC06() const {
     Serial.print(F("AT+VERSION"));
-    String ver = Serial.readString();
-    return ver;
-}
-
-bool Bt::isConnected() {
-    if (firstRun || connection_check.isTimeAfter(true)) {
-        connected = server ? checkPeerType(ASK_CLIENT) : checkPeerType(ASK_SERVER);
-        connection_check.reset();
-#ifdef DEBUG
-        if (!server && !connected) {
-            writeLog('W', ORIGIN, 410);
-        }
-#endif
-    }
-    return connected;
+    return Serial.readString();
 }
 
 String Bt::execBtAtCommand(const __FlashStringHelper *cmd) {
@@ -127,11 +115,10 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
     return s;
 }
 
-bool Bt::getConnected() {
-    return isConnected();
-}
-
 void Bt::applyBt05() {
+#ifdef WATCH_DOG
+        wdt_reset();
+#endif
     execBtAtCommand(F("AT+ORGL"));
     execBtAtCommand(F("AT+NAME="), name, 200);
     execBtAtCommand(F("AT+RMAAD"));
@@ -152,7 +139,10 @@ void Bt::applyBt05() {
     String device = devices.substring((unsigned int) dp0, (unsigned int) dp1);
 
     while (device.startsWith("+INQ:")) {
-        uint8_t dio_c = (unsigned int) device.indexOf(',');
+#ifdef WATCH_DOG
+        wdt_reset();
+#endif
+        uint8_t dio_c = static_cast<uint8_t>((unsigned int) device.indexOf(','));
         String peer_address = device.substring((unsigned int) (device.indexOf(':') + 1), dio_c);
         peer_address.replace(':', ',');
 
@@ -183,5 +173,6 @@ void Bt::execReset() {
 
 bool Bt::checkPeerType(const char *conn_type) {
     Serial.println(F("ask"));
+    Serial.flush();
     return Serial.readStringUntil('\n').indexOf(conn_type) >= 0;
 }

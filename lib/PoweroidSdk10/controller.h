@@ -65,7 +65,7 @@ private:
 
     const char *printDht() const;
 
-    void consumeSerialToBuff() const;
+    void noInfoToBuff() const;
 };
 
 

@@ -20,11 +20,11 @@ const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 class Relays {
 public:
 
-    static bool mapped;
+    bool mapped = true;
 
-    static int8_t mappings[VIRTUAL_RELAYS];
+    int8_t mappings[VIRTUAL_RELAYS];
 
-    static unsigned char status[5];
+    unsigned char status[5]= {'.', '.', '.', '.', '\0'};
 
     void power(uint8_t i, bool _power);
 

@@ -9,7 +9,7 @@ Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), 
 
 void Pwr::begin() {
 #ifdef WATCH_DOG
-    wdt_enable(WDTO_8S);
+    wdt_disable();
 #endif
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
@@ -26,16 +26,22 @@ void Pwr::begin() {
 
     loadDisarmedStates();
 
+#ifdef WATCH_DOG
+    wdt_enable(WDTO_8S);
+#endif
     if (BT){
         BT->begin();
+        CTX->passive = !BT->server;
     }
+    REL->mapped = !CTX->passive;
+    Serial.setTimeout(SERIAL_READ_TIMEOUT);
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->begin();
     }
 #endif
 #ifdef WATCH_DOG
-    wdt_enable(WDTO_1S);
+    wdt_enable(WDTO_2S);
 #endif
 }
 
@@ -50,9 +56,7 @@ void Pwr::run() {
     }
 
     if (BT){
-        CTX->passive = !BT->server;
-        REL->mapped = !CTX->passive;
-        bool newConnected = BT->getConnected();
+        bool newConnected = CMD->isConnected();
         bool updateConnected = newConnected != CTX->connected;
         CTX->refreshState = CTX->refreshState || updateConnected;
         CTX->connected = newConnected;

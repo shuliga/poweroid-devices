@@ -5,8 +5,6 @@
 #include <SoftwareSerial.h>
 #include <context.h>
 
-#define CONNECTION_CHECK 10000L
-
 #define HC_05_AT_BAUD 38400
 #define HC_06_BAUD 115200
 
@@ -23,14 +21,10 @@ const int TIMEOUT_STEP = 100;
 class Bt {
 public:
   const char *name;
-  bool firstRun = true;
   bool server = false;
   Bt(const char *id);
 
   void begin();
-
-  bool getConnected();
-  bool isConnected();
 
 private:
     bool connected = false;

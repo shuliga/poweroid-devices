@@ -2,6 +2,8 @@
 #include "global.h"
 #include "commands.h"
 
+static const char *ORIGIN = "CMD";
+
 Commands::Commands(Context &_ctx) : ctx(&_ctx) {
     cmd_str = {"get_ver",
                "get_dht",
@@ -12,7 +14,7 @@ Commands::Commands(Context &_ctx) : ctx(&_ctx) {
                "get_bin_prop_",
                "set_prop_",
                "get_prop_all",
-               "get_prop_len",
+               "get_prop_len_bin",
                "load_props",
                "store_props",
                "reset_props",
@@ -26,6 +28,8 @@ typedef const char *(Commands::*Index_fn_ptr)(uint8_t i);
 
 const char *_cmd = " -> ";
 const char *STATE_FORMAT_BUFF = {"[%i] State %s: %s"};
+
+static TimingState connection_check(CONNECTION_CHECK);
 
 const char *Commands::printProperty(uint8_t i) {
     char _desc[64];
@@ -43,28 +47,31 @@ void Commands::printBinProperty(uint8_t i) {
 }
 
 void Commands::listen() {
-    uint8_t l = 0;
     while (Serial.available()) {
-        cmd = Serial.readStringUntil('\n');
-        if (cmd.indexOf("->") >= 0) { continue; }
-//        cmd = Serial.readString();
+        if (cmd.length() == 0) {
+            cmd = Serial.readStringUntil('\n');
+        }
+        if (isResponse(cmd.c_str())) {
+            strlcpy(BUFF,cmd.c_str(), BUFF_SIZE);
 #ifdef DEBUG
-        writeLog('I', "CMD", 100, cmd.c_str());
+            writeLog('I', "RSP", 100 + ctx->passive, cmd.c_str());
 #endif
-        l++;
+            cmd = "";
+            continue;
+        }
+#ifdef DEBUG
+        writeLog('I', "CMD", 100 + ctx->passive, cmd.c_str());
+#endif
         if (ctx->passive) {
             if (cmd.indexOf(REL_PREFIX) >= 0) {
                 uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
                                                      (unsigned int) cmd.indexOf(']')).toInt();
                 int8_t i = getMappedFromVirtual(ri);
-//                ctx->RELAYS.status[2] = ri + 48;
-//                ctx->RELAYS.status[3] = cmd.length() + 48;
-                ctx->refreshState = true;
                 if (i >= 0) {
                     ctx->refreshState = true;
                     ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0);
                 }
-                return;
+                cmd = "";
             }
         }
 
@@ -76,28 +83,25 @@ void Commands::listen() {
 
         if (cmd.startsWith(cmd_str.CMD_GET_SENSOR_ALL)) {
             for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
-                printCmd(cmd, ctx->SENS.printSensor(i));
+                printCmdResponse(cmd, ctx->SENS.printSensor(i));
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_RESET_PROPS)) {
-            printCmd(cmd, NULL);
+            printCmdResponse(cmd, NULL);
             for (uint8_t i = 0; i < ctx->props_size; i++) {
                 ctx->PROPERTIES[i].runtime = ctx->PROPERTIES[i].val;
             }
             ctx->refreshProps = true;
-            return;
         }
 
-        char num[5];
-        castCommand(cmd_str.CMD_GET_PROP_LEN, itoa(ctx->props_size, num, 10));
+        char len[2] = {ctx->props_size, 0};
+        castCommand(cmd_str.CMD_GET_PROP_LEN_BIN, len);
 
         if (cmd.startsWith(cmd_str.CMD_GET_PROP_ALL)) {
             for (uint8_t i = 0; i < ctx->props_size; i++) {
-                printCmd(cmd, printProperty(i));
+                printCmdResponse(cmd, printProperty(i));
             }
-            return;
         }
 
         if (castCommand(cmd_str.CMD_LOAD_PROPS, NULL)) {
@@ -112,9 +116,8 @@ void Commands::listen() {
         if (cmd.startsWith(cmd_str.CMD_GET_PROP)) {
             uint8_t i = getIndex(cmd);
             if (i < ctx->props_size) {
-                printCmd(cmd, printProperty(i));
+                printCmdResponse(cmd, printProperty(i));
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_BIN_PROP)) {
@@ -122,7 +125,6 @@ void Commands::listen() {
             if (i < ctx->props_size) {
                 printBinProperty(i);
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_SET_PROP)) {
@@ -132,32 +134,28 @@ void Commands::listen() {
                 long v = cmd.substring((unsigned int) idx).toInt();
                 ctx->PROPERTIES[i].runtime = v * ctx->PROPERTIES[i].scale;
                 ctx->refreshProps = true;
-                printCmd(cmd, printProperty(i));
+                printCmdResponse(cmd, printProperty(i));
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
             for (uint8_t i = 0; i < state_count; i++) {
-                printCmd(cmd, printState(i));
+                printCmdResponse(cmd, printState(i));
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_RELAY_ALL)) {
             for (uint8_t i = 0; i < ctx->RELAYS.size(); i++) {
-                printCmd(cmd, NULL);
+                printCmdResponse(cmd, NULL);
                 ctx->RELAYS.printRelay(i);
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_GET_STATE)) {
             uint8_t i = getIndex(cmd);
             if (i < state_count) {
-                printCmd(cmd, printState(i));
+                printCmdResponse(cmd, printState(i));
             }
-            return;
         }
 
         if (cmd.startsWith(cmd_str.CMD_DISARM_STATE)) {
@@ -166,19 +164,44 @@ void Commands::listen() {
             if (i < state_count) {
                 disarmState(i, trigger);
                 ctx->PERS.storeState(i, trigger);
-                printCmd(cmd, printState(i));
+                printCmdResponse(cmd, printState(i));
             }
-            return;
         }
+        cmd = "";
     }
 
 }
 
-void Commands::printCmd(const String &cmd, const char *suffix) const {
+bool Commands::isResponse(const char * c) const { return strstr(c, "->") != NULL; }
+
+void Commands::printCmdResponse(const String &cmd, const char *suffix) const {
     Serial.print(cmd);
-    Serial.print(_cmd);
+    printCmd(_cmd, suffix);
+}
+
+void Commands::printCmd(const char *cmd, const char *suffix) const {
+    Serial.print(cmd);
     suffix != NULL ? Serial.println(suffix) : Serial.println();
 }
+
+
+void Commands::executeCmd(const char *_cmd, const char *suffix) {
+    printCmd(_cmd, suffix);
+    Serial.flush();
+    consumeSerialToBuff();
+    bool isResp = isResponse(BUFF);
+    if (!isResp){
+        cmd = String(BUFF);
+        consumeSerialToBuff();
+    }
+#ifdef DEBUG
+    writeLog('I', ORIGIN, 200 + ctx->passive + (isResp ? 0 : 100), _cmd);
+    writeLog('I', ORIGIN, 210 + ctx->passive + (isResp ? 0 : 100), BUFF);
+#endif
+}
+
+void Commands::consumeSerialToBuff() const { BUFF[Serial.readBytesUntil('\n', BUFF, BUFF_SIZE)] = 0; }
+
 
 uint8_t Commands::getIndex(const String &cmd) const {
     uint8_t li = (uint8_t) cmd.lastIndexOf(':');
@@ -210,10 +233,27 @@ void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
 
 bool Commands::castCommand(const char *prefix, const char *val) {
     if (cmd.startsWith(prefix)) {
-        printCmd(cmd, val);
+        printCmdResponse(cmd, val);
         return true;
     }
     return false;
 }
 
+bool Commands::isConnected() {
+    if (connection_check.isTimeAfter(true)) {
+        connected = ctx->passive ? checkPeerType(ASK_SERVER) : checkPeerType(ASK_CLIENT) ;
+        connection_check.reset();
+#ifdef DEBUG
+        if (ctx->passive && !connected) {
+            writeLog('W', ORIGIN, 410);
+        }
+#endif
+    }
+    return connected;
+}
+
+bool Commands::checkPeerType(const char *type) {
+    executeCmd(cmd_str.ASK, NULL);
+    return strstr(BUFF, type) != NULL;
+}
 

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <src/SoftwareSerial.h>
+#include <avr/wdt.h>
 #include "commons.h"
 #include "global.h"
 
@@ -8,6 +9,9 @@ SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
 
 const char *SPACE_BUFF = "                                ";
+
+static char LOG_BUFF[32];
+
 
 unsigned long hash(byte *data, unsigned long size) {
     unsigned long hash = 19;
@@ -21,30 +25,35 @@ unsigned long hash(byte *data, unsigned long size) {
     return hash;
 }
 
+char * idxToChar(uint8_t idx){
+    static char num[5];
+    return itoa(idx, num, 10);
+}
+
 void writeLog(const char level, const char *origin, const int code) {
-    sprintf(BUFF, "%c [%s] %i", level, origin, code);
+    sprintf(LOG_BUFF, "%c [%s] %i", level, origin, code);
 #ifdef SSERIAL
-    SSerial.println(BUFF);
+    SSerial.println(LOG_BUFF);
 #else
-    Serial.println(BUFF);
+    Serial.println(LOG_BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, unsigned long result) {
-    sprintf(BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
+    sprintf(LOG_BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
 #ifdef SSERIAL
-    SSerial.println(BUFF);
+    SSerial.println(LOG_BUFF);
 #else
-    Serial.println(BUFF);
+    Serial.println(LOG_BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, const char *result) {
-    sprintf(BUFF, "%c [%s] %i '%s'", level, origin, code, result);
+    sprintf(LOG_BUFF, "%c [%s] %i '%s'", level, origin, code, result);
 #ifdef SSERIAL
-    SSerial.println(BUFF);
+    SSerial.println(LOG_BUFF);
 #else
-    Serial.println(BUFF);
+    Serial.println(LOG_BUFF);
 #endif
 }
 
@@ -58,3 +67,15 @@ uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst) {
     }
     return n;
 }
+
+#ifdef WATCH_DOG
+
+// Tweak to enable Watchdog working, disables watchdog after initiation
+uint8_t mcusr_mirror __attribute__ ((section (".noinit")));
+void get_mcusr(void) __attribute__((naked)) __attribute__((section(".init3")));
+void get_mcusr(void){
+    mcusr_mirror = MCUSR;
+    MCUSR = 0;
+    wdt_disable();
+}
+#endif

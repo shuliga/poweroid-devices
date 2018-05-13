@@ -6,11 +6,11 @@
 #include "relays.h"
 
 static bool powered[RELAYS];
-unsigned char Relays::status[5] = {'.', '.', '.', '.', '\0'};
 
-bool Relays::mapped = true;
 
-int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
+// unsigned char Relays::status[5] = {'.', '.', '.', '.', '\0'};
+
+// int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
 
 void Relays::power(uint8_t i, bool _power)
 {
@@ -70,7 +70,9 @@ void Relays::printRelay(uint8_t idx)
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
 #ifdef SSERIAL
     SSerial.println(BUFF);
+    SSerial.flush();
 #else
     Serial.println(BUFF);
+    Serial.flush();
 #endif
 }

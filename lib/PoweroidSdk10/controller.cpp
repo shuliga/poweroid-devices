@@ -85,6 +85,8 @@ void Controller::outputState() const {
 
 void Controller::process() {
 
+    oled.checkConnected();
+
     McEvent event = encoderClick.checkButton();
 
     switch (state) {
@@ -163,8 +165,7 @@ void Controller::process() {
             if (!ctx->passive) {
                 cmd->storeProps();
             } else {
-                Serial.println(cmd->cmd_str.CMD_STORE_PROPS);
-                consumeSerial();
+                cmd->executeCmd(cmd->cmd_str.CMD_STORE_PROPS, NULL);
             }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
@@ -232,18 +233,6 @@ void Controller::process() {
     }
 }
 
-const char *Controller::printDht() const {
-    if (ctx->passive){
-        Serial.println(cmd->cmd_str.CMD_GET_DHT);
-        consumeSerialToBuff();
-        return strchr(BUFF, '>');
-    } else {
-        return ctx->SENS.printDht();
-    }
-}
-
-void Controller::consumeSerialToBuff() const { BUFF[Serial.readBytesUntil('\n', BUFF, BUFF_SIZE)] = 0; }
-
 bool Controller::testControl(TimingState &timer) const {
     bool fr = firstRun();
     if (fr || control_touched) {
@@ -273,15 +262,30 @@ void Controller::goToEditProp(uint8_t i) const {
     state = EDIT_PROP;
 }
 
+const char *Controller::printDht() const {
+    char * start = BUFF;
+    if (ctx->passive){
+        if (ctx->connected){
+            cmd->executeCmd(cmd->cmd_str.CMD_GET_DHT, NULL);
+            start = strchr(BUFF, '>') + 1;
+        } else {
+            noInfoToBuff();
+        }
+        return start;
+    } else {
+        return ctx->SENS.printDht();
+    }
+}
+
 void Controller::loadProperty(uint8_t idx) const {
     if (!ctx->passive) {
         flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
         copyProperty(ctx->PROPERTIES[idx], idx);
     } else {
         if (ctx->connected) {
-            Serial.print(cmd->cmd_str.CMD_GET_BIN_PROP);
-            Serial.println(idx);
-            consumeSerialToBuff();
+//            cmd->executeCmd(cmd->cmd_str.CMD_GET_PROP_LEN_BIN, NULL);
+//            prop_max = BUFF[0];
+            cmd->executeCmd(cmd->cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
             Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
             copyProperty(remoteProperty, idx);
         } else {
@@ -309,16 +313,11 @@ void Controller::updateProperty(uint8_t idx) const {
         sei();
     } else {
         if (ctx->connected) {
-            Serial.print(cmd->cmd_str.CMD_SET_PROP);
-            Serial.print(idx);
-            Serial.print(':');
-            Serial.println(prop_value);
-            consumeSerial();
+            sprintf(BUFF, "%i:%lu", idx, prop_value);
+            cmd->executeCmd(cmd->cmd_str.CMD_SET_PROP, BUFF);
         }
     }
 }
-
-void Controller::consumeSerial() const { Serial.readBytesUntil('\n', BUFF, BUFF_SIZE); }
 
 void Controller::switchDisplay(boolean inverse) const {
     oled.displayOff();
@@ -329,7 +328,7 @@ void Controller::switchDisplay(boolean inverse) const {
 
 void Controller::outputPropDescr(char *_buff) {
     oled.setTextXY(DISPLAY_BASE, 0);
-    padLine(BUFF, 2, 0);
+    padLine(_buff, 2, 0);
     oled.putString(_buff);
 }
 
@@ -356,12 +355,14 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
             brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s"
                                                                                                    : "%i"));
     if (ctx->passive && !ctx->connected){
-        strcpy(BUFF,"--");
+        noInfoToBuff();
     } else {
         sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
     }
     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }
+
+void Controller::noInfoToBuff() const { strcpy(BUFF, "--"); }
 
 
 #ifdef ENC1_PIN

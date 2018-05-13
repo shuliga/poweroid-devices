@@ -7,8 +7,8 @@
 
 #define PWR23
 
-//#define DEBUG
-//#define WATCH_DOG
+ #define DEBUG
+#define WATCH_DOG
 
 #ifdef DEBUG
     #define SSERIAL
@@ -67,6 +67,9 @@
 #endif // PWR20
 
 #define DEBOUNCE_DELAY 500L
+#define SERIAL_READ_TIMEOUT 150
+#define CONNECTION_CHECK 10000L
+
 
 #define RX_SS 8
 #define TX_SS 9
@@ -81,6 +84,7 @@ extern SoftwareSerial SSerial;
 extern const char *SPACE_BUFF;
 
 unsigned long hash(byte *data, unsigned long size);
+char * idxToChar(uint8_t idx);
 void writeLog(const char level, const char *origin, const int code);
 void writeLog(const char level, const char *origin, const int code, unsigned long result);
 void writeLog(const char level, const char *origin, const int code, const char *result);
