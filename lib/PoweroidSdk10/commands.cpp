@@ -47,34 +47,33 @@ void Commands::printBinProperty(uint8_t i) {
 }
 
 void Commands::listen() {
+    //
+    // processStatus
+    //
     while (Serial.available()) {
-        if (cmd.length() == 0) {
-            cmd = Serial.readStringUntil('\n');
-        }
-        if (isResponse(cmd.c_str())) {
-            strlcpy(BUFF,cmd.c_str(), BUFF_SIZE);
+        cmd = Serial.readStringUntil('\n');
+        if (isCommand()) break;
 #ifdef DEBUG
-            writeLog('I', "RSP", 100 + ctx->passive, cmd.c_str());
+        writeLog('I', "STS", 100 + ctx->passive, cmd.c_str());
 #endif
-            cmd = "";
-            continue;
-        }
-#ifdef DEBUG
-        writeLog('I', "CMD", 100 + ctx->passive, cmd.c_str());
-#endif
-        if (ctx->passive) {
-            if (cmd.indexOf(REL_PREFIX) >= 0) {
-                uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
-                                                     (unsigned int) cmd.indexOf(']')).toInt();
-                int8_t i = getMappedFromVirtual(ri);
-                if (i >= 0) {
-                    ctx->refreshState = true;
-                    ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0);
-                }
-                cmd = "";
+        if (ctx->passive && cmd.indexOf(REL_PREFIX) >= 0) {
+            uint8_t ri = (uint8_t) cmd.substring((unsigned int) (cmd.indexOf('[') + 1),
+                                                 (unsigned int) cmd.indexOf(']')).toInt();
+            int8_t i = getMappedFromVirtual(ri);
+            if (i >= 0) {
+                ctx->refreshState = true;
+                ctx->RELAYS.power((uint8_t) i, cmd.indexOf(REL_POWERED) > 0);
             }
         }
+    }
 
+    //
+    // processCommand
+    //
+    if (isCommand()) {
+#ifdef DEBUG
+        writeLog('I', ORIGIN, 100 + ctx->passive, cmd.c_str());
+#endif
         castCommand(cmd_str.ASK, ctx->passive ? ASK_CLIENT : ASK_SERVER);
 
         castCommand(cmd_str.CMD_GET_VER, ctx->version);
@@ -167,12 +166,13 @@ void Commands::listen() {
                 printCmdResponse(cmd, printState(i));
             }
         }
-        cmd = "";
-    }
 
+    }
+    cmd = "";
 }
 
-bool Commands::isResponse(const char * c) const { return strstr(c, "->") != NULL; }
+
+bool Commands::isResponse(const char *c) const { return strstr(c, "->") != NULL; }
 
 void Commands::printCmdResponse(const String &cmd, const char *suffix) const {
     Serial.print(cmd);
@@ -186,17 +186,13 @@ void Commands::printCmd(const char *cmd, const char *suffix) const {
 
 
 void Commands::executeCmd(const char *_cmd, const char *suffix) {
+    listen();
     printCmd(_cmd, suffix);
     Serial.flush();
     consumeSerialToBuff();
-    bool isResp = isResponse(BUFF);
-    if (!isResp){
-        cmd = String(BUFF);
-        consumeSerialToBuff();
-    }
 #ifdef DEBUG
-    writeLog('I', ORIGIN, 200 + ctx->passive + (isResp ? 0 : 100), _cmd);
-    writeLog('I', ORIGIN, 210 + ctx->passive + (isResp ? 0 : 100), BUFF);
+    writeLog('I', ORIGIN, 200 + ctx->passive, _cmd);
+    writeLog('I', ORIGIN, 210 + ctx->passive, BUFF);
 #endif
 }
 
@@ -241,7 +237,7 @@ bool Commands::castCommand(const char *prefix, const char *val) {
 
 bool Commands::isConnected() {
     if (connection_check.isTimeAfter(true)) {
-        connected = ctx->passive ? checkPeerType(ASK_SERVER) : checkPeerType(ASK_CLIENT) ;
+        connected = ctx->passive ? checkPeerType(ASK_SERVER) : checkPeerType(ASK_CLIENT);
         connection_check.reset();
 #ifdef DEBUG
         if (ctx->passive && !connected) {
@@ -255,5 +251,14 @@ bool Commands::isConnected() {
 bool Commands::checkPeerType(const char *type) {
     executeCmd(cmd_str.ASK, NULL);
     return strstr(BUFF, type) != NULL;
+}
+
+bool Commands::isCommand() {
+    for (uint8_t i = 0; i < ARRAY_SIZE(cmd_array); ++i) {
+        if (cmd.startsWith(cmd_array[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 

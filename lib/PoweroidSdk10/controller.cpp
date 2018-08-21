@@ -21,6 +21,7 @@ static enum State {
 
 static TimingState sleep_timer = TimingState(100000L);
 static TimingState autoComplete_timer = TimingState(6000L);
+static TimingState controller_timer = TimingState(100L);
 
 static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
@@ -231,6 +232,7 @@ void Controller::process() {
         outputState();
         ctx->refreshState = false;
     }
+
 }
 
 bool Controller::testControl(TimingState &timer) const {
@@ -295,22 +297,18 @@ void Controller::loadProperty(uint8_t idx) const {
 }
 
 void Controller::copyProperty(Property &prop, uint8_t idx) const {
-    cli();
     long scale = prop.scale;
     prop_value = (prop.runtime / scale);
     prop_min = (prop.minv / scale);
     prop_max = (prop.maxv / scale);
     prop_measure = prop.measure;
     c_prop_idx = idx;
-    sei();
 }
 
 void Controller::updateProperty(uint8_t idx) const {
     if (!ctx->passive) {
-        cli();
         ctx->PROPERTIES[idx].runtime = prop_value * ctx->PROPERTIES[idx].scale;
         c_prop_value = prop_value;
-        sei();
     } else {
         if (ctx->connected) {
             sprintf(BUFF, "%i:%lu", idx, prop_value);

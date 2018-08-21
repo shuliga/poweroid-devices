@@ -2,6 +2,8 @@
 #include <avr/wdt.h>
 #include "PoweroidSdk10.h"
 
+volatile uint8_t semaphor = 0;
+
 Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
     REL = &ctx.RELAYS;
     SENS = &ctx.SENS;
@@ -10,6 +12,12 @@ Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), 
 void Pwr::begin() {
 #ifdef WATCH_DOG
     wdt_disable();
+#endif
+#ifdef DEBUG
+    cli();
+    TCCR1B &= ~((1 << CS12) | (1 << CS10));
+    TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
+    sei();
 #endif
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
@@ -41,7 +49,7 @@ void Pwr::begin() {
     }
 #endif
 #ifdef WATCH_DOG
-    wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_1S);
 #endif
 }
 
@@ -49,31 +57,48 @@ void Pwr::run() {
 #ifdef WATCH_DOG
     wdt_reset();
 #endif
+#ifdef DEBUG
+    initTimer();
+#endif
+    bool newConnected = false;
+    bool updateConnected = false;
+
+    semaphor = 1;
     SENS->process();
 
+    semaphor = 2;
     if (CMD) {
         CMD->listen();
     }
 
+    semaphor = 3;
     if (BT){
-        bool newConnected = CMD->isConnected();
-        bool updateConnected = newConnected != CTX->connected;
+        newConnected = CMD->isConnected();
+        updateConnected = newConnected != CTX->connected;
         CTX->refreshState = CTX->refreshState || updateConnected;
         CTX->connected = newConnected;
-        if (updateConnected) {
-            REL->printRelays();
-        }
     }
 
+    semaphor = 4;
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->process();
     }
 #endif
+    semaphor = 5;
+    if (updateConnected && newConnected) {
+        REL->printRelays();
+    }
     if (firstRun) {
-        writeLog('I', SIGNATURE, 101);
+        writeLog('I', SIGNATURE, 100 + CTX->passive);
         firstRun = false;
     }
+#ifdef DEBUG
+    cli();
+    TCCR1B &= ~((1 << CS12) | (1 << CS10));
+    TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
+    sei();
+#endif
 }
 
 void Pwr::printVersion() {
@@ -107,3 +132,28 @@ void Pwr::power(uint8_t i, bool power) {
         CTX->refreshState = true;
     }
 }
+
+void Pwr::post() {
+    CTX->peerReady = false;
+}
+
+#ifdef DEBUG
+void initTimer() {
+// initialize Timer1
+    cli();
+    TCCR1A = 0;
+    TCCR1B = 0;
+
+    OCR1A = 15624; // 65536 - 15624; // 16000000L / 1024 / OVERTIME - 1; // set timer value 16MHz/1024/1Hz-1
+
+    TCCR1B |= (1 << WGM12); // turn on CTC mode. clear timer on compare match
+    TCCR1B |= (1 << CS12) | (1 << CS10); // 1024 prescaler
+    TIMSK1 |= (1 << OCIE1A); // enable timer compare interrupt
+    sei();
+}
+
+ISR(TIMER1_COMPA_vect) {
+    writeLog('E', "OVERTIME", semaphor);
+}
+#endif
+

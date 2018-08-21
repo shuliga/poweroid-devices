@@ -49,6 +49,7 @@ typedef struct Context {
     bool refreshState;
     bool passive;
     bool connected;
+    bool peerReady = true;
 };
 
 #endif //POWEROID_10_CONTEXT_H

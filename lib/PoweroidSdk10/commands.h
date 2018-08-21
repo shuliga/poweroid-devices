@@ -29,7 +29,11 @@ public:
 
     Commands(Context &_ctx);
 
-    CommandsStr cmd_str;
+    union {
+        CommandsStr cmd_str;
+        char * cmd_array[17];
+    };
+
 
     void listen();
 
@@ -68,6 +72,12 @@ private:
     void consumeSerialToBuff() const;
 
     bool checkPeerType(const char *type);
+
+    bool processCommand();
+
+    void processStatus();
+
+    bool isCommand();
 };
 
 #endif // COMMANDS_H

@@ -7,7 +7,7 @@
 
 #define PWR23
 
- #define DEBUG
+#define DEBUG
 #define WATCH_DOG
 
 #ifdef DEBUG
@@ -67,7 +67,7 @@
 #endif // PWR20
 
 #define DEBOUNCE_DELAY 500L
-#define SERIAL_READ_TIMEOUT 150
+#define SERIAL_READ_TIMEOUT 250
 #define CONNECTION_CHECK 10000L
 
 

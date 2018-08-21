@@ -38,9 +38,9 @@ void Bt::begin() {
             server = false;
             Serial.end();
             delay(2000);
-            Serial.begin(HC_05_AT_BAUD);
+            Serial.begin(HC_05_AT_BAUD_FAST);
 
-            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD);
+            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD_FAST);
 
             Serial.println("AT");
             delay(200);
@@ -60,6 +60,8 @@ void Bt::begin() {
                     connected = true;
                 }
             }
+            Serial.end();
+            Serial.begin(HC_05_AT_BAUD_FAST);
         }
     }
 
@@ -105,9 +107,11 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, uns
     }
     while ((Serial.available() || active_timeout > _delay) && !s.endsWith("OK\r\n") && !s.endsWith("ERROR")) {
         char c = (char) Serial.read();
-        c >= ' ' && c <= 'z' || c == '\r' || c == '\n' ? s += c : s += ' ';
-        _delay += 20;
-        delay(20);
+        _delay += 5;
+        delay(5);
+        if (c < 0) continue;
+//        c >= ' ' && c <= 'z' || c == '\r' || c == '\n' ? s += c : s += ' ';
+        s += c;
     }
 #if defined(SSERIAL) and defined(DEBUG)
     SSerial.print(s);
@@ -124,43 +128,36 @@ void Bt::applyBt05() {
     execBtAtCommand(F("AT+RMAAD"));
     execBtAtCommand(F("AT+ROLE=1")); // ser role to master
     execBtAtCommand(F("AT+POLAR=1,0")); // PIN09 output low level indicates successful connection
+    execBtAtCommand(F(HC_05_AT_BAUD_AT)); // Set baud rate
     execReset();
     execBtAtCommand(F("AT+CMODE=0")); // connect only to predefined address
     execBtAtCommand(F("AT+CLASS=1F00")); // iquire only devices with type 1F00
-    execBtAtCommand(F("AT+INQM=1,2,4")); // inquire rssi mode, 2 items, timeout 5 sec
+    execBtAtCommand(F("AT+INQM=1,2,3")); // inquire rssi mode, 2 items, timeout 1.28 * 3 sec
 
-    String devices = execBtAtCommand(F("AT+INQ"), 0, 5100); // Inquire devices, until OK
+    String devices = execBtAtCommand(F("AT+INQ"), 0, 4000); // Inquire devices, until OK
 
-    int dp0 = 0;
     int dp1 = devices.indexOf('\r');
     if (dp1 < 0)
         return;
 
-    String device = devices.substring((unsigned int) dp0, (unsigned int) dp1);
-
-    while (device.startsWith("+INQ:")) {
+    String device = devices.substring(0, (unsigned int) dp1);
+#ifdef SSERIAL
+    SSerial.println();
+    SSerial.print("Device found: ");
+    SSerial.println(device);
+#endif
+    if (device.startsWith("+INQ:")) {
 #ifdef WATCH_DOG
         wdt_reset();
 #endif
-        uint8_t dio_c = static_cast<uint8_t>((unsigned int) device.indexOf(','));
-        String peer_address = device.substring((unsigned int) (device.indexOf(':') + 1), dio_c);
+        String peer_address = device.substring((unsigned int) (device.indexOf(':') + 1), (unsigned int) device.indexOf(','));
         peer_address.replace(':', ',');
 
-        dp0 = devices.indexOf('+', (unsigned int) dp1);
-        dp1 = devices.indexOf('\n', (unsigned int) dp0);
-        device = devices.substring((unsigned int) dp0, (unsigned int) dp1);
-//
-//        String peer_name = execBtAtCommand(F("AT+RNAME?"), peer_address.c_str(),
-//                                           5000);// get pairing candidate name, sample address +INQ:2016:10:202848,1F00,FFA6
-//
-//        if (peer_name.startsWith("+RNAME:PWR-")) {
         execBtAtCommand(F("AT+PSWD="), PASSWD, 0);
         execBtAtCommand(F("AT+BIND="), peer_address.c_str(), 0);
         execBtAtCommand(F("AT+POLAR=1,1")); // PIN09 output HIGH level indicates successful connection
         execReset();
         execBtAtCommand(F("AT+POLAR=1,0")); // PIN09 output LOW level indicates successful connection
-        break;
-//        }
     }
 
 }

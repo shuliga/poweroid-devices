@@ -163,4 +163,7 @@ void loop() {
     PWR.power(0, fan_power);
     PWR.power(1, floor_power);
 
+
+    PWR.post();
+
 }

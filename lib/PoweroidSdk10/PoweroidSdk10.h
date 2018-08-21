@@ -47,6 +47,8 @@ public:
 
     void power(uint8_t i, bool i1);
 
+    void post();
+
 private:
 
     bool firstRun = true;
@@ -54,6 +56,11 @@ private:
     void init_pins();
 
     void loadDisarmedStates();
+
 };
+
+#ifdef DEBUG
+void initTimer();
+#endif
 
 #endif //POWEROID_SDK_10_H
