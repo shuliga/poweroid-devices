@@ -43,7 +43,7 @@ private:
 
     void updateProperty(uint8_t idx) const;
 
-    void loadProperty(uint8_t idx) const;
+    bool loadProperty(uint8_t idx) const;
 
     void goToEditProp(uint8_t i) const;
 

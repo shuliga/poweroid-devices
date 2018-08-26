@@ -91,10 +91,11 @@ void Controller::process() {
     switch (state) {
         case EDIT_PROP: {
 
-            if (testControl(autoComplete_timer)) {
-                loadProperty(prop_idx);
-                outputPropDescr(BUFF);
-                outputStatus(F("Edit value:"), old_prop_value);
+            if (testControl(autoComplete_timer) || ctx->refreshProps) {
+                if (loadProperty(prop_idx)){
+                    outputPropDescr(BUFF);
+                    outputStatus(F("Edit value:"), old_prop_value);
+                }
             }
 
             if (c_prop_value != prop_value || ctx->refreshProps) {
@@ -119,11 +120,12 @@ void Controller::process() {
         }
         case BROWSE: {
 
-            if (testControl(sleep_timer) || c_prop_idx != prop_idx || ctx->refreshProps) {
-                loadProperty(prop_idx);
-                outputPropDescr(BUFF);
-                outputPropVal(prop_measure, (int16_t) prop_value, false, true);
-                outputStatus(F("Property:"), prop_idx + 1);
+            if (testControl(sleep_timer) || c_prop_idx != prop_idx || ctx->refreshProps || ctx->refreshState) {
+                if (loadProperty(prop_idx)) {
+                    outputPropDescr(BUFF);
+                    outputPropVal(prop_measure, (int16_t) prop_value, false, true);
+                    outputStatus(F("Property:"), prop_idx + 1);
+                }
             }
 
             if (event == CLICK && canGoToEdit()) {
@@ -235,6 +237,7 @@ void Controller::process() {
         outputState();
         ctx->refreshState = false;
     }
+    ctx->refreshProps = false;
 
 }
 
@@ -287,7 +290,8 @@ const char *Controller::printDht() const {
     }
 }
 
-void Controller::loadProperty(uint8_t idx) const {
+bool Controller::loadProperty(uint8_t idx) const {
+    c_prop_idx = idx;
     if (!ctx->passive) {
         flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
         copyProperty(ctx->PROPERTIES[idx], idx);
@@ -299,12 +303,13 @@ void Controller::loadProperty(uint8_t idx) const {
                 copyProperty(ctx->remoteProperty, idx);
             } else {
                 cmd->printCmd(cmd->cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
+                return false;
             }
         } else {
             BUFF[0] = 0;
         }
     }
-    c_prop_idx = idx;
+    return true;
 }
 
 void Controller::copyProperty(Property &prop, uint8_t idx) const {
@@ -318,13 +323,13 @@ void Controller::copyProperty(Property &prop, uint8_t idx) const {
 void Controller::updateProperty(uint8_t idx) const {
     if (!ctx->passive) {
         ctx->PROPERTIES[idx].runtime = prop_value * ctx->PROPERTIES[idx].scale;
-        c_prop_value = prop_value;
     } else {
         if (ctx->connected) {
             sprintf(BUFF, "%i:%lu", idx, prop_value);
             cmd->printCmd(cmd->cmd_str.CMD_SET_PROP, BUFF);
         }
     }
+    c_prop_value = prop_value;
 }
 
 void Controller::switchDisplay(boolean inverse) const {

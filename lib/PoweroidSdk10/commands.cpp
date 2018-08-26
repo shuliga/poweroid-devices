@@ -54,13 +54,9 @@ void Commands::listen() {
 #ifdef DEBUG
             writeLog('I', ORIGIN, 200 + ctx->passive, cmd.c_str());
 #endif
-if (true) {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH);
-    delay(125);
-    digitalWrite(LED_PIN, LOW);
-    digitalWrite(LED_PIN, LOW);
-}
+    delay(5);
 
             castCommand(cmd_str.CMD_GET_VER, ctx->version);
 
@@ -70,8 +66,6 @@ if (true) {
                 ctx->peerReady = true;
                 if (cmd.indexOf(MODE_ASK) > 0) {
                     printCmdResponse(cmd, ctx->passive ? MODE_CLIENT : MODE_SERVER);
-                } else {
-//                    ctx->passive = cmd.indexOf(MODE_CLIENT) > 0;
                 }
             }
 
@@ -176,6 +170,7 @@ if (true) {
                 disarmState(i, trigger);
             }
 
+            digitalWrite(LED_PIN, LOW);
         } else {
 #ifdef DEBUG
             writeLog('I', ORIGIN, 210 + ctx->passive, cmd.c_str());
