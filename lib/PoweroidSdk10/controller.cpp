@@ -169,13 +169,14 @@ void Controller::process() {
             if (!ctx->passive) {
                 cmd->storeProps();
             } else {
-                cmd->printCmdResponse(cmd->cmd_str.CMD_STORE_PROPS, NULL);
+                cmd->printCmd(cmd->cmd_str.CMD_STORE_PROPS, NULL);
             }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
             goToBrowse();
             break;
         }
+
         case SLEEP: {
             if (firstRun()) {
                 sleep_timer.reset();

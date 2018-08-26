@@ -10,7 +10,7 @@ SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 
 // const char *SPACE_BUFF = "                ";
 
-static char LOG_BUFF[32];
+// static char LOG_BUFF[32];
 
 
 unsigned long hash(byte *data, unsigned long size) {
@@ -31,29 +31,29 @@ char * idxToChar(uint8_t idx){
 }
 
 void writeLog(const char level, const char *origin, const int code) {
-    sprintf(LOG_BUFF, "%c [%s] %i", level, origin, code);
+    sprintf(BUFF, "%c [%s] %i", level, origin, code);
 #ifdef SSERIAL
     SSerial.println(LOG_BUFF);
 #else
-    Serial.println(LOG_BUFF);
+    Serial.println(BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, unsigned long result) {
-    sprintf(LOG_BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
+    sprintf(BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
 #ifdef SSERIAL
     SSerial.println(LOG_BUFF);
 #else
-    Serial.println(LOG_BUFF);
+    Serial.println(BUFF);
 #endif
 }
 
 void writeLog(const char level, const char *origin, const int code, const char *result) {
-    sprintf(LOG_BUFF, "%c [%s] %i '%s'", level, origin, code, result);
+    sprintf(BUFF, "%c [%s] %i '%s'", level, origin, code, result);
 #ifdef SSERIAL
     SSerial.println(LOG_BUFF);
 #else
-    Serial.println(LOG_BUFF);
+    Serial.println(BUFF);
 #endif
 }
 

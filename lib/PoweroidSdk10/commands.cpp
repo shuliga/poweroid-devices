@@ -54,20 +54,19 @@ void Commands::listen() {
 #ifdef DEBUG
             writeLog('I', ORIGIN, 200 + ctx->passive, cmd.c_str());
 #endif
+if (true) {
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
+    delay(125);
+    digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+}
+
             castCommand(cmd_str.CMD_GET_VER, ctx->version);
 
             castCommand(cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
             if (cmd.startsWith(cmd_str.MODE)) {
-                if (true) {
-                    pinMode(LED_PIN, OUTPUT);
-                    digitalWrite(LED_PIN, HIGH);
-                    delay(250);
-                    digitalWrite(LED_PIN, LOW);
-                } else {
-                    digitalWrite(LED_PIN, LOW);
-                }
-
                 ctx->peerReady = true;
                 if (cmd.indexOf(MODE_ASK) > 0) {
                     printCmdResponse(cmd, ctx->passive ? MODE_CLIENT : MODE_SERVER);
@@ -87,11 +86,6 @@ void Commands::listen() {
                 for (uint8_t i = 0; i < ctx->props_size; i++) {
                     ctx->PROPERTIES[i].runtime = ctx->PROPERTIES[i].val;
                 }
-                ctx->refreshProps = true;
-            }
-
-            if (cmd.startsWith(cmd_str.CMD_SET_BIN_PROP)) {
-                Serial.readBytes((uint8_t *) &ctx->remoteProperty, sizeof(Property));
                 ctx->refreshProps = true;
             }
 
@@ -130,11 +124,19 @@ void Commands::listen() {
                 }
             }
 
+            if (cmd.startsWith(cmd_str.CMD_SET_BIN_PROP)) {
+                strcpy(BUFF, Serial.readStringUntil('\n').c_str());
+                Serial.readBytes((uint8_t *) &ctx->remoteProperty, sizeof(Property));
+                ctx->refreshProps = true;
+            }
+
             if (cmd.startsWith(cmd_str.CMD_GET_BIN_PROP)) {
                 uint8_t i = getIndex();
                 if (i < ctx->props_size) {
-                    printCmd(cmd_str.CMD_SET_BIN_PROP, NULL);
+                    printCmd(cmd_str.CMD_SET_BIN_PROP, idxToChar(i));
+                    Serial.flush();
                     printBinProperty(i);
+                    Serial.flush();
                 }
             }
 
