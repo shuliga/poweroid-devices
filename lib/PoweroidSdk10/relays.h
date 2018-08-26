@@ -22,7 +22,7 @@ public:
 
     bool mapped = true;
 
-    int8_t mappings[VIRTUAL_RELAYS];
+    int8_t mappings[VIRTUAL_RELAYS] = {2, 3};
 
     unsigned char status[5]= {'.', '.', '.', '.', '\0'};
 

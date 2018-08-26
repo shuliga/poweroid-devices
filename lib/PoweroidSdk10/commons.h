@@ -82,8 +82,6 @@
 extern SoftwareSerial SSerial;
 #endif
 
-extern const char *SPACE_BUFF;
-
 unsigned long hash(byte *data, unsigned long size);
 char * idxToChar(uint8_t idx);
 void writeLog(const char level, const char *origin, const int code);

@@ -4,13 +4,9 @@
 
 #include "global.h"
 #include "relays.h"
+#include "common_commands.h"
 
 static bool powered[RELAYS];
-
-
-// unsigned char Relays::status[5] = {'.', '.', '.', '.', '\0'};
-
-// int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
 
 void Relays::power(uint8_t i, bool _power)
 {
@@ -29,6 +25,7 @@ void Relays::power(uint8_t i, bool _power)
             {
                 powered[mappedIdx] = _power;
                 printRelay((uint8_t) mappedIdx);
+                printCmd(cu.cmd_str.CMD_SET_RELAY, idxToChar(mappedIdx));
             }
         }
     }

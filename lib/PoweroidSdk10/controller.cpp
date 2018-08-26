@@ -9,6 +9,7 @@
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
+#include "common_commands.h"
 
 #ifndef NO_CONTROLLER
 
@@ -171,7 +172,7 @@ void Controller::process() {
             if (!ctx->passive) {
                 cmd->storeProps();
             } else {
-                cmd->printCmd(cmd->cmd_str.CMD_STORE_PROPS, NULL);
+                printCmd(cu.cmd_str.CMD_STORE_PROPS, NULL);
             }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
@@ -279,7 +280,7 @@ const char *Controller::printDht() const {
     char * start = BUFF;
     if (ctx->passive){
         if (ctx->connected){
-            cmd->printCmd(cmd->cmd_str.CMD_GET_DHT, NULL);
+            printCmd(cu.cmd_str.CMD_GET_DHT, NULL);
             start = strchr(BUFF, '>') + 1;
         } else {
             noInfoToBuff();
@@ -302,7 +303,7 @@ bool Controller::loadProperty(uint8_t idx) const {
             if (ctx->refreshProps) {
                 copyProperty(ctx->remoteProperty, idx);
             } else {
-                cmd->printCmd(cmd->cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
+                printCmd(cu.cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
                 return false;
             }
         } else {
@@ -326,7 +327,7 @@ void Controller::updateProperty(uint8_t idx) const {
     } else {
         if (ctx->connected) {
             sprintf(BUFF, "%i:%lu", idx, prop_value);
-            cmd->printCmd(cmd->cmd_str.CMD_SET_PROP, BUFF);
+            printCmd(cu.cmd_str.CMD_SET_PROP, BUFF);
         }
     }
     c_prop_value = prop_value;
