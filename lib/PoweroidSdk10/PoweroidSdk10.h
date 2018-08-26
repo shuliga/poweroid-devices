@@ -47,8 +47,6 @@ public:
 
     void power(uint8_t i, bool i1);
 
-    void post();
-
 private:
 
     bool firstRun = true;

@@ -102,7 +102,7 @@ void Persistence::checkFactoryReset(Property *props) {
         writeLog('I', ORIGIN, 200);
 #endif
         storeProperties(props);
-        EEPROM.put(STATES_OFFSET, 0); // Clear state DISARM flags
+        EEPROM.write(STATES_OFFSET, 0); // Clear state DISARM flags
     }
 }
 
@@ -111,6 +111,6 @@ bool Persistence::loadState(uint8_t id) {
 }
 
 void Persistence::storeState(uint8_t id, bool state) {
-    EEPROM.put(STATES_OFFSET,
-               state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & (~(1 << id)));
+    EEPROM.write(STATES_OFFSET,
+               state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & ~(1 << id));
 }

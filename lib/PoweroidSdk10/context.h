@@ -39,6 +39,7 @@ typedef struct Context {
     Relays RELAYS;
 
     Property *PROPERTIES;
+    Property remoteProperty;
     const uint8_t props_size;
     const char *id;
 
@@ -48,8 +49,8 @@ typedef struct Context {
     bool refreshProps;
     bool refreshState;
     bool passive;
-    bool connected;
-    bool peerReady = true;
+    bool connected = false;
+    bool peerReady;
 };
 
 #endif //POWEROID_10_CONTEXT_H

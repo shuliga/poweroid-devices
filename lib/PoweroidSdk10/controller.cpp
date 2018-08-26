@@ -21,7 +21,6 @@ static enum State {
 
 static TimingState sleep_timer = TimingState(100000L);
 static TimingState autoComplete_timer = TimingState(6000L);
-static TimingState controller_timer = TimingState(100L);
 
 static volatile bool control_touched = false;
 static volatile uint8_t prop_idx = 0;
@@ -31,8 +30,6 @@ static volatile long prop_value;
 static volatile int props_idx_max = 0;
 static volatile int state_idx_max = 0;
 
-
-static Property remoteProperty;
 
 static int8_t c_prop_idx = -1;
 static int8_t c_state_idx = -1;
@@ -62,6 +59,7 @@ void Controller::begin() {
 }
 
 void Controller::initEncoderInterrupts() {
+    cli();
     PCICR |= (1 << PCIE2);
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
     sei();
@@ -103,17 +101,20 @@ void Controller::process() {
                 updateProperty(prop_idx);
                 outputPropVal(prop_measure, (int16_t) prop_value, true, true);
             }
+
             if (event == CLICK || autoComplete_timer.isTimeAfter(true)) {
                 goToBrowse();
-            };
+            }
+
             if (event == DOUBLE_CLICK) {
                 prop_value = old_prop_value;
                 updateProperty(prop_idx);
                 goToBrowse();
-            };
+            }
+
             if (event == HOLD) {
                 state = STORE;
-            };
+            }
             break;
         }
         case BROWSE: {
@@ -125,17 +126,17 @@ void Controller::process() {
                 outputStatus(F("Property:"), prop_idx + 1);
             }
 
-            if (event == CLICK) {
+            if (event == CLICK && canGoToEdit()) {
                 goToEditProp(prop_idx);
-            };
+            }
 
             if (event == HOLD || sleep_timer.isTimeAfter(true)) {
                 state = SLEEP;
-            };
+            }
 
             if (event == DOUBLE_CLICK && !ctx->passive) {
                 state = STATES;
-            };
+            }
 
             break;
         }
@@ -150,13 +151,15 @@ void Controller::process() {
             }
 
             if (event == HOLD) {
-                disarmState(state_idx, strcmp(getState(state_idx)->state, "DISARM") != 0);
+                bool disarm = strcmp(getState(state_idx)->state, "DISARM") != 0;
+                disarmState(state_idx, disarm);
+                cmd->disarmState(state_idx, disarm);
                 c_state_idx = -1;
-            };
+            }
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
                 state = BROWSE;
-            };
+            }
 
             break;
         }
@@ -166,7 +169,7 @@ void Controller::process() {
             if (!ctx->passive) {
                 cmd->storeProps();
             } else {
-                cmd->executeCmd(cmd->cmd_str.CMD_STORE_PROPS, NULL);
+                cmd->printCmdResponse(cmd->cmd_str.CMD_STORE_PROPS, NULL);
             }
             outputStatus(F("<Storing...>"), prop_value);
             delay(500);
@@ -203,7 +206,7 @@ void Controller::process() {
                 state = BROWSE;
             };
 
-            if (control_touched && ctx->defaultPropertyIdx >= 0) {
+            if (control_touched && ctx->defaultPropertyIdx >= 0 && canGoToEdit()) {
                 control_touched = false;
                 switchDisplay(true);
                 prop_idx = (uint8_t) ctx->defaultPropertyIdx;
@@ -227,7 +230,6 @@ void Controller::process() {
             break;
         }
     }
-    ctx->refreshProps = false;
     if (ctx->refreshState && state != SUSPEND && state != SLEEP) {
         outputState();
         ctx->refreshState = false;
@@ -258,17 +260,22 @@ bool Controller::firstRun() const {
 }
 
 void Controller::goToEditProp(uint8_t i) const {
+
     c_prop_value = -1; // invalidate cache
     c_prop_idx = -1; // invalidate cache
     old_prop_value = prop_value; // for reminder in status
     state = EDIT_PROP;
 }
 
+bool inline Controller::canGoToEdit(){
+    return !(ctx->passive && !ctx->connected);
+}
+
 const char *Controller::printDht() const {
     char * start = BUFF;
     if (ctx->passive){
         if (ctx->connected){
-            cmd->executeCmd(cmd->cmd_str.CMD_GET_DHT, NULL);
+            cmd->printCmd(cmd->cmd_str.CMD_GET_DHT, NULL);
             start = strchr(BUFF, '>') + 1;
         } else {
             noInfoToBuff();
@@ -287,13 +294,16 @@ void Controller::loadProperty(uint8_t idx) const {
         if (ctx->connected) {
 //            cmd->executeCmd(cmd->cmd_str.CMD_GET_PROP_LEN_BIN, NULL);
 //            prop_max = BUFF[0];
-            cmd->executeCmd(cmd->cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
-            Serial.readBytes((uint8_t *) &remoteProperty, sizeof(Property));
-            copyProperty(remoteProperty, idx);
+            if (ctx->refreshProps) {
+                copyProperty(ctx->remoteProperty, idx);
+            } else {
+                cmd->printCmd(cmd->cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
+            }
         } else {
             BUFF[0] = 0;
         }
     }
+    c_prop_idx = idx;
 }
 
 void Controller::copyProperty(Property &prop, uint8_t idx) const {
@@ -302,7 +312,6 @@ void Controller::copyProperty(Property &prop, uint8_t idx) const {
     prop_min = (prop.minv / scale);
     prop_max = (prop.maxv / scale);
     prop_measure = prop.measure;
-    c_prop_idx = idx;
 }
 
 void Controller::updateProperty(uint8_t idx) const {
@@ -312,7 +321,7 @@ void Controller::updateProperty(uint8_t idx) const {
     } else {
         if (ctx->connected) {
             sprintf(BUFF, "%i:%lu", idx, prop_value);
-            cmd->executeCmd(cmd->cmd_str.CMD_SET_PROP, BUFF);
+            cmd->printCmd(cmd->cmd_str.CMD_SET_PROP, BUFF);
         }
     }
 }
@@ -325,9 +334,11 @@ void Controller::switchDisplay(boolean inverse) const {
 }
 
 void Controller::outputPropDescr(char *_buff) {
-    oled.setTextXY(DISPLAY_BASE, 0);
-    padLine(_buff, 2, 0);
-    oled.putString(_buff);
+    if (canGoToEdit()) {
+        oled.setTextXY(DISPLAY_BASE, 0);
+        padLine(_buff, 2, 0);
+        oled.putString(_buff);
+    }
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
@@ -339,12 +350,15 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     oled.putNumber(val);
 }
 
-
-void inline Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
-    strncat(_buff, SPACE_BUFF, LINE_SIZE * lines - strlen(_buff) - tail);
+void Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
+    uint8_t  t = LINE_SIZE * lines - tail;
+    for(uint8_t i = strlen(_buff); i < t; i++){
+        _buff[i] = ' ';
+    }
+    _buff[t] = 0;
 }
 
-uint8_t Controller::getNumberOfDigits(long i) {
+uint8_t inline Controller::getNumberOfDigits(long i) {
     return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
 }
 
@@ -352,10 +366,10 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
     const char *fmt =
             brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s"
                                                                                                    : "%i"));
-    if (ctx->passive && !ctx->connected){
-        noInfoToBuff();
-    } else {
+    if (canGoToEdit()){
         sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
+    } else {
+        noInfoToBuff();
     }
     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }

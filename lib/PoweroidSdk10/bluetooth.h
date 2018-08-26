@@ -33,7 +33,6 @@ public:
   void begin();
 
 private:
-    bool connected = false;
 
     String execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout);
     String execBtAtCommand(const __FlashStringHelper *cmd);

@@ -34,22 +34,24 @@ void Pwr::begin() {
 
     loadDisarmedStates();
 
-#ifdef WATCH_DOG
+    #ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
 #endif
     if (BT){
         BT->begin();
         CTX->passive = !BT->server;
     }
+
     REL->mapped = !CTX->passive;
     Serial.setTimeout(SERIAL_READ_TIMEOUT);
+    writeLog('I', "PWR", 200 + CTX->passive);
+#ifdef WATCH_DOG
+    wdt_enable(WDTO_2S);
+#endif
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->begin();
     }
-#endif
-#ifdef WATCH_DOG
-    wdt_enable(WDTO_1S);
 #endif
 }
 
@@ -85,9 +87,10 @@ void Pwr::run() {
         CTRL->process();
     }
 #endif
+
     semaphor = 5;
     if (updateConnected && newConnected) {
-        REL->printRelays();
+        REL->castMappedRelays();
     }
     if (firstRun) {
         writeLog('I', SIGNATURE, 100 + CTX->passive);
@@ -131,10 +134,6 @@ void Pwr::power(uint8_t i, bool power) {
         REL->power(i, power);
         CTX->refreshState = true;
     }
-}
-
-void Pwr::post() {
-    CTX->peerReady = false;
 }
 
 #ifdef DEBUG

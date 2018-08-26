@@ -30,13 +30,15 @@ public:
 
     uint8_t size();
 
-    void printRelay(uint8_t idx);
+    const char * printRelay(uint8_t idx);
 
     unsigned char * relStatus();
 
     void reset();
 
-    void printRelays();
+    void castMappedRelays();
+
+    int8_t getMappedFromVirtual(uint8_t i);
 };
 
 

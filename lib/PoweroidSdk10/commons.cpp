@@ -8,7 +8,7 @@
 SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
 
-const char *SPACE_BUFF = "                                ";
+// const char *SPACE_BUFF = "                ";
 
 static char LOG_BUFF[32];
 

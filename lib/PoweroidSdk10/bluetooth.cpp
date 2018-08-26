@@ -19,25 +19,20 @@ Bt::Bt(const char *id) {
 }
 
 void Bt::begin() {
-    delay(1000);
-    String ver = getVerHC06();
+
+    delay(600);
+
     server = true;
-    if (ver.startsWith(BT_VER_06)) {
-        Serial.print(F("AT+BAUD8"));
-    }
-    cleanSerial();
-    Serial.end();
-    delay(1000);
     Serial.begin(HC_06_BAUD);
-    ver = getVerHC06();
+    String ver = getVerHC06();
+
     if (ver.startsWith(BT_VER_06)) {
         Serial.print(F("AT+NAME"));
         Serial.print(name);
     } else {
-        if (!checkPeerType(ASK_CLIENT)) {
+        if (!checkPeerType(MODE_CLIENT)) {
             server = false;
             Serial.end();
-            delay(2000);
             Serial.begin(HC_05_AT_BAUD_FAST);
 
             writeLog('I', ORIGIN, 210, HC_05_AT_BAUD_FAST);
@@ -50,27 +45,15 @@ void Bt::begin() {
 #ifdef WATCH_DOG
             wdt_reset();
 #endif
-
             if (ver.startsWith(BT_VER_05)) {
                 applyBt05();
-                connected = true;
             } else {
-                if (checkPeerType(ASK_SERVER)) {
+                if (checkPeerType(MODE_SERVER)) {
                     writeLog('I', ORIGIN, 211);
-                    connected = true;
                 }
             }
-            Serial.end();
-            Serial.begin(HC_05_AT_BAUD_FAST);
         }
     }
-
-    if (server) {
-        writeLog('I', ORIGIN, 200);
-        pinMode(LED_PIN, OUTPUT);
-        digitalWrite(LED_PIN, HIGH);
-    }
-
 }
 
 void Bt::cleanSerial() const {
@@ -128,7 +111,7 @@ void Bt::applyBt05() {
     execBtAtCommand(F("AT+RMAAD"));
     execBtAtCommand(F("AT+ROLE=1")); // ser role to master
     execBtAtCommand(F("AT+POLAR=1,0")); // PIN09 output low level indicates successful connection
-    execBtAtCommand(F(HC_05_AT_BAUD_AT)); // Set baud rate
+//    execBtAtCommand(F(HC_05_AT_BAUD_AT)); // Set baud rate
     execReset();
     execBtAtCommand(F("AT+CMODE=0")); // connect only to predefined address
     execBtAtCommand(F("AT+CLASS=1F00")); // iquire only devices with type 1F00
@@ -169,7 +152,9 @@ void Bt::execReset() {
 }
 
 bool Bt::checkPeerType(const char *conn_type) {
-    Serial.println(F("ask"));
+    delay(500);
+    cleanSerial();
+    Serial.println(F("mode ask"));
     Serial.flush();
     return Serial.readStringUntil('\n').indexOf(conn_type) >= 0;
 }
