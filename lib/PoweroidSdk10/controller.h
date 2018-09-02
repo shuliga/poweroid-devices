@@ -59,10 +59,6 @@ private:
 
     void outputState() const;
 
-    const char *printDht() const;
-
-    void noInfoToBuff() const;
-
     bool canGoToEdit();
 };
 

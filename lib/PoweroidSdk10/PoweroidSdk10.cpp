@@ -19,7 +19,6 @@ void Pwr::begin() {
     TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
     sei();
 #endif
-    Serial.setTimeout(SERIAL_READ_TIMEOUT);
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
@@ -31,10 +30,6 @@ void Pwr::begin() {
 
     CTX->PERS.begin();
 
-    SENS->initSensors();
-
-    loadDisarmedStates();
-
     #ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
 #endif
@@ -42,6 +37,10 @@ void Pwr::begin() {
         BT->begin();
         CTX->passive = !BT->server;
     }
+
+    SENS->initSensors(!CTX->passive);
+
+    loadDisarmedStates();
 
     REL->mapped = !CTX->passive;
     writeLog('I', "PWR", 200 + CTX->passive);
@@ -53,6 +52,7 @@ void Pwr::begin() {
         CTRL->begin();
     }
 #endif
+    Serial.setTimeout(SERIAL_READ_TIMEOUT);
 }
 
 void Pwr::run() {

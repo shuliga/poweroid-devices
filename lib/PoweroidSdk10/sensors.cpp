@@ -4,6 +4,7 @@
 
 #include "global.h"
 #include "sensors.h"
+#include "commands.h"
 
 // Console output codes
 // 100 -
@@ -24,6 +25,8 @@ static TimingState pollTiming = TimingState(5000L);
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 static bool installed[ARRAY_SIZE(IN_PINS)];
 static bool dht_installed;
+static bool propagate = false;
+static bool dht_set = false;
 
 Sensors::Sensors() : dht(DHT_PIN, DHTTYPE) {
 }
@@ -48,6 +51,10 @@ void Sensors::updateTnH() {
     if (dht_installed && pollTiming.ping()) {
         temp = dht.readTemperature();
         humid = dht.readHumidity();
+        if (propagate) {
+            sprintf(BUFF, ":%c%c", getInt(temp), getInt(humid));
+            printCmd(cu.cmd_str.CMD_SET_DHT, BUFF);
+        }
     }
 }
 
@@ -82,7 +89,8 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
     return inst || sign;
 }
 
-void Sensors::initSensors() {
+void Sensors::initSensors(bool _propagate) {
+    propagate = _propagate;
     delay(1000L);
     searchDht();
     pollTiming.reset();
@@ -129,14 +137,21 @@ uint8_t Sensors::size() {
 }
 
 const char *Sensors::printDht() {
-    sprintf(BUFF, "%i~C, %i%%", (int) floor(temp + 0.5), (int) floor(humid + 0.5));
+    if (dht_installed || dht_set) {
+        sprintf(BUFF, "%i~C, %i%%", getInt(temp), getInt(humid));
+    } else {
+        noInfoToBuff();
+    }
     return BUFF;
 }
+
+int8_t Sensors::getInt(float f) const { return (int8_t) floor(f + 0.5); }
 
 void Sensors::setDht(int8_t _temp, uint8_t _humid) {
     if (!dht_installed) {
         temp = _temp;
         humid = _humid;
+        dht_set = true;
     }
 }
 

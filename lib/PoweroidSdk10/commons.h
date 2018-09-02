@@ -89,6 +89,6 @@ void writeLog(const char level, const char *origin, const int code, unsigned lon
 void writeLog(const char level, const char *origin, const int code, const char *result);
 uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
 uint8_t getNumberOfDigits(long i);
-
+void noInfoToBuff();
 #endif
 

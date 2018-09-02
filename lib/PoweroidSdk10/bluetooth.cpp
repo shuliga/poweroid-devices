@@ -20,7 +20,7 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
 
-    delay(600);
+    delay(1000);
 
     server = true;
     Serial.begin(HC_06_BAUD);
@@ -63,6 +63,7 @@ void Bt::cleanSerial() const {
 
 String Bt::getVerHC06() const {
     Serial.print(F("AT+VERSION"));
+    Serial.flush();
     return Serial.readString();
 }
 

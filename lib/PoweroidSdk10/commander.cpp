@@ -41,7 +41,8 @@ void Commands::listen() {
             castCommand(cu.cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_DHT)) {
-                ctx->SENS.setDht(atoi(cmd.substring(cmd.indexOf(':') + 1, cmd.indexOf(',') - 1).c_str()), atoi(cmd.substring(cmd.lastIndexOf(',') + 1).c_str()));
+                int8_t  i = static_cast<int8_t>(cmd.indexOf(':'));
+                ctx->SENS.setDht(cmd.c_str()[i + 1], (uint8_t) cmd.c_str()[i + 2]);
             }
 
             if (cmd.startsWith(cu.cmd_str.MODE)) {
@@ -51,11 +52,11 @@ void Commands::listen() {
                 }
             }
 
-            if (cmd.startsWith(cu.cmd_str.CMD_GET_SENSOR_ALL)) {
-                for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
-                    printCmdResponse(cmd, ctx->SENS.printSensor(i));
-                }
-            }
+//            if (cmd.startsWith(cu.cmd_str.CMD_GET_SENSOR_ALL)) {
+//                for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
+//                    printCmdResponse(cmd, ctx->SENS.printSensor(i));
+//                }
+//            }
 
             if (cmd.startsWith(cu.cmd_str.CMD_RESET_PROPS)) {
                 printCmdResponse(cmd, NULL);

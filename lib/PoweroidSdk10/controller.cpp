@@ -201,7 +201,7 @@ void Controller::process() {
 
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
-                oled.outputTextXY(DISPLAY_BASE + 2, 64, printDht(), true, dither);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS.printDht(), true, dither);
             }
 
             // Exit SLEEP state on event
@@ -274,21 +274,6 @@ void Controller::goToEditProp(uint8_t i) const {
 
 bool inline Controller::canGoToEdit(){
     return !(ctx->passive && !ctx->connected);
-}
-
-const char *Controller::printDht() const {
-    char * start = BUFF;
-    if (ctx->passive){
-        if (ctx->connected){
-            printCmd(cu.cmd_str.CMD_GET_DHT, NULL);
-            start = strchr(BUFF, '>') + 1;
-        } else {
-            noInfoToBuff();
-        }
-        return start;
-    } else {
-        return ctx->SENS.printDht();
-    }
 }
 
 bool Controller::loadProperty(uint8_t idx) const {
@@ -376,9 +361,6 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
     }
     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }
-
-void Controller::noInfoToBuff() const { strcpy(BUFF, "--"); }
-
 
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN

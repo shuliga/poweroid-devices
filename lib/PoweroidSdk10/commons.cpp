@@ -72,6 +72,9 @@ uint8_t getNumberOfDigits(long i) {
     return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
 }
 
+void noInfoToBuff() { strcpy(BUFF, "--"); }
+
+
 #ifdef WATCH_DOG
 
 // Tweak to enable Watchdog working, disables watchdog after initiation

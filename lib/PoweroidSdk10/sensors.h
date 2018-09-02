@@ -19,6 +19,7 @@ class Sensors {
 public:
 
     const char *const ORIGIN = "SENSORS";
+
     Sensors();
 
     void updateTnH();
@@ -33,7 +34,7 @@ public:
 
     bool checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on);
 
-    void initSensors();
+    void initSensors(bool _propagate);
 
     void checkInstalled();
 
@@ -63,6 +64,8 @@ private:
     void printInstalled(uint8_t pin);
 
     void searchDht();
+
+    int8_t getInt(float f) const;
 };
 
 

@@ -21,10 +21,10 @@ Cu cu{
                            "reset_props",
                            "set_relay_",
                            "mode ",
-                           "get_prop_all",
-                           "get_state_all",
-                           "get_sensor_all",
-                           "get_relay_all",
+//                           "get_prop_all",
+//                           "get_state_all",
+//                           "get_sensor_all",
+//                           "get_relay_all",
     }
 };
 
