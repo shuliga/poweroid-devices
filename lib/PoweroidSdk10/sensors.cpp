@@ -133,3 +133,10 @@ const char *Sensors::printDht() {
     return BUFF;
 }
 
+void Sensors::setDht(int8_t _temp, uint8_t _humid) {
+    if (!dht_installed) {
+        temp = _temp;
+        humid = _humid;
+    }
+}
+

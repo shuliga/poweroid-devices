@@ -14,7 +14,7 @@ static const int PROP_SIZE = 4;
 #include <MultiClick.h>
 #include "commons.h"
 #include "context.h"
-#include "commands.h"
+#include "commander.h"
 
 class Controller {
 public:
@@ -55,13 +55,9 @@ private:
 
     void copyProperty(Property &prop, uint8_t idx) const;
 
-    static uint8_t getNumberOfDigits(long i);
-
     static void padLine(char *_buff, uint8_t lines, uint8_t tail);
 
     void outputState() const;
-
-    void consumeSerial() const;
 
     const char *printDht() const;
 

@@ -22,15 +22,15 @@ public:
 
     bool mapped = true;
 
-    int8_t mappings[VIRTUAL_RELAYS] = {2, 3};
+    static int8_t mappings[VIRTUAL_RELAYS];
 
-    unsigned char status[5]= {'.', '.', '.', '.', '\0'};
+    static unsigned char status[5];
 
     void power(uint8_t i, bool _power);
 
     uint8_t size();
 
-    const char * printRelay(uint8_t idx);
+    void printRelay(uint8_t idx);
 
     unsigned char * relStatus();
 

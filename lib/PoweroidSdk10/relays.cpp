@@ -4,29 +4,31 @@
 
 #include "global.h"
 #include "relays.h"
-#include "common_commands.h"
+#include "commands.h"
 
 static bool powered[RELAYS];
 
+int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
+
+unsigned char Relays::status[5]= "....";
+
 void Relays::power(uint8_t i, bool _power)
 {
-    if (i < RELAYS)
+    if (i < size() && powered[i] != _power)
     {
-        if (i < size() && powered[i] != _power)
-        {
-            powered[i] = _power;
+        powered[i] = _power;
 #ifndef SSERIAL
-            digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
+        digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
 #endif
-            printRelay(i);
+        printRelay(i);
 
-            int8_t mappedIdx = mappings[i];
-            if (mapped &&  mappedIdx >= 0)
-            {
-                powered[mappedIdx] = _power;
-                printRelay((uint8_t) mappedIdx);
-                printCmd(cu.cmd_str.CMD_SET_RELAY, idxToChar(mappedIdx));
-            }
+        int8_t mappedIdx = mappings[i];
+        if (mapped && mappedIdx >= 0)
+        {
+            powered[mappedIdx] = _power;
+            printRelay((uint8_t) mappedIdx);
+            sprintf(BUFF, "%i:%s", mappedIdx, _power ? REL_POWERED : REL_NOT_POWERED);
+            printCmd(cu.cmd_str.CMD_SET_RELAY, BUFF);
         }
     }
 }
@@ -71,12 +73,12 @@ int8_t Relays::getMappedFromVirtual(uint8_t i) {
 }
 
 
-const char* Relays::printRelay(uint8_t idx)
+void Relays::printRelay(uint8_t idx)
 {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+    Serial.println(BUFF);
 #ifdef SSERIAL
     SSerial.println(BUFF);
     SSerial.flush();
 #endif
-    return BUFF;
 }

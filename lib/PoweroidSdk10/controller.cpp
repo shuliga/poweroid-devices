@@ -9,7 +9,7 @@
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
 #include "controller.h"
-#include "common_commands.h"
+#include "commands.h"
 
 #ifndef NO_CONTROLLER
 
@@ -363,10 +363,6 @@ void Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
         _buff[i] = ' ';
     }
     _buff[t] = 0;
-}
-
-uint8_t inline Controller::getNumberOfDigits(long i) {
-    return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
 }
 
 void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure) {

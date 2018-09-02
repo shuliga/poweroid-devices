@@ -19,6 +19,7 @@ void Pwr::begin() {
     TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
     sei();
 #endif
+    Serial.setTimeout(SERIAL_READ_TIMEOUT);
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
@@ -43,7 +44,6 @@ void Pwr::begin() {
     }
 
     REL->mapped = !CTX->passive;
-    Serial.setTimeout(SERIAL_READ_TIMEOUT);
     writeLog('I', "PWR", 200 + CTX->passive);
 #ifdef WATCH_DOG
     wdt_enable(WDTO_2S);

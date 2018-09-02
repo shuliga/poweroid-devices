@@ -19,7 +19,7 @@
 #include "sensors.h"
 #include "bluetooth.h"
 #include "context.h"
-#include "commands.h"
+#include "commander.h"
 #include "controller.h"
 
 #define FULL_VERSION VERSION "-" BOARD_VERSION

@@ -51,7 +51,9 @@ public:
 
     const char *printDht();
 
+    void setDht(int8_t _temp, uint8_t _humid);
 private:
+
     float temp;
 
     float humid;
