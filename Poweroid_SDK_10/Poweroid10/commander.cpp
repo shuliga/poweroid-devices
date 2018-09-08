@@ -26,7 +26,7 @@ void Commands::printBinProperty(uint8_t i) {
 }
 
 void Commands::listen() {
-    while (Serial.available()) {
+    if (Serial.available()) {
         cmd = Serial.readStringUntil('\n');
         if (isCommand()) {
 #ifdef DEBUG

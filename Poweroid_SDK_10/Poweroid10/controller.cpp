@@ -283,8 +283,6 @@ bool Controller::loadProperty(uint8_t idx) const {
         copyProperty(ctx->PROPERTIES[idx], idx);
     } else {
         if (ctx->connected) {
-//            cmd->executeCmd(cmd->cmd_str.CMD_GET_PROP_LEN_BIN, NULL);
-//            prop_max = BUFF[0];
             if (ctx->refreshProps) {
                 copyProperty(ctx->remoteProperty, idx);
             } else {

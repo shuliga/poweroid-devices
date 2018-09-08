@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 
-#set(PROJECT_NAME Poweroid_bt_test)
-set(PROJECT_NAME Poweroid_10)
+set(PROJECT_NAME Poweroid_SDK_10)
 
 set(DEVICE_NAME fan_3x1_dht)
 
-project(${PROJECT_NAME})
+project(${DEVICE_NAME})
 
-#set(${CMAKE_PROJECT_NAME}_SKETCH test/bt_test.ino)
 set(${CMAKE_PROJECT_NAME}_SKETCH ${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
 
-link_directories(lib)
+link_directories(Poweroid_SDK_10)
 
 #### Uncomment below additional settings as needed.
 set(${CMAKE_PROJECT_NAME}_BOARD pro)

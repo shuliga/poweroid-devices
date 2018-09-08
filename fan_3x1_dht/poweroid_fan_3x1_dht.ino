@@ -2,7 +2,7 @@
 #define ID "PWR-FAN-FLR-32-DHT"
 
 #include "global.h"
-#include "PoweroidSdk10.h"
+#include "Poweroid10.h"
 #include "poweroid_fan_3x1_dht_state.h"
 #include "poweroid_fan_3x1_dht_prop.h"
 

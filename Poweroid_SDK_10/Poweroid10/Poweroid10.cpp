@@ -1,6 +1,6 @@
 #include "global.h"
 #include <avr/wdt.h>
-#include "PoweroidSdk10.h"
+#include "Poweroid10.h"
 
 volatile uint8_t semaphor = 0;
 
