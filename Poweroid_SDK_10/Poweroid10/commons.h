@@ -5,7 +5,13 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+#include "properties.h"
+
 #define PWR23
+
+// #define SPI
 
 //#define DEBUG
 //#define WATCH_DOG
@@ -18,20 +24,15 @@
 #define LED_PIN 13
 #define FACTORY_RESET_PIN 10
 
-#include <Arduino.h>
-#include <SoftwareSerial.h>
-#include "properties.h"
-
 #ifdef PWR23
 
 #define BOARD_VERSION "PWR23"
-
-#define DHT_PIN 5
 
 #define ENC1_PIN 2
 #define ENC2_PIN 3
 #define ENC_BTN_PIN 4
 
+#define DHT_PIN 5
 #define IN1_PIN 5
 #define IN2_PIN 6
 #define IN3_PIN 7
@@ -42,6 +43,16 @@
 
 #define PWR1_PIN 8
 #define PWR2_PIN 9
+
+#ifndef SPI
+#define IND1_PIN 10
+#define IND2_PIN 11
+#endif
+
+#ifdef SPI
+#define SPI_SS_PIN 10
+#endif
+
 
 #endif // PWR23
 

@@ -72,6 +72,9 @@ int8_t Relays::getMappedFromVirtual(uint8_t i) {
     return -1;
 }
 
+bool Relays::isPowered(uint8_t idx){
+    return powered[idx];
+}
 
 void Relays::printRelay(uint8_t idx)
 {

@@ -20,9 +20,7 @@ unsigned long hashProp(Property *props, int size) {
     return result;
 }
 
-Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size, int8_t *_mappings,
-                         uint8_t msz) : given_sign_chr(_sign), props(_props_runtime), size(props_size),
-                                        mappings(_mappings), mappings_size(msz) {}
+Persistence::Persistence(const char *_sign, Property *_props_runtime, uint8_t props_size) : given_sign_chr(_sign), props(_props_runtime), size(props_size) {}
 
 void Persistence::begin() {
     checkFactoryReset(props);
@@ -44,29 +42,11 @@ void Persistence::begin() {
 #endif
         EEPROM.put(BASE, signature);
         storeProperties(props);
-        storeMappings(mappings);
     } else
         if (eeprom_hash != hashProp(props, size))
     {
 //        writeLog('W', ORIGIN, 301);
         loadProperties(props);
-        loadMappings(mappings);
-    }
-}
-
-void Persistence::storeMappings(int8_t *mappings)
-{
-    for (uint8_t i = 0; i < mappings_size; i++) {
-        EEPROM.put(MAPPINGS_OFFSET + i, mappings[i]);
-
-    }
-}
-
-void Persistence::loadMappings(int8_t *mappings)
-{
-    for (uint8_t i = 0; i < mappings_size; i++)
-    {
-        mappings[i] = (i < MAPPINGS_SIZE) ? (int8_t) EEPROM.read(MAPPINGS_OFFSET + i) : -1;
     }
 }
 

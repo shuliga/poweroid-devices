@@ -29,7 +29,7 @@ typedef struct Context {
             const char *_id, int8_t _defaultPropIdx)
             : signature(_signature), version(_version), PROPERTIES(_factory), SENS(), RELAYS(),
               props_size(_props_size), id(_id),
-              PERS(Persistence(_signature, _factory, _props_size, RELAYS.mappings, VIRTUAL_RELAYS)),
+              PERS(Persistence(_signature, _factory, _props_size)),
               defaultPropertyIdx(_defaultPropIdx) {}
 
     const char *signature;

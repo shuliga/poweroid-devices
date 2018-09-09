@@ -52,19 +52,13 @@ bool TimingState::isTimeAfter(bool trigger) {
     return state;
 }
 
-void TimingState::flash(uint8_t pin, boolean on) {
+bool TimingState::flash() {
     unsigned long current = getCurrent();
     if (testInterval(current)) {
         state = !state;
         mils = current;
     }
-    uint8_t out;
-    if (state && on) {
-        out = HIGH;
-    } else {
-        out = LOW;
-    }
-    digitalWrite(pin, out);
+    return state;
 }
 
 bool TimingState::ping() {

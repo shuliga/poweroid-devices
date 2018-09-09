@@ -39,6 +39,8 @@ public:
     void castMappedRelays();
 
     int8_t getMappedFromVirtual(uint8_t i);
+
+    bool isPowered(uint8_t idx);
 };
 
 

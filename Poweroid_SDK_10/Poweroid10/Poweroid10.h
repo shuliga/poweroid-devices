@@ -21,6 +21,8 @@
 #include "context.h"
 #include "commander.h"
 #include "controller.h"
+#include "indicators.h"
+
 
 #define FULL_VERSION VERSION "-" BOARD_VERSION
 
@@ -35,6 +37,7 @@ public:
     Sensors *SENS;
     Commands *CMD;
     Controller *CTRL;
+
     Bt *BT;
 
     Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt);
@@ -51,7 +54,7 @@ private:
 
     bool firstRun = true;
 
-    void init_pins();
+    void initPins();
 
     void loadDisarmedStates();
 

@@ -26,7 +26,7 @@ void Pwr::begin() {
 #endif
     printVersion();
 
-    init_pins();
+    initPins();
 
     CTX->PERS.begin();
 
@@ -108,7 +108,7 @@ void Pwr::printVersion() {
     Serial.println(CTX->version);
 }
 
-void Pwr::init_pins() {
+void Pwr::initPins() {
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
@@ -117,6 +117,7 @@ void Pwr::init_pins() {
     for (uint8_t i = 0; i < SENS->size(); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
+
 }
 
 void Pwr::loadDisarmedStates() {

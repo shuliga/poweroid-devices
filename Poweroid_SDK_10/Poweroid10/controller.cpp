@@ -247,7 +247,9 @@ bool Controller::testControl(TimingState &timer) const {
     if (fr || control_touched) {
         timer.reset();
         control_touched = false;
-        outputState();
+        if (fr) {
+            outputState();
+        }
     }
     return fr;
 }
@@ -290,7 +292,7 @@ bool Controller::loadProperty(uint8_t idx) const {
                 return false;
             }
         } else {
-            BUFF[0] = 0;
+            BUFF[0] = '\0';
         }
     }
     return true;

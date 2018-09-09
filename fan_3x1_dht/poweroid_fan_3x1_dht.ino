@@ -7,6 +7,7 @@
 #include "poweroid_fan_3x1_dht_prop.h"
 
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
+TimingState FLASH(500L);
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
                   FAN_PROPS.DEFAULT_PROPERTY);
@@ -162,4 +163,6 @@ void loop() {
 
     PWR.power(0, fan_power);
     PWR.power(1, floor_power);
+
+    INDICATORS.flash(0, &FLASH, PWR.REL->isPowered(1));
 }
