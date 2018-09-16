@@ -20,7 +20,7 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
 
-    delay(1000);
+    delay(2000);
 
     server = true;
     Serial.begin(HC_06_BAUD);

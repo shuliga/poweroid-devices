@@ -17,7 +17,7 @@ typedef struct CommandsStr {
     const char* CMD_GET_BIN_PROP;
     const char* CMD_SET_BIN_PROP;
     const char* CMD_SET_PROP;
-    const char* CMD_GET_PROP_LEN_BIN;
+    const char* CMD_GET_LEN_PROP_BIN;
     const char* CMD_LOAD_PROPS;
     const char* CMD_STORE_PROPS;
     const char* CMD_RESET_PROPS;
@@ -34,7 +34,7 @@ extern union Cu{
     char * cmd_array[19];
 } cu;
 
-extern const char *_cmd;
+extern const char *cmd_arrow;
 
 extern String cmd;
 

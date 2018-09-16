@@ -4,7 +4,7 @@
 
 static const char *ORIGIN = "CMD";
 
-Commands::Commands(Context &_ctx) : ctx(&_ctx){};
+Commands::Commands(Context &_ctx) : ctx(&_ctx) {};
 
 const char *STATE_FORMAT_BUFF = {"[%i] State %s: %s"};
 
@@ -32,16 +32,17 @@ void Commands::listen() {
 #ifdef DEBUG
             writeLog('I', ORIGIN, 200 + ctx->passive, cmd.c_str());
 #endif
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH);
-    delay(5);
-
+#ifndef SPI
+            pinMode(LED_PIN, OUTPUT);
+            digitalWrite(LED_PIN, HIGH);
+            delay(5);
+#endif
             castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);
 
             castCommand(cu.cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_DHT)) {
-                int8_t  i = static_cast<int8_t>(cmd.indexOf(':'));
+                int8_t i = static_cast<int8_t>(cmd.indexOf(':'));
                 ctx->SENS.setDht(cmd.c_str()[i + 1], (uint8_t) cmd.c_str()[i + 2]);
             }
 
@@ -67,7 +68,7 @@ void Commands::listen() {
             }
 
             char len[2] = {ctx->props_size, 0};
-            castCommand(cu.cmd_str.CMD_GET_PROP_LEN_BIN, len);
+            castCommand(cu.cmd_str.CMD_GET_LEN_PROP_BIN, len);
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_RELAY)) {
                 Relays relays = ctx->RELAYS;
@@ -119,13 +120,15 @@ void Commands::listen() {
             }
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_PROP)) {
-                uint8_t i = getIndex();
-                int8_t idx = getValIndex();
-                if (i < ctx->props_size && idx > 0) {
-                    long v = cmd.substring((unsigned int) idx).toInt();
-                    ctx->PROPERTIES[i].runtime = v * ctx->PROPERTIES[i].scale;
-                    ctx->refreshProps = true;
-                    printCmdResponse(cmd, printProperty(i));
+                if (!ctx->passive) {
+                    uint8_t i = getIndex();
+                    int8_t idx = getValIndex();
+                    if (i < ctx->props_size && idx > 0) {
+                        long v = cmd.substring((unsigned int) idx).toInt();
+                        ctx->PROPERTIES[i].runtime = v * ctx->PROPERTIES[i].scale;
+                        ctx->refreshProps = true;
+                        printCmdResponse(cmd, printProperty(i));
+                    }
                 }
             }
 

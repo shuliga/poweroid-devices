@@ -15,7 +15,7 @@ Cu cu{
                            "get_bin_prop_",
                            "set_bin_prop_",
                            "set_prop_",
-                           "get_prop_len_bin",
+                           "get_len_prop_bin",
                            "load_props",
                            "store_props",
                            "reset_props",
@@ -28,7 +28,7 @@ Cu cu{
     }
 };
 
-const char *_cmd = " -> ";
+const char *cmd_arrow = " -> ";
 
 String cmd;
 
@@ -36,7 +36,7 @@ int getValIndex() { return cmd.lastIndexOf(':') + 1; }
 
 void printCmdResponse(const String &cmd, const char *suffix) {
     Serial.print(cmd);
-    printCmd(_cmd, suffix);
+    printCmd(cmd_arrow, suffix);
 }
 
 void printCmd(const char *cmd, const char *suffix) {
@@ -55,7 +55,7 @@ uint8_t getIndex() {
 
 bool isCommand() {
     for (uint8_t i = 0; i < ARRAY_SIZE(cu.cmd_array); ++i) {
-        if (cmd.startsWith(cu.cmd_array[i]) && cmd.indexOf(_cmd) < 0) {
+        if (cmd.startsWith(cu.cmd_array[i]) && cmd.indexOf(cmd_arrow) < 0) {
             return true;
         }
     }

@@ -41,6 +41,8 @@ static bool dither = false;
 static volatile long prop_min;
 static volatile long prop_max;
 static volatile uint8_t prop_measure;
+static volatile bool requestForRefresh = false;
+
 
 #if defined(ENC1_PIN) && defined(ENC2_PIN)
 Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
@@ -65,7 +67,7 @@ void Controller::initEncoderInterrupts() {
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
     sei();
     props_idx_max = ctx->props_size - 1;
-    state_idx_max = state_count -1;
+    state_idx_max = state_count - 1;
 }
 
 void Controller::initDisplay() {
@@ -78,7 +80,7 @@ void Controller::initDisplay() {
 void Controller::outputState() const {
     strcpy(BUFF, (const char *) ctx->RELAYS.relStatus());
     padLine(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) ((ctx->connected ? 130 : 129) + (ctx-> passive ? 0 : 2));
+    BUFF[15] = (unsigned char) ((ctx->connected ? 130 : 129) + (ctx->passive ? 0 : 2));
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -90,10 +92,11 @@ void Controller::process() {
     McEvent event = encoderClick.checkButton();
 
     switch (state) {
+
         case EDIT_PROP: {
 
             if (testControl(autoComplete_timer) || ctx->refreshProps) {
-                if (loadProperty(prop_idx)){
+                if (loadProperty(prop_idx)) {
                     outputPropDescr(BUFF);
                     outputStatus(F("Edit value:"), old_prop_value);
                 }
@@ -119,6 +122,7 @@ void Controller::process() {
             }
             break;
         }
+
         case BROWSE: {
 
             if (testControl(sleep_timer) || c_prop_idx != prop_idx || ctx->refreshProps || ctx->refreshState) {
@@ -143,13 +147,14 @@ void Controller::process() {
 
             break;
         }
+
         case STATES: {
             if (testControl(sleep_timer) || c_state_idx != state_idx) {
                 strcpy(BUFF, getState(state_idx)->name);
                 outputPropDescr(BUFF);
                 strcpy(BUFF, getState(state_idx)->state);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
-                outputStatus(F("State:"), state_idx );
+                outputStatus(F("State:"), state_idx);
                 c_state_idx = state_idx;
             }
 
@@ -174,7 +179,7 @@ void Controller::process() {
             } else {
                 printCmd(cu.cmd_str.CMD_STORE_PROPS, NULL);
             }
-            outputStatus(F("<Storing...>"), prop_value);
+            outputStatus(F("<Storing...> "), prop_value);
             delay(500);
             goToBrowse();
             break;
@@ -274,7 +279,7 @@ void Controller::goToEditProp(uint8_t i) const {
     state = EDIT_PROP;
 }
 
-bool inline Controller::canGoToEdit(){
+bool inline Controller::canGoToEdit() {
     return !(ctx->passive && !ctx->connected);
 }
 
@@ -287,8 +292,12 @@ bool Controller::loadProperty(uint8_t idx) const {
         if (ctx->connected) {
             if (ctx->refreshProps) {
                 copyProperty(ctx->remoteProperty, idx);
+                requestForRefresh = false;
             } else {
-                printCmd(cu.cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
+                if (!requestForRefresh) {
+                    printCmd(cu.cmd_str.CMD_GET_BIN_PROP, idxToChar(idx));
+                    requestForRefresh = true;
+                }
                 return false;
             }
         } else {
@@ -343,8 +352,8 @@ void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
 }
 
 void Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
-    uint8_t  t = LINE_SIZE * lines - tail;
-    for(uint8_t i = strlen(_buff); i < t; i++){
+    uint8_t t = LINE_SIZE * lines - tail;
+    for (uint8_t i = strlen(_buff); i < t; i++) {
         _buff[i] = ' ';
     }
     _buff[t] = 0;
@@ -354,7 +363,7 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
     const char *fmt =
             brackets && measure ? "[%i]%s" : (brackets & !measure ? "[%i]" : (!brackets && measure ? "%i%s"
                                                                                                    : "%i"));
-    if (canGoToEdit()){
+    if (canGoToEdit()) {
         sprintf(BUFF, fmt, _prop_val, MEASURES[measure_idx]);
     } else {
         noInfoToBuff();
@@ -366,21 +375,27 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
 #ifdef ENC2_PIN
 
 ISR(PCINT2_vect) {
-    unsigned char result = encoder.process();
-    if (result != NOTHING) {
+    unsigned char input = encoder.process();
+    if (input != NOTHING) {
         control_touched = true;
-        switch (state) {
-            case EDIT_PROP: {
-                result == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
-                break;
-            }
-            case BROWSE: {
-                result == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
-                break;
-            }
-            case STATES: {
-                result == DIR_CW ? DECR(state_idx, 0) : INCR(state_idx, state_idx_max);
-                break;
+        if (!requestForRefresh) {
+            switch (state) {
+
+                case EDIT_PROP: {
+                    input == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
+                    break;
+                }
+
+                case BROWSE: {
+                    input == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
+                    break;
+                }
+
+                case STATES: {
+                    input == DIR_CW ? DECR(state_idx, 0) : INCR(state_idx, state_idx_max);
+                    break;
+                }
+
             }
         }
     }
