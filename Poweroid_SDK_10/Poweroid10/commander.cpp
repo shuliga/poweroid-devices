@@ -3,12 +3,11 @@
 #include "commander.h"
 
 static const char *ORIGIN = "CMD";
+const char *STATE_FORMAT_BUFF = "[%i] State %s: %s";
 
 Commands::Commands(Context &_ctx) : ctx(&_ctx) {};
 
-const char *STATE_FORMAT_BUFF = {"[%i] State %s: %s"};
-
-static TimingState connection_check(CONNECTION_CHECK);
+TimingState Commands::connection_check(CONNECTION_CHECK);
 
 const char *Commands::printProperty(uint8_t i) {
     char _desc[64];
@@ -170,11 +169,6 @@ void Commands::storeProps() {
     ctx->PERS.storeProperties(ctx->PROPERTIES);
 }
 
-const char *printState(uint8_t i) {
-    sprintf(BUFF, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
-    return BUFF;
-}
-
 void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
     if (prev_state != state) {
         printState(id);
@@ -200,4 +194,11 @@ void Commands::disarmState(uint8_t i, bool disarm) {
     ctx->PERS.storeState(i, disarm);
     printCmdResponse(cmd, printState(i));
 }
+
+const char *printState(uint8_t i) {
+    sprintf(BUFF, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
+    return BUFF;
+}
+
+
 

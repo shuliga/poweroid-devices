@@ -6,11 +6,9 @@
 #include "relays.h"
 #include "commands.h"
 
-static bool powered[RELAYS];
+bool Relays::powered[RELAYS];
 
 int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
-
-unsigned char Relays::status[5]= "....";
 
 void Relays::power(uint8_t i, bool _power)
 {
@@ -26,9 +24,7 @@ void Relays::power(uint8_t i, bool _power)
         if (mapped && mappedIdx >= 0)
         {
             powered[mappedIdx] = _power;
-            printRelay((uint8_t) mappedIdx);
-            sprintf(BUFF, "%i:%s", mappedIdx, _power ? REL_POWERED : REL_NOT_POWERED);
-            printCmd(cu.cmd_str.CMD_SET_RELAY, BUFF);
+            castRelay(static_cast<uint8_t>(mappedIdx));
         }
     }
 }
@@ -38,12 +34,19 @@ uint8_t Relays::size()
     return ARRAY_SIZE(OUT_PINS);
 }
 
+
+void Relays::castRelay(uint8_t idx){
+    sprintf(BUFF, "%i:%s", idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+    printCmd(cu.cmd_str.CMD_SET_RELAY, BUFF);
+}
+
+
 unsigned char * Relays::relStatus()
 {
     const uint8_t r_size = mapped ? RELAYS : size();
     for(uint8_t i = 0; i < r_size; ++i)
     {
-        status[i] = (powered[i] ? (unsigned char) 128 : (unsigned char)127);
+        status[i + (i > size() ? 1 : 0)] = (powered[i] ? (unsigned char) 128 : (unsigned char)127);
     }
     return status;
 }
@@ -58,8 +61,9 @@ void Relays::reset()
 
 void Relays::castMappedRelays(){
     const uint8_t r_size = mapped ? RELAYS : size();
-    for(uint8_t i = 0; i < r_size; ++i) {
-        printRelay(i);
+    for(uint8_t i = size(); i < r_size; ++i) {
+        castRelay(i);
+        delay(50);
     }
 }
 

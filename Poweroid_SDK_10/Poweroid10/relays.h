@@ -22,10 +22,6 @@ public:
 
     bool mapped = true;
 
-    static int8_t mappings[VIRTUAL_RELAYS];
-
-    static unsigned char status[5];
-
     void power(uint8_t i, bool _power);
 
     uint8_t size();
@@ -41,6 +37,17 @@ public:
     int8_t getMappedFromVirtual(uint8_t i);
 
     bool isPowered(uint8_t idx);
+
+    void castRelay(uint8_t idx);
+
+private:
+
+    static bool powered[4];
+
+    static int8_t mappings[VIRTUAL_RELAYS];
+
+    unsigned char status[6] = ".. ..";
+
 };
 
 

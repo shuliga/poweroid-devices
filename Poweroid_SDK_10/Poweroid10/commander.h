@@ -31,6 +31,7 @@ private:
 
     void printBinProperty(uint8_t i);
 
+    static TimingState connection_check;
 };
 
 #endif // COMMANDER_H
