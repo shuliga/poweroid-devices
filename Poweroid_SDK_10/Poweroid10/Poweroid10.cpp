@@ -30,10 +30,10 @@ void Pwr::begin() {
 
     CTX->PERS.begin();
 
-    #ifdef WATCH_DOG
+#ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
 #endif
-    if (BT){
+    if (BT) {
         BT->begin();
         CTX->passive = !BT->server;
     }
@@ -74,7 +74,7 @@ void Pwr::run() {
     }
 
     semaphor = 3;
-    if (BT){
+    if (BT) {
         newConnected = CMD->isConnected();
         updateConnected = newConnected != CTX->connected;
         CTX->refreshState = CTX->refreshState || updateConnected;
@@ -109,6 +109,7 @@ void Pwr::printVersion() {
 }
 
 void Pwr::initPins() {
+
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
@@ -118,6 +119,7 @@ void Pwr::initPins() {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
 
+    INDICATORS.init();
 }
 
 void Pwr::loadDisarmedStates() {
@@ -132,8 +134,8 @@ void Pwr::loadDisarmedStates() {
 
 void Pwr::power(uint8_t i, bool power) {
     if (!CTX->passive) {
+        CTX->refreshState = power != REL->isPowered(i);
         REL->power(i, power);
-        CTX->refreshState = true;
     }
 }
 

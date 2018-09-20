@@ -1,5 +1,5 @@
 #if !defined(ARRAY_SIZE)
-    #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
+#define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
 #ifndef COMMONS_H
@@ -17,12 +17,10 @@
 //#define WATCH_DOG
 
 #ifdef DEBUG
-    #define SSERIAL
-    #define NO_CONTROLLER
+#define SSERIAL
+#define NO_CONTROLLER
 #endif
 
-#define LED_PIN 13
-#define FACTORY_RESET_PIN 10
 
 #ifdef PWR23
 
@@ -37,17 +35,23 @@
 #define IN2_PIN 6
 #define IN3_PIN 7
 
-#define INA1_PIN 14
-#define INA2_PIN 15
-#define INA3_PIN 16
-
 #define PWR1_PIN 8
 #define PWR2_PIN 9
 
 #ifndef SPI
+
 #define IND1_PIN 10
 #define IND2_PIN 11
+
+#define FACTORY_RESET_PIN 12
+
+#define LED_PIN 13
+
 #endif
+
+#define INA1_PIN 14
+#define INA2_PIN 15
+#define INA3_PIN 16
 
 #ifdef SPI
 #define SPI_SS_PIN 10
@@ -94,12 +98,20 @@ extern SoftwareSerial SSerial;
 #endif
 
 unsigned long hash(byte *data, unsigned long size);
-char * idxToChar(uint8_t idx);
+
+char *idxToChar(uint8_t idx);
+
 void writeLog(const char level, const char *origin, const int code);
+
 void writeLog(const char level, const char *origin, const int code, unsigned long result);
+
 void writeLog(const char level, const char *origin, const int code, const char *result);
+
 uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
+
 uint8_t getNumberOfDigits(long i);
+
 void noInfoToBuff();
+
 #endif
 

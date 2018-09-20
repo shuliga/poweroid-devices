@@ -76,6 +76,7 @@ void Persistence::loadProperties(Property *props) {
 }
 
 void Persistence::checkFactoryReset(Property *props) {
+#ifdef FACTORY_RESET_PIN
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
     if (digitalRead(FACTORY_RESET_PIN) == LOW) {
 #ifdef DEBUG
@@ -84,6 +85,7 @@ void Persistence::checkFactoryReset(Property *props) {
         storeProperties(props);
         EEPROM.write(STATES_OFFSET, 0); // Clear state DISARM flags
     }
+#endif
 }
 
 bool Persistence::loadState(uint8_t id) {

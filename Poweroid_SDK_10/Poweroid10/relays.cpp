@@ -46,7 +46,7 @@ unsigned char * Relays::relStatus()
     const uint8_t r_size = mapped ? RELAYS : size();
     for(uint8_t i = 0; i < r_size; ++i)
     {
-        status[i + (i > size() ? 1 : 0)] = (powered[i] ? (unsigned char) 128 : (unsigned char)127);
+        status[i + (i >= size() ? 1 : 0)] = (powered[i] ? (unsigned char) 128 : (unsigned char)127);
     }
     return status;
 }
