@@ -7,7 +7,8 @@
 #include "poweroid_timer_button_1x1_prop.h"
 
 Timings timings = {0, 0};
-TimingState FLASH(500L);
+TimingState FLASH(750L);
+TimingState FLASH_SBY(250L);
 
 MultiClick btn = MultiClick(IN3_PIN);
 
@@ -50,8 +51,24 @@ void run_state_power(McEvent event) {
                 state_power = SP_OFF;
                 break;
             }
-            if (timings.countdown_power.isTimeAfter(true)) {
+            if (event == CLICK) {
+                state_power = SP_POWER_SBY;
+                break;
+            }
+            if (!timings.countdown_power.countdown(true, false, false)) {
                 state_power = SP_POWER_END;
+                break;
+            }
+            break;
+        }
+        case SP_POWER_SBY: {
+            timings.countdown_power_end.countdown(true, true, false);
+            if (event == CLICK) {
+                state_power = prev_state_power;
+                break;
+            }
+            if (event == HOLD) {
+                state_power = SP_OFF;
                 break;
             }
             break;
@@ -65,7 +82,11 @@ void run_state_power(McEvent event) {
                 state_power = SP_OFF;
                 break;
             }
-            if (timings.countdown_power_end.isTimeAfter(true)) {
+            if (event == CLICK) {
+                state_power = SP_POWER_SBY;
+                break;
+            }
+            if (!timings.countdown_power.countdown(true, false, false)) {
                 state_power = SP_OFF;
                 break;
             }
@@ -104,6 +125,10 @@ void loop() {
         }
 
     } else {
-        INDICATORS.set(0, false);
+        if (state_power == SP_POWER_SBY) {
+            INDICATORS.flash(0, &FLASH_SBY, true);
+        } else {
+            INDICATORS.set(0, false);
+        }
     }
 }
