@@ -34,7 +34,6 @@ void Commands::listen() {
 #ifndef SPI
             pinMode(LED_PIN, OUTPUT);
             digitalWrite(LED_PIN, HIGH);
-            delay(5);
 #endif
             castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);
 
@@ -51,12 +50,6 @@ void Commands::listen() {
                     printCmdResponse(cmd, ctx->passive ? MODE_CLIENT : MODE_SERVER);
                 }
             }
-
-//            if (cmd.startsWith(cu.cmd_str.CMD_GET_SENSOR_ALL)) {
-//                for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
-//                    printCmdResponse(cmd, ctx->SENS.printSensor(i));
-//                }
-//            }
 
             if (cmd.startsWith(cu.cmd_str.CMD_RESET_PROPS)) {
                 printCmdResponse(cmd, NULL);
@@ -80,11 +73,11 @@ void Commands::listen() {
                 }
             }
 
-//            if (cmd.startsWith(cmd_str.CMD_GET_PROP_ALL)) {
-//                for (uint8_t i = 0; i < ctx->props_size; i++) {
-//                    printCmdResponse(cmd, printProperty(i));
-//                }
-//            }
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_PROP_ALL)) {
+                for (uint8_t i = 0; i < ctx->props_size; i++) {
+                    printCmdResponse(cmd, printProperty(i));
+                }
+            }
 
             if (castCommand(cu.cmd_str.CMD_LOAD_PROPS, NULL)) {
                 ctx->PERS.loadProperties(ctx->PROPERTIES);
@@ -131,18 +124,6 @@ void Commands::listen() {
                 }
             }
 
-//            if (cmd.startsWith(cmd_str.CMD_GET_STATE_ALL)) {
-//                for (uint8_t i = 0; i < state_count; i++) {
-//                    printCmdResponse(cmd, printState(i));
-//                }
-//            }
-//
-//            if (cmd.startsWith(cmd_str.CMD_GET_RELAY_ALL)) {
-//                for (uint8_t i = 0; i < ctx->RELAYS.size(); i++) {
-//                    printCmdResponse(cmd, ctx->RELAYS.printRelay(i));
-//                }
-//            }
-
             if (cmd.startsWith(cu.cmd_str.CMD_GET_STATE)) {
                 uint8_t i = getIndex();
                 if (i < state_count) {
@@ -156,7 +137,31 @@ void Commands::listen() {
                 disarmState(i, trigger);
             }
 
+#ifndef SAVE_RAM
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_STATE_ALL)) {
+                for (uint8_t i = 0; i < state_count; i++) {
+                    printCmdResponse(cmd, printState(i));
+                }
+            }
+
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_RELAY_ALL)) {
+                for (uint8_t i = 0; i < ctx->RELAYS.size(); i++) {
+                    printCmdResponse(cmd, ctx->RELAYS.printRelay(i));
+                }
+            }
+
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_SENSOR_ALL)) {
+                for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
+                    printCmdResponse(cmd, ctx->SENS.printSensor(i));
+                }
+            }
+
+#endif
+
+#ifndef SPI
             digitalWrite(LED_PIN, LOW);
+#endif
+
         } else {
 #ifdef DEBUG
             writeLog('I', ORIGIN, 210 + ctx->passive, cmd.c_str());

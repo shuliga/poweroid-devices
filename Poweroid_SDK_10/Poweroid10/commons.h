@@ -12,6 +12,7 @@
 #define PWR23
 
 // #define SPI
+// #define SAVE_RAM
 
 //#define DEBUG
 //#define WATCH_DOG

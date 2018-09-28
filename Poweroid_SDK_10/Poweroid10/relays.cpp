@@ -18,7 +18,7 @@ void Relays::power(uint8_t i, bool _power)
 #ifndef SSERIAL
         digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
 #endif
-        printRelay(i);
+        Serial.println(printRelay(i));
 
         int8_t mappedIdx = mappings[i];
         if (mapped && mappedIdx >= 0)
@@ -80,10 +80,9 @@ bool Relays::isPowered(uint8_t idx){
     return powered[idx];
 }
 
-void Relays::printRelay(uint8_t idx)
+char * Relays::printRelay(uint8_t idx)
 {
     sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
-    Serial.println(BUFF);
 #ifdef SSERIAL
     SSerial.println(BUFF);
     SSerial.flush();

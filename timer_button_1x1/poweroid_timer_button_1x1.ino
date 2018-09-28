@@ -1,5 +1,5 @@
 
-#define ID "PWR-FAN-FLR-32-DHT"
+#define ID "PWR-TMB-11"
 
 #include "global.h"
 #include "Poweroid10.h"
@@ -10,7 +10,7 @@ Timings timings = {0, 0};
 TimingState FLASH(750L);
 TimingState FLASH_SBY(250L);
 
-MultiClick btn = MultiClick(IN3_PIN);
+MultiClick btn = MultiClick(IN2_PIN);
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
                       PROPS.DEFAULT_PROPERTY);
@@ -63,6 +63,7 @@ void run_state_power(McEvent event) {
         }
         case SP_POWER_SBY: {
             timings.countdown_power_end.countdown(true, true, false);
+            timings.countdown_power.countdown(true, true, false);
             if (event == CLICK) {
                 state_power = prev_state_power;
                 break;
@@ -86,7 +87,7 @@ void run_state_power(McEvent event) {
                 state_power = SP_POWER_SBY;
                 break;
             }
-            if (!timings.countdown_power.countdown(true, false, false)) {
+            if (!timings.countdown_power_end.countdown(true, false, false)) {
                 state_power = SP_OFF;
                 break;
             }
