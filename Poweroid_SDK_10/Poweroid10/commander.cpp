@@ -45,7 +45,7 @@ void Commands::listen() {
             }
 
             if (cmd.startsWith(cu.cmd_str.MODE)) {
-                ctx->peerReady = true;
+                ctx->peerFound = true;
                 if (cmd.indexOf(MODE_ASK) > 0) {
                     printCmdResponse(cmd, ctx->passive ? MODE_CLIENT : MODE_SERVER);
                 }
@@ -183,8 +183,8 @@ void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
 bool Commands::isConnected() {
     if (connection_check.isTimeAfter(true)) {
         printCmd(cu.cmd_str.MODE, ctx->passive ? MODE_SERVER : MODE_CLIENT);
-        connected = ctx->peerReady;
-        ctx->peerReady = false;
+        connected = ctx->peerFound;
+        ctx->peerFound = false;
         connection_check.reset();
 #ifdef DEBUG
         if (ctx->passive && !connected) {

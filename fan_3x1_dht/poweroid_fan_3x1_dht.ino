@@ -10,7 +10,7 @@ Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
 TimingState FLASH(500L);
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
-                  FAN_PROPS.DEFAULT_PROPERTY);
+                  FAN_PROPS.DEFAULT_PROPERTY, NULL);
 
 Commands CMD(CTX);
 Bt BT(CTX.id);

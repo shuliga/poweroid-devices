@@ -12,8 +12,10 @@ TimingState FLASH_SBY(250L);
 
 MultiClick btn = MultiClick(IN2_PIN);
 
+const char *printToGo();
+
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
-                      PROPS.DEFAULT_PROPERTY);
+                      PROPS.DEFAULT_PROPERTY, &printToGo);
 
 Commands CMD(CTX);
 Bt BT(CTX.id);
@@ -26,12 +28,21 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 void apply_timings() {
-    timings.countdown_power_end.interval = (unsigned long) PROPS.FACTORY[2].runtime * 60000L;
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
                                        (unsigned long) PROPS.FACTORY[1].runtime * 60000L -
                                        timings.countdown_power_end.interval;
+    timings.countdown_power_end.interval = (unsigned long) PROPS.FACTORY[2].runtime * 60000L > timings.countdown_power.interval ? timings.countdown_power.interval : PROPS.FACTORY[2].runtime * 60000L;
 }
 
+
+const char *printToGo() {
+    long totalToGo = timings.countdown_power.millsToGo(timings.countdown_power.getCurrent()) / 1000;
+    uint8_t hrsToGo = totalToGo / 3600;
+    uint8_t minToGo = (totalToGo - hrsToGo * 3600) / 60;
+    uint8_t secToGo = (totalToGo - hrsToGo * 3600 - minToGo * 60);
+    sprintf(BUFF, "%02d:%02d:%02d", hrsToGo, minToGo, secToGo);
+    return BUFF;
+}
 
 void run_state_power(McEvent event) {
     switch (state_power) {

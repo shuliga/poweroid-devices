@@ -15,6 +15,10 @@ bool TimingState::testInterval(unsigned long current) {
     return (current - mils - delta) >= interval + (suspended == 0 ? 0 : current - suspended);
 }
 
+long TimingState::millsToGo(unsigned long current) {
+    return interval - (current - mils - delta) + (suspended == 0 ? 0 : current - suspended);
+}
+
 bool TimingState::countdown(bool on, bool suspend, bool cancel) {
     unsigned long current = getCurrent();
     if (!state && !dirty && on) {
@@ -24,9 +28,11 @@ bool TimingState::countdown(bool on, bool suspend, bool cancel) {
     if (dirty && !on) {
         dirty = false;
     }
-    if (state){
-        if(suspend){
-            suspended = getCurrent();
+    if (state) {
+        if (suspend) {
+            if (suspended == 0) {
+                suspended = current;
+            }
         } else {
             suspended = 0;
         }

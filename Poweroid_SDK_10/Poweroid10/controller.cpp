@@ -206,7 +206,7 @@ void Controller::process() {
 
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
-                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->SENS.printDht(), true, dither);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->printBanner(), true, dither);
             }
 
             // Exit SLEEP state on event

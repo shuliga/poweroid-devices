@@ -28,6 +28,8 @@ typedef struct TimingState {
     bool flash();
 
     bool ping();
+
+    long millsToGo(unsigned long current);
 };
 
 #endif

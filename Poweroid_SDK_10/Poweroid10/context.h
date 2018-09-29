@@ -25,12 +25,12 @@ void disarmState(uint8_t i, bool _disarm);
 const char * printState(uint8_t i);
 
 typedef struct Context {
-    Context(const char *_signature, const char *_version, Property *_factory, const uint8_t _props_size,
-            const char *_id, int8_t _defaultPropIdx)
-            : signature(_signature), version(_version), PROPERTIES(_factory), SENS(), RELAYS(),
-              props_size(_props_size), id(_id),
-              PERS(Persistence(_signature, _factory, _props_size)),
-              defaultPropertyIdx(_defaultPropIdx) {}
+    Context(const char *_signature, const char *_version, Property *_factory_props, const uint8_t _props_size,
+            const char *_id, int8_t _defaultPropIdx, const char * (*_printBanner)())
+            : signature(_signature), version(_version), PROPERTIES(_factory_props),
+              props_size(_props_size), id(_id), SENS(), RELAYS(),
+              PERS(Persistence(_signature, _factory_props, _props_size)),
+              defaultPropertyIdx(_defaultPropIdx), printBanner(_printBanner) {}
 
     const char *signature;
     const char *version;
@@ -45,12 +45,15 @@ typedef struct Context {
 
     Persistence PERS;
 
+    const char * (*printBanner)();
+
     int8_t defaultPropertyIdx;
     bool refreshProps;
     bool refreshState;
     bool passive;
     bool connected = false;
-    bool peerReady;
+    bool peerFound;
+
 };
 
 #endif //POWEROID_10_CONTEXT_H
