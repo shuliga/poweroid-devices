@@ -20,11 +20,11 @@ Cu cu{
                            "reset_props",
                            "set_relay_",
                            "mode ",
-                           "get_prop_all",
+                           "get_all_prop",
 #ifndef SAVE_RAM
-                           "get_state_all",
-                           "get_sensor_all",
-                           "get_relay_all",
+                           "get_all_state",
+                           "get_all_sensor",
+                           "get_all_relay",
 #endif
     }
 };

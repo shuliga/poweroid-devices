@@ -15,10 +15,10 @@ void Relays::power(uint8_t i, bool _power)
     if (i < size() && powered[i] != _power)
     {
         powered[i] = _power;
+
 #ifndef SSERIAL
         digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
 #endif
-        Serial.println(printRelay(i));
 
         int8_t mappedIdx = mappings[i];
         if (mapped && mappedIdx >= 0)
@@ -34,12 +34,10 @@ uint8_t Relays::size()
     return ARRAY_SIZE(OUT_PINS);
 }
 
-
 void Relays::castRelay(uint8_t idx){
     sprintf(BUFF, "%i:%s", idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
     printCmd(cu.cmd_str.CMD_SET_RELAY, BUFF);
 }
-
 
 unsigned char * Relays::relStatus()
 {
@@ -66,7 +64,6 @@ void Relays::castMappedRelays(){
         delay(50);
     }
 }
-
 
 int8_t Relays::getMappedFromVirtual(uint8_t i) {
     for (uint8_t idx = 0; idx < VIRTUAL_RELAYS; idx++) {

@@ -30,7 +30,7 @@ typedef struct Context {
             : signature(_signature), version(_version), PROPERTIES(_factory_props),
               props_size(_props_size), id(_id), SENS(), RELAYS(),
               PERS(Persistence(_signature, _factory_props, _props_size)),
-              defaultPropertyIdx(_defaultPropIdx), printBanner(_printBanner) {}
+              props_default_idx(_defaultPropIdx), printBanner(_printBanner) {}
 
     const char *signature;
     const char *version;
@@ -40,14 +40,14 @@ typedef struct Context {
 
     Property *PROPERTIES;
     Property remoteProperty;
-    const uint8_t props_size;
+    uint8_t props_size;
     const char *id;
 
     Persistence PERS;
 
     const char * (*printBanner)();
 
-    int8_t defaultPropertyIdx;
+    int8_t props_default_idx;
     bool refreshProps;
     bool refreshState;
     bool passive;

@@ -22,11 +22,11 @@ typedef struct CommandsStr {
     const char* CMD_RESET_PROPS;
     const char* CMD_SET_RELAY;
     const char* MODE;
-    const char* CMD_GET_PROP_ALL;
+    const char* CMD_GET_ALL_PROP;
 #ifndef SAVE_RAM
-    const char* CMD_GET_STATE_ALL;
-    const char* CMD_GET_SENSOR_ALL;
-    const char* CMD_GET_RELAY_ALL;
+    const char* CMD_GET_ALL_STATE;
+    const char* CMD_GET_ALL_SENSOR;
+    const char* CMD_GET_ALL_RELAY;
 #endif
 };
 

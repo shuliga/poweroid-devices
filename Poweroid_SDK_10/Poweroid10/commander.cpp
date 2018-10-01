@@ -49,6 +49,15 @@ void Commands::listen() {
                 if (cmd.indexOf(MODE_ASK) > 0) {
                     printCmdResponse(cmd, ctx->passive ? MODE_CLIENT : MODE_SERVER);
                 }
+                if (cmd.indexOf(MODE_CLIENT) > 0 && ctx->passive) {
+                    int8_t i = cmd.indexOf(',');
+                    int8_t j = cmd.lastIndexOf(',');
+                    const char * c = cmd.c_str();
+                    if (i > 0 ) {
+                        ctx->props_size = cmd.substring(i + 1, j).toInt();
+                        ctx->props_default_idx = cmd.substring(j + 1).toInt();
+                    }
+                }
             }
 
             if (cmd.startsWith(cu.cmd_str.CMD_RESET_PROPS)) {
@@ -70,7 +79,7 @@ void Commands::listen() {
                 }
             }
 
-            if (cmd.startsWith(cu.cmd_str.CMD_GET_PROP_ALL)) {
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_PROP)) {
                 for (uint8_t i = 0; i < ctx->props_size; i++) {
                     printCmdResponse(cmd, printProperty(i));
                 }
@@ -135,19 +144,19 @@ void Commands::listen() {
             }
 
 #ifndef SAVE_RAM
-            if (cmd.startsWith(cu.cmd_str.CMD_GET_STATE_ALL)) {
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_STATE)) {
                 for (uint8_t i = 0; i < state_count; i++) {
                     printCmdResponse(cmd, printState(i));
                 }
             }
 
-            if (cmd.startsWith(cu.cmd_str.CMD_GET_RELAY_ALL)) {
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_RELAY)) {
                 for (uint8_t i = 0; i < ctx->RELAYS.size(); i++) {
                     printCmdResponse(cmd, ctx->RELAYS.printRelay(i));
                 }
             }
 
-            if (cmd.startsWith(cu.cmd_str.CMD_GET_SENSOR_ALL)) {
+            if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_SENSOR)) {
                 for (uint8_t i = 0; i < ctx->SENS.size(); i++) {
                     printCmdResponse(cmd, ctx->SENS.printSensor(i));
                 }
@@ -179,7 +188,8 @@ void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
 
 bool Commands::isConnected() {
     if (connection_check.isTimeAfter(true)) {
-        printCmd(cu.cmd_str.MODE, ctx->passive ? MODE_SERVER : MODE_CLIENT);
+        sprintf(BUFF,"%s,%i,%i",MODE_CLIENT, ctx->props_size, ctx->props_default_idx);
+        printCmd(cu.cmd_str.MODE, ctx->passive ? MODE_SERVER : BUFF);
         connected = ctx->peerFound;
         ctx->peerFound = false;
         connection_check.reset();
@@ -201,6 +211,3 @@ const char *printState(uint8_t i) {
     sprintf(BUFF, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
     return BUFF;
 }
-
-
-

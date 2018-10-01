@@ -215,10 +215,10 @@ void Controller::process() {
                 state = BROWSE;
             };
 
-            if (control_touched && ctx->defaultPropertyIdx >= 0 && canGoToEdit()) {
+            if (control_touched && ctx->props_default_idx >= 0 && canGoToEdit()) {
                 control_touched = false;
                 switchDisplay(true);
-                prop_idx = (uint8_t) ctx->defaultPropertyIdx;
+                prop_idx = (uint8_t) ctx->props_default_idx;
                 goToEditProp(prop_idx);
             }
 
