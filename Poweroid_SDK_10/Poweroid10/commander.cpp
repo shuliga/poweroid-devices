@@ -59,9 +59,6 @@ void Commands::listen() {
                 ctx->refreshProps = true;
             }
 
-            char len[2] = {ctx->props_size, 0};
-            castCommand(cu.cmd_str.CMD_GET_LEN_PROP_BIN, len);
-
             if (cmd.startsWith(cu.cmd_str.CMD_SET_RELAY)) {
                 Relays relays = ctx->RELAYS;
                 int8_t i = ctx->passive ? relays.getMappedFromVirtual(getIndex()) : getIndex();

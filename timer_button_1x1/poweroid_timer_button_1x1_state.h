@@ -5,7 +5,7 @@
 #include "timings.h"
 
 typedef struct Timings {
-    TimingState countdown_power, countdown_power_end;
+    TimingState countdown_power, countdown_power_end, countdown_full;
 };
 
 enum StatePower {

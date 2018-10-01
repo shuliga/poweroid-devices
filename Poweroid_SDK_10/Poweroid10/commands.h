@@ -17,7 +17,6 @@ typedef struct CommandsStr {
     const char* CMD_GET_BIN_PROP;
     const char* CMD_SET_BIN_PROP;
     const char* CMD_SET_PROP;
-    const char* CMD_GET_LEN_PROP_BIN;
     const char* CMD_LOAD_PROPS;
     const char* CMD_STORE_PROPS;
     const char* CMD_RESET_PROPS;

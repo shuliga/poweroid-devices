@@ -15,16 +15,17 @@ Cu cu{
                            "get_bin_prop_",
                            "set_bin_prop_",
                            "set_prop_",
-                           "get_len_prop_bin",
                            "load_props",
                            "store_props",
                            "reset_props",
                            "set_relay_",
                            "mode ",
-//                           "get_prop_all",
-//                           "get_state_all",
-//                           "get_sensor_all",
-//                           "get_relay_all",
+                           "get_prop_all",
+#ifndef SAVE_RAM
+                           "get_state_all",
+                           "get_sensor_all",
+                           "get_relay_all",
+#endif
     }
 };
 
