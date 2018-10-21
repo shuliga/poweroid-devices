@@ -7,7 +7,8 @@
 #include "poweroid_timer_button_1x1_prop.h"
 #include "DS1307.h"
 
-Timings timings = {0, 0, 0};
+Timings timings = {0};
+unsigned long SBY_MILLS = 0L;
 TimingState FLASH(750L);
 TimingState FLASH_SBY(250L);
 
@@ -29,18 +30,15 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 void apply_timings() {
-    timings.countdown_full.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
+    timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
                                       (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
-    timings.countdown_power_end.interval =
-            (unsigned long) PROPS.FACTORY[2].runtime * 60000L > timings.countdown_full.interval
-            ? timings.countdown_full.interval : PROPS.FACTORY[2].runtime * 60000L;
-    timings.countdown_power.interval = timings.countdown_full.interval - timings.countdown_power_end.interval;
+    SBY_MILLS =  PROPS.FACTORY[2].runtime * 60000L;
 }
 
 
 const char *printToGo() {
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
-    long totalToGo = countDown ? timings.countdown_full.millsToGo(timings.countdown_full.getCurrent()) / 1000 : 0;
+    long totalToGo = countDown ? timings.countdown_power.millsToGo() / 1000 : 0;
     uint8_t hrsToGo = totalToGo / 3600;
     uint8_t minToGo = (totalToGo - hrsToGo * 3600) / 60;
     uint8_t secToGo = (totalToGo - hrsToGo * 3600 - minToGo * 60);
@@ -64,7 +62,6 @@ void run_state_power(McEvent event) {
         case SP_POWER: {
             if (prev_state_power == SP_OFF) {
                 timings.countdown_power.reset();
-                timings.countdown_full.reset();
             }
             prev_state_power = SP_POWER;
             if (event == HOLD) {
@@ -76,15 +73,17 @@ void run_state_power(McEvent event) {
                 break;
             }
             if (!timings.countdown_power.countdown(true, false, false)) {
+                state_power = SP_OFF;
+                break;
+            }
+            if (timings.countdown_power.millsToGo() < SBY_MILLS) {
                 state_power = SP_POWER_END;
                 break;
             }
             break;
         }
         case SP_POWER_SBY: {
-            timings.countdown_power_end.countdown(true, true, false);
             timings.countdown_power.countdown(true, true, false);
-            timings.countdown_full.countdown(true, true, false);
             if (event == CLICK) {
                 state_power = prev_state_power;
                 break;
@@ -96,9 +95,6 @@ void run_state_power(McEvent event) {
             break;
         }
         case SP_POWER_END: {
-            if (prev_state_power == SP_POWER) {
-                timings.countdown_power_end.reset();
-            }
             prev_state_power = SP_POWER_END;
             if (event == HOLD) {
                 state_power = SP_OFF;
@@ -108,7 +104,7 @@ void run_state_power(McEvent event) {
                 state_power = SP_POWER_SBY;
                 break;
             }
-            if (!timings.countdown_power_end.countdown(true, false, false)) {
+            if (!timings.countdown_power.countdown(true, false, false)) {
                 state_power = SP_OFF;
                 break;
             }

@@ -15,6 +15,10 @@ inline bool TimingState::testInterval(unsigned long current) {
     return millsToGo(current) <= 0;
 }
 
+long TimingState::millsToGo() {
+    return interval - (getCurrent() - mils - delta);
+}
+
 long TimingState::millsToGo(unsigned long current) {
     return interval - (current - mils - delta);
 }
