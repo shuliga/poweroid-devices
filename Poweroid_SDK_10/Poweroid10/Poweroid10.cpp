@@ -19,6 +19,7 @@ void Pwr::begin() {
     TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
     sei();
 #endif
+    delay(1000);
     Serial.begin(DEFAULT_BAUD);
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
@@ -43,7 +44,7 @@ void Pwr::begin() {
     loadDisarmedStates();
 
     REL->mapped = !CTX->passive;
-    writeLog('I', "PWR", 200 + CTX->passive);
+    writeLog('I', "PWR", 200 + CTX->passive, (unsigned long)0);
 #ifdef WATCH_DOG
     wdt_enable(WDTO_2S);
 #endif
@@ -93,7 +94,7 @@ void Pwr::run() {
         REL->castMappedRelays();
     }
     if (firstRun) {
-        writeLog('I', SIGNATURE, 100 + CTX->passive);
+        writeLog('I', SIGNATURE, 100 + CTX->passive, (unsigned long)0);
         firstRun = false;
     }
 #ifdef DEBUG

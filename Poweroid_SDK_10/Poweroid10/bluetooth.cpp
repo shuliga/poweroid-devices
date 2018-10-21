@@ -20,7 +20,7 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
 
-    delay(2000);
+    delay(2500);
 
     server = true;
     Serial.begin(HC_06_BAUD);
@@ -49,7 +49,7 @@ void Bt::begin() {
                 applyBt05();
             } else {
                 if (checkPeerType(MODE_SERVER)) {
-                    writeLog('I', ORIGIN, 211);
+                    writeLog('I', ORIGIN, 211, (unsigned long)0);
                 }
             }
         }

@@ -25,15 +25,6 @@ char * idxToChar(uint8_t idx){
     return itoa(idx, num, 10);
 }
 
-void writeLog(const char level, const char *origin, const int code) {
-    sprintf(BUFF, "%c [%s] %i", level, origin, code);
-#ifdef SSERIAL
-    SSerial.println(BUFF);
-#else
-    Serial.println(BUFF);
-#endif
-}
-
 void writeLog(const char level, const char *origin, const int code, unsigned long result) {
     sprintf(BUFF, "%c [%s] %i (%lu)", level, origin, code, result);
 #ifdef SSERIAL

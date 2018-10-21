@@ -239,8 +239,12 @@ void Controller::process() {
             break;
         }
     }
-    if (ctx->refreshState && state != SUSPEND && state != SLEEP) {
-        outputState();
+    if (ctx->refreshState) {
+        if(state == SUSPEND || state == SLEEP) {
+            state = SLEEP;
+        } else {
+            outputState();
+        }
         ctx->refreshState = false;
     }
     ctx->refreshProps = false;
