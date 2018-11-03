@@ -2,8 +2,11 @@
 #define BT_H
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <context.h>
+
+#ifdef SSERIAL
+#include <SoftwareSerial.h>
+#endif
 
 #define STRINGIZE_NX(A) #A
 #define STRINGIZE(A) STRINGIZE_NX(A)

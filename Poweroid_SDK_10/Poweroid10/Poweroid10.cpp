@@ -2,7 +2,7 @@
 #include <avr/wdt.h>
 #include "Poweroid10.h"
 
-volatile uint8_t semaphor = 0;
+// volatile uint8_t semaphor = 0;
 
 Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
     REL = &ctx.RELAYS;
@@ -19,12 +19,20 @@ void Pwr::begin() {
     TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
     sei();
 #endif
-    delay(1000);
+
     Serial.begin(DEFAULT_BAUD);
+
+    if (BT) {
+        BT->begin();
+        CTX->passive = !BT->server;
+    }
+
+
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
     SSerial.println("SSerial-started");
 #endif
+
     printVersion();
 
     initPins();
@@ -34,26 +42,25 @@ void Pwr::begin() {
 #ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
 #endif
-    if (BT) {
-        BT->begin();
-        CTX->passive = !BT->server;
-    }
-
     SENS->initSensors(!CTX->passive);
 
     loadDisarmedStates();
 
     REL->mapped = !CTX->passive;
+
     writeLog('I', "PWR", 200 + CTX->passive, (unsigned long)0);
 #ifdef WATCH_DOG
     wdt_enable(WDTO_2S);
 #endif
+
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->begin();
     }
 #endif
+
     Serial.setTimeout(SERIAL_READ_TIMEOUT);
+
 }
 
 void Pwr::run() {
@@ -66,15 +73,15 @@ void Pwr::run() {
     bool newConnected = false;
     bool updateConnected = false;
 
-    semaphor = 1;
+//    semaphor = 1;
     SENS->process();
 
-    semaphor = 2;
+//    semaphor = 2;
     if (CMD) {
         CMD->listen();
     }
 
-    semaphor = 3;
+//    semaphor = 3;
     if (BT) {
         newConnected = CMD->isConnected();
         updateConnected = newConnected != CTX->connected;
@@ -82,14 +89,14 @@ void Pwr::run() {
         CTX->connected = newConnected;
     }
 
-    semaphor = 4;
+//    semaphor = 4;
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->process();
     }
 #endif
 
-    semaphor = 5;
+//    semaphor = 5;
     if (updateConnected && newConnected) {
         REL->castMappedRelays();
     }

@@ -8,6 +8,7 @@
 #include "global.h"
 #include <Rotary.h>
 #include <ACROBOTIC_SSD1306.h>
+#include <Wire.h>
 #include "controller.h"
 #include "commands.h"
 
@@ -58,16 +59,25 @@ void Controller::begin() {
     initDisplay();
 #if defined(ENC1_PIN) && defined(ENC2_PIN)
     initEncoderInterrupts();
+    props_idx_max = ctx->props_size - 1;
+    state_idx_max = state_count - 1;
 #endif
 }
 
 void Controller::initEncoderInterrupts() {
+
     cli();
+#if defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) //ARDUINO_AVR_UNO_PRO
+#define PCVECT PCINT1_vect
+    PCICR |= (1 << PCIE1);
+    PCMSK1 |= (1 << PCINT10) | (1 << PCINT11);
+#else
+#define PCVECT PCINT2_vect
     PCICR |= (1 << PCIE2);
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
+#endif
     sei();
-    props_idx_max = ctx->props_size - 1;
-    state_idx_max = state_count - 1;
+
 }
 
 void Controller::initDisplay() {
@@ -378,7 +388,7 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
 #ifdef ENC1_PIN
 #ifdef ENC2_PIN
 
-ISR(PCINT2_vect) {
+ISR(PCVECT) {
     unsigned char input = encoder.process();
     if (input != NOTHING) {
         control_touched = true;

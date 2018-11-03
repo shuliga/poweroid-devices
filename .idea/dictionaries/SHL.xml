@@ -2,6 +2,7 @@
   <dictionary name="SHL">
     <words>
       <w>eeprom</w>
+      <w>uart</w>
     </words>
   </dictionary>
 </component>

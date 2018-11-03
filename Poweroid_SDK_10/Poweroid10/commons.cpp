@@ -1,10 +1,13 @@
 #include <Arduino.h>
-#include <src/SoftwareSerial.h>
-#include <avr/wdt.h>
 #include "commons.h"
 #include "global.h"
 
+#ifdef WATCH_DOG
+#include <avr/wdt.h>
+#endif
+
 #ifdef SSERIAL
+#include <SoftwareSerial.h>
 SoftwareSerial SSerial = SoftwareSerial(RX_SS, TX_SS);
 #endif
 
