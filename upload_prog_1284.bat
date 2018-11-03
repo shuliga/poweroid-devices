@@ -1,1 +1,0 @@
-C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\avrdude -CC:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\etc\avrdude.conf -v -patmega1284p -cstk500v1 -PCOM3 -b115200 -Uflash:w:C:\Users\SHL\CLionProjects\Poweroid\cmake-build-release\%1:i
