@@ -3,8 +3,8 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 
 set(PROJECT_NAME Poweroid_SDK_10)
 
-set(DEVICE_NAME timer_button_1x1)
-#set(DEVICE_NAME fan_3x1_dht)
+#set(DEVICE_NAME timer_button_1x1)
+set(DEVICE_NAME fan_3x1_dht)
 
 project(${DEVICE_NAME})
 

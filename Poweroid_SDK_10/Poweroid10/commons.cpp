@@ -57,10 +57,6 @@ uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst) {
     return n;
 }
 
-uint8_t getNumberOfDigits(long i) {
-    return i > 0 ? (uint8_t) log10((double) i) + 1 : 1;
-}
-
 void noInfoToBuff() { strcpy(BUFF, "--"); }
 
 

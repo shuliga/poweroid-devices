@@ -25,6 +25,7 @@ void Pwr::begin() {
     if (BT) {
         BT->begin();
         CTX->passive = !BT->server;
+        CTX->bt = BT->on;
     }
 
 
@@ -141,7 +142,7 @@ void Pwr::loadDisarmedStates() {
 }
 
 void Pwr::power(uint8_t i, bool power) {
-    if (!CTX->passive) {
+    if (CTX->canAccessLocally()) {
         CTX->refreshState = power != REL->isPowered(i);
         REL->power(i, power);
     }

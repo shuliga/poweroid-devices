@@ -19,10 +19,9 @@ const long INST_DELAY = 50L;
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
-static TimingState flash_333 = TimingState(333);
 static TimingState pollTiming = TimingState(5000L);
-
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
+
 static bool installed[ARRAY_SIZE(IN_PINS)];
 static bool dht_installed;
 static bool propagate = false;
@@ -31,7 +30,7 @@ static bool dht_set = false;
 Sensors::Sensors() : dht(DHT_PIN, DHTTYPE) {
 }
 
-void Sensors::searchDht() {
+void Sensors::searchDHT() {
     dht.begin();
     float val = dht.readHumidity();
     if (!isnan(val)) {
@@ -47,7 +46,7 @@ void Sensors::searchDht() {
     }
 }
 
-void Sensors::updateTnH() {
+void Sensors::updateDHT() {
     if (dht_installed && pollTiming.ping()) {
         temp = dht.readTemperature();
         humid = dht.readHumidity();
@@ -66,25 +65,10 @@ float Sensors::getHumidity() const {
     return humid;
 }
 
-void Sensors::printInstalled(uint8_t pin) {
-    writeLog('I', ORIGIN, 201, pin);
-}
-
 bool Sensors::checkInstalled(uint8_t pin, bool inst) {
     bool sign = digitalRead(pin) == LOW;
     if (!inst && sign) {
-        printInstalled(pin);
-    }
-    return inst || sign;
-}
-
-bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on) {
-    bool sign = false;
-    if (!inst) {
-        sign = hold_on.isTimeAfter(digitalRead(pin) == LOW);
-        if (sign) {
-            printInstalled(pin);
-        }
+        writeLog('I', ORIGIN, 201, pin);
     }
     return inst || sign;
 }
@@ -92,13 +76,13 @@ bool Sensors::checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_
 void Sensors::initSensors(bool _propagate) {
     propagate = _propagate;
     delay(1000L);
-    searchDht();
+    searchDHT();
     pollTiming.reset();
 }
 
 void Sensors::process() {
     checkInstalled();
-    updateTnH();
+    updateDHT();
 }
 
 void Sensors::checkInstalled() {
@@ -110,7 +94,6 @@ void Sensors::checkInstalled() {
 bool Sensors::isDhtInstalled() {
     return dht_installed;
 }
-
 
 bool Sensors::isSensorOn(uint8_t index) {
     return hold_on[index].isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
@@ -147,7 +130,7 @@ const char *Sensors::printDht() {
 
 int8_t Sensors::getInt(float f) const { return (int8_t) floor(f + 0.5); }
 
-void Sensors::setDht(int8_t _temp, uint8_t _humid) {
+void Sensors::setDHT(int8_t _temp, uint8_t _humid) {
     if (!dht_installed) {
         temp = _temp;
         humid = _humid;

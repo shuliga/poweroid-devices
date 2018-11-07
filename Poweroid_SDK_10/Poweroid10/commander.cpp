@@ -41,7 +41,7 @@ void Commands::listen() {
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_DHT)) {
                 int8_t i = static_cast<int8_t>(cmd.indexOf(':'));
-                ctx->SENS.setDht(cmd.c_str()[i + 1], (uint8_t) cmd.c_str()[i + 2]);
+                ctx->SENS.setDHT(cmd.c_str()[i + 1], (uint8_t) cmd.c_str()[i + 2]);
             }
 
             if (cmd.startsWith(cu.cmd_str.MODE)) {

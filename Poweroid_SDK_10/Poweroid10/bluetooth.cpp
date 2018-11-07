@@ -50,6 +50,8 @@ void Bt::begin() {
             } else {
                 if (checkPeerType(MODE_SERVER)) {
                     writeLog('I', ORIGIN, 211, (unsigned long)0);
+                } else {
+                    on = false;
                 }
             }
         }

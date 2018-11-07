@@ -31,6 +31,8 @@ class Bt {
 public:
   const char *name;
   bool server = false;
+  bool on = true;
+
   Bt(const char *id);
 
   void begin();

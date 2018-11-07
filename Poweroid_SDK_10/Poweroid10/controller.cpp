@@ -71,7 +71,7 @@ void Controller::initEncoderInterrupts() {
 #define PCVECT PCINT1_vect
     PCICR |= (1 << PCIE1);
     PCMSK1 |= (1 << PCINT10) | (1 << PCINT11);
-#else
+#else //ARDUINO_AVR_PRO
 #define PCVECT PCINT2_vect
     PCICR |= (1 << PCIE2);
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
@@ -90,7 +90,7 @@ void Controller::initDisplay() {
 void Controller::outputState() const {
     strcpy(BUFF, (const char *) ctx->RELAYS.relStatus());
     padLine(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) ((ctx->connected ? 130 : 129) + (ctx->passive ? 0 : 2));
+    BUFF[15] = (unsigned char) (ctx->bt ? (((ctx->connected ? 130 : 129) + (ctx->passive ? 0 : 2))) : '\0');
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -151,7 +151,7 @@ void Controller::process() {
                 state = SLEEP;
             }
 
-            if (event == DOUBLE_CLICK && !ctx->passive) {
+            if (event == DOUBLE_CLICK && ctx->canAccessLocally()) {
                 state = STATES;
             }
 
@@ -184,12 +184,12 @@ void Controller::process() {
 
         case STORE: {
             firstRun();
-            if (!ctx->passive) {
+            if (ctx->canAccessLocally()) {
                 cmd->storeProps();
             } else {
                 printCmd(cu.cmd_str.CMD_STORE_PROPS, NULL);
             }
-            outputStatus(F("<Storing...> "), prop_value);
+            outputStatus(F("Storing... "), prop_value);
             delay(500);
             goToBrowse();
             break;
@@ -294,12 +294,13 @@ void Controller::goToEditProp(uint8_t i) const {
 }
 
 bool inline Controller::canGoToEdit() {
-    return !(ctx->passive && !ctx->connected);
+    return !(ctx->passive && !ctx->connected && ctx->bt);
 }
+
 
 bool Controller::loadProperty(uint8_t idx) const {
     c_prop_idx = idx;
-    if (!ctx->passive) {
+    if (ctx->canAccessLocally()) {
         flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
         copyProperty(ctx->PROPERTIES[idx], idx);
     } else {
@@ -330,7 +331,7 @@ void Controller::copyProperty(Property &prop, uint8_t idx) const {
 }
 
 void Controller::updateProperty(uint8_t idx) const {
-    if (!ctx->passive) {
+    if (ctx->canAccessLocally()) {
         ctx->PROPERTIES[idx].runtime = prop_value * ctx->PROPERTIES[idx].scale;
     } else {
         if (ctx->connected) {
@@ -359,7 +360,7 @@ void Controller::outputPropDescr(char *_buff) {
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
-    padLine(BUFF, 1, getNumberOfDigits(val));
+    padLine(BUFF, 1, val > 0 ? log10((double) val) + 1 : 1);
     oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, (unsigned char) (16 - PROP_SIZE));
     oled.putNumber(val);

@@ -60,6 +60,7 @@ private:
     void outputState() const;
 
     bool canGoToEdit();
+
 };
 
 

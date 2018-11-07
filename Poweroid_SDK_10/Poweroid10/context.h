@@ -52,7 +52,12 @@ typedef struct Context {
     bool refreshState;
     bool passive;
     bool connected = false;
+    bool bt = false;
     bool peerFound;
+
+    boolean canAccessLocally(){
+        return !bt || !passive;
+    }
 
 };
 

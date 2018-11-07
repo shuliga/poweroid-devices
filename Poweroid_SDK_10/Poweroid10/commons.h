@@ -7,12 +7,11 @@
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-#include "properties.h"
 
 #define PWR23
 
 // #define SPI
-// #define SAVE_RAM
+#define SAVE_RAM
 
 //#define DEBUG
 //#define WATCH_DOG
@@ -20,6 +19,10 @@
 #ifdef DEBUG
 #define SSERIAL
 #define NO_CONTROLLER
+#endif
+
+#ifdef NO_CONTROLLER
+#undef SAVE_RAM
 #endif
 
 
@@ -53,11 +56,11 @@
 #define INA1_PIN 14
 #define INA2_PIN 15
 #define INA3_PIN 16
+#define INA4_PIN 17
 
 #ifdef SPI
 #define SPI_SS_PIN 10
 #endif
-
 
 #endif // PWR23
 
@@ -65,20 +68,20 @@
 
 #define BOARD_VERSION "PWR20"
 
-#define ENC_BTN_PIN 7
-
 #define DHT_PIN 2
 
 #define IN1_PIN 2
 #define IN2_PIN 4
 #define IN3_PIN 6
 
-#define INA1_PIN 14
-#define INA2_PIN 15
-#define INA3_PIN 16
+#define ENC_BTN_PIN 7
 
 #define PWR1_PIN 10
 #define PWR2_PIN 11
+
+#define INA1_PIN 14
+#define INA2_PIN 15
+#define INA3_PIN 16
 
 #endif // PWR20
 
@@ -107,8 +110,6 @@ void writeLog(const char level, const char *origin, const int code, unsigned lon
 void writeLog(const char level, const char *origin, const int code, const char *result);
 
 uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
-
-uint8_t getNumberOfDigits(long i);
 
 void noInfoToBuff();
 

@@ -22,7 +22,7 @@ public:
 
     Sensors();
 
-    void updateTnH();
+    void updateDHT();
 
     float getTemperature() const;
 
@@ -31,8 +31,6 @@ public:
     void process();
 
     bool checkInstalled(uint8_t pin, bool inst);
-
-    bool checkInstalledWithDelay(uint8_t pin, bool inst, TimingState &hold_on);
 
     void initSensors(bool _propagate);
 
@@ -52,7 +50,7 @@ public:
 
     const char *printDht();
 
-    void setDht(int8_t _temp, uint8_t _humid);
+    void setDHT(int8_t _temp, uint8_t _humid);
 private:
 
     float temp;
@@ -63,7 +61,7 @@ private:
 
     void printInstalled(uint8_t pin);
 
-    void searchDht();
+    void searchDHT();
 
     int8_t getInt(float f) const;
 };
