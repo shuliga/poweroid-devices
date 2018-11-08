@@ -66,11 +66,7 @@ float Sensors::getHumidity() const {
 }
 
 bool Sensors::checkInstalled(uint8_t pin, bool inst) {
-    bool sign = digitalRead(pin) == LOW;
-    if (!inst && sign) {
-        writeLog('I', ORIGIN, 201, pin);
-    }
-    return inst || sign;
+    return inst || digitalRead(pin) == LOW;
 }
 
 void Sensors::initSensors(bool _propagate) {
@@ -88,6 +84,9 @@ void Sensors::process() {
 void Sensors::checkInstalled() {
     for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
         installed[i] = checkInstalled(IN_PINS[i], installed[i]);
+#ifdef DEBUG
+        writeLog('I', ORIGIN, installed[i] ? 201 : 501, i);
+#endif
     }
 }
 
@@ -111,10 +110,6 @@ bool Sensors::isSensorVal(uint8_t index, uint8_t val) {
     return getSensorVal(index) == val;
 }
 
-const char *Sensors::printSensor(uint8_t idx) {
-    writeLog('I', ORIGIN, installed[idx] ? 201 : 501, idx);
-}
-
 uint8_t Sensors::size() {
     return ARRAY_SIZE(IN_PINS);
 }
@@ -136,5 +131,10 @@ void Sensors::setDHT(int8_t _temp, uint8_t _humid) {
         humid = _humid;
         dht_set = true;
     }
+}
+
+const char *Sensors::printSensor(uint8_t i) {
+    sprintf(BUFF, "Sens:%i %s", i, installed[i] ? "inst" : "n/a");
+    return BUFF;
 }
 

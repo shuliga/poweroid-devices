@@ -44,13 +44,14 @@ public:
 
     bool isSensorVal(uint8_t index, uint8_t val);
 
-    const char * printSensor(uint8_t idx);
-
     uint8_t size();
 
     const char *printDht();
 
     void setDHT(int8_t _temp, uint8_t _humid);
+
+    const char *printSensor(uint8_t i);
+
 private:
 
     float temp;
@@ -58,8 +59,6 @@ private:
     float humid;
 
     DHT dht;
-
-    void printInstalled(uint8_t pin);
 
     void searchDHT();
 
