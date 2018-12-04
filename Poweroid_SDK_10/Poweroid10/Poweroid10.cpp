@@ -20,6 +20,8 @@ void Pwr::begin() {
     sei();
 #endif
 
+    initPins();
+
     Serial.begin(DEFAULT_BAUD);
 
     if (BT) {
@@ -35,8 +37,6 @@ void Pwr::begin() {
 #endif
 
     printVersion();
-
-    initPins();
 
     CTX->PERS.begin();
 
@@ -118,6 +118,8 @@ void Pwr::printVersion() {
 }
 
 void Pwr::initPins() {
+
+    pinMode(LED_PIN, OUTPUT);
 
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);

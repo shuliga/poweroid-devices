@@ -32,7 +32,6 @@ void Commands::listen() {
             writeLog('I', ORIGIN, 200 + ctx->passive, cmd.c_str());
 #endif
 #ifndef SPI
-            pinMode(LED_PIN, OUTPUT);
             digitalWrite(LED_PIN, HIGH);
 #endif
             castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);

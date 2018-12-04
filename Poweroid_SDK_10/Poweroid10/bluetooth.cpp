@@ -33,9 +33,9 @@ void Bt::begin() {
         if (!checkPeerType(MODE_CLIENT)) {
             server = false;
             Serial.end();
-            Serial.begin(HC_05_AT_BAUD_FAST);
+            Serial.begin(HC_05_AT_BAUD);
 
-            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD_FAST);
+            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD);
 
             Serial.println("AT");
             delay(200);
@@ -46,8 +46,11 @@ void Bt::begin() {
             wdt_reset();
 #endif
             if (ver.startsWith(BT_VER_05)) {
+                digitalWrite(LED_PIN, HIGH);
                 applyBt05();
             } else {
+                Serial.end();
+                Serial.begin(HC_05_AT_BAUD_FAST);
                 if (checkPeerType(MODE_SERVER)) {
                     writeLog('I', ORIGIN, 211, (unsigned long)0);
                 } else {
@@ -109,7 +112,8 @@ void Bt::applyBt05() {
 #ifdef WATCH_DOG
         wdt_reset();
 #endif
-    execBtAtCommand(F("AT+ORGL"));
+
+//    execBtAtCommand(F("AT+ORGL"));
     execBtAtCommand(F("AT+NAME="), name, 200);
     execBtAtCommand(F("AT+RMAAD"));
     execBtAtCommand(F("AT+ROLE=1")); // ser role to master
