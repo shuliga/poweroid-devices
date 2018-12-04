@@ -46,7 +46,6 @@ void Bt::begin() {
             wdt_reset();
 #endif
             if (ver.startsWith(BT_VER_05)) {
-                digitalWrite(LED_PIN, HIGH);
                 applyBt05();
             } else {
                 Serial.end();
