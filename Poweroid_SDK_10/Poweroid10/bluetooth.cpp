@@ -24,11 +24,10 @@ void Bt::begin() {
 
     server = true;
     Serial.begin(HC_06_BAUD);
-    String ver = getVerHC06();
+    String ver = execCommand(F("AT+VERSION"), 0, false);
 
     if (ver.startsWith(BT_VER_06)) {
-        Serial.print(F("AT+NAME"));
-        Serial.print(name);
+        execCommand(F("AT+NAME"), name, false);
     } else {
         if (!checkPeerType(MODE_CLIENT)) {
             server = false;
@@ -77,34 +76,30 @@ String Bt::execBtAtCommand(const __FlashStringHelper *cmd) {
 
 String Bt::execBtAtCommand(const __FlashStringHelper *cmd, const char *cmd2, unsigned long timeout) {
 #ifdef SSERIAL
-    SSerial.print("CMD->");
+    SSerial.print("AT_CMD->");
     SSerial.println(cmd);
 #endif
-    String s;
-    Serial.print(cmd);
-    if (cmd2 != 0) {
-        Serial.print(cmd2);
-    }
-    Serial.println();
 
-    long active_timeout = (timeout > 0) ? timeout : Serial.getTimeout();
-    uint16_t _delay = 0;
-    while (!Serial.available() && active_timeout > _delay) {
-        _delay += TIMEOUT_STEP;
-        delay(TIMEOUT_STEP);
-    }
-    while ((Serial.available() || active_timeout > _delay) && !s.endsWith("OK\r\n") && !s.endsWith("ERROR")) {
-        char c = (char) Serial.read();
-        _delay += 5;
-        delay(5);
-        if (c < 0) continue;
-//        c >= ' ' && c <= 'z' || c == '\r' || c == '\n' ? s += c : s += ' ';
-        s += c;
-    }
+    pushCommand(cmd, cmd2, true);
+
+    unsigned long t = Serial.getTimeout();
+    Serial.setTimeout(timeout == 0 ? t : timeout );
+
+    String res = Serial.readString();
+    while(Serial.available()){
 #if defined(SSERIAL) and defined(DEBUG)
-    SSerial.print(s);
+        SSerial.println(Serial.readString());
+#else
+        Serial.readString();
 #endif
-    return s;
+    }
+
+#if defined(SSERIAL) and defined(DEBUG)
+    SSerial.println(res);
+#endif
+
+    Serial.setTimeout(t);
+    return res;
 }
 
 void Bt::applyBt05() {
@@ -159,8 +154,24 @@ void Bt::execReset() {
 
 bool Bt::checkPeerType(const char *conn_type) {
     delay(500);
+    return execCommand(F("mode ask"), 0, true).indexOf(conn_type) >= 0;
+}
+
+String Bt::execCommand(const __FlashStringHelper *fshcmd,  const char *cmd2, bool crlf) {
     cleanSerial();
-    Serial.println(F("mode ask"));
+    pushCommand(fshcmd, cmd2, crlf);
     Serial.flush();
-    return Serial.readStringUntil('\n').indexOf(conn_type) >= 0;
+    delay(200);
+    return Serial.readString();
+}
+
+void Bt::pushCommand(const __FlashStringHelper *fshcmd, const char *cmd2, bool crlf) {
+    Serial.print(fshcmd);
+    if (cmd2 != 0) {
+        Serial.print(cmd2);
+    }
+    if (crlf) {
+        Serial.println();
+    }
+
 }

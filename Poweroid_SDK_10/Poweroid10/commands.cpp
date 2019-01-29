@@ -5,6 +5,8 @@
 #include "commons.h"
 #include "commands.h"
 
+static const char *ORIGIN = "CMD";
+
 Cu cu{
     cu.cmd_str = {"get_ver",
                            "get_dht",
@@ -45,7 +47,7 @@ void printCmd(const char *cmd, const char *suffix) {
     suffix != NULL ? Serial.println(suffix) : Serial.println();
     Serial.flush();
 #ifdef DEBUG
-    writeLog('I', ORIGIN, 100 + ctx->passive, cmd);
+    writeLog('I', ORIGIN, 100, cmd);
 #endif
 }
 
@@ -70,5 +72,3 @@ bool castCommand(const char *prefix, const char *val) {
     }
     return false;
 }
-
-

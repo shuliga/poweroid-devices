@@ -2,8 +2,8 @@
 // Created by SHL on 09.09.2018.
 //
 
-#ifndef FAN_3X1_DHT_INDICATORS_H
-#define FAN_3X1_DHT_INDICATORS_H
+#ifndef INDICATORS_H
+#define INDICATORS_H
 
 #include "commons.h"
 #include "timings.h"
@@ -19,4 +19,4 @@ public:
 
 extern Indicators INDICATORS;
 
-#endif //FAN_3X1_DHT_INDICATORS_H
+#endif //INDICATORS_H

@@ -28,6 +28,7 @@
 const int TIMEOUT_STEP = 100;
 
 class Bt {
+
 public:
   const char *name;
   bool server = false;
@@ -51,6 +52,10 @@ private:
     String getVerHC06() const;
 
     void cleanSerial() const;
+
+    String execCommand(const __FlashStringHelper *fshcmd, const char *cmd2, bool crlf);
+
+    void pushCommand(const __FlashStringHelper *fshcmd, const char *cmd2, bool crlf);
 };
 
 #endif // BT_H

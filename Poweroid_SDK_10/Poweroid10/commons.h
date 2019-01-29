@@ -10,10 +10,10 @@
 
 #define PWR23
 
-// #define SPI
-#define SAVE_RAM
+//#define SPI
+//#define SAVE_RAM
 
-//#define DEBUG
+#define DEBUG
 //#define WATCH_DOG
 
 #ifdef DEBUG
@@ -108,6 +108,8 @@ char *idxToChar(uint8_t idx);
 void writeLog(const char level, const char *origin, const int code, unsigned long result);
 
 void writeLog(const char level, const char *origin, const int code, const char *result);
+
+void writeLog(const char level, const char *origin, const int code);
 
 uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
 

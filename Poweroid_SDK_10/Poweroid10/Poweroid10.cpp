@@ -151,22 +151,24 @@ void Pwr::power(uint8_t i, bool power) {
 }
 
 #ifdef DEBUG
+
+// Initialize Timer1
 void initTimer() {
-// initialize Timer1
+
     cli();
     TCCR1A = 0;
     TCCR1B = 0;
 
-    OCR1A = 15624; // 65536 - 15624; // 16000000L / 1024 / OVERTIME - 1; // set timer value 16MHz/1024/1Hz-1
+    OCR1A = 15624;                          // 65536 - 15624; // 16000000L / 1024 / OVERTIME - 1; // set timer value 16MHz/1024/1Hz-1
 
-    TCCR1B |= (1 << WGM12); // turn on CTC mode. clear timer on compare match
-    TCCR1B |= (1 << CS12) | (1 << CS10); // 1024 prescaler
-    TIMSK1 |= (1 << OCIE1A); // enable timer compare interrupt
+    TCCR1B |= (1 << WGM12);                 // turn on CTC mode. clear timer on compare match
+    TCCR1B |= (1 << CS12) | (1 << CS10);    // 1024 pre-scaler
+    TIMSK1 |= (1 << OCIE1A);                // enable timer compare interrupt
     sei();
 }
 
 ISR(TIMER1_COMPA_vect) {
-    writeLog('E', "OVERTIME", semaphor);
+//    writeLog('E', "OVERTIME", semaphor);
 }
 #endif
 

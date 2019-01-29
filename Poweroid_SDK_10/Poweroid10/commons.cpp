@@ -37,6 +37,10 @@ void writeLog(const char level, const char *origin, const int code, unsigned lon
 #endif
 }
 
+void writeLog(const char level, const char *origin, const int code) {
+    writeLog(level, origin, code, (unsigned long) 0L);
+}
+
 void writeLog(const char level, const char *origin, const int code, const char *result) {
     sprintf(BUFF, "%c [%s] %i '%s'", level, origin, code, result);
 #ifdef SSERIAL
