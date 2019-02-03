@@ -59,7 +59,7 @@ void Commander::listen() {
                         ctx->props_size = cmd.substring(i + 1, j).toInt();
                         ctx->props_default_idx = cmd.substring(j + 1).toInt();
                         if (k > j) {
-                            cmd.substring(k + 1).toCharArray(BANNER, LINE_SIZE);
+                            cmd.substring(k + 1, cmd.indexOf('\r')).toCharArray(BANNER, LINE_SIZE);
                         }
                     }
                 }
