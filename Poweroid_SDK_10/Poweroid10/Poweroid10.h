@@ -28,6 +28,9 @@
 
 const char SIGNATURE[] = "PWR";
 
+
+extern void fillBanner();
+
 const int DEFAULT_BAUD = 9600;
 
 class Pwr {
@@ -35,12 +38,12 @@ public:
     Context *CTX;
     Relays *REL;
     Sensors *SENS;
-    Commands *CMD;
+    Commander *CMD;
     Controller *CTRL;
 
     Bt *BT;
 
-    Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt);
+    Pwr(Context &ctx, Commander *_cmd, Controller *_ctrl, Bt *_bt);
 
     void begin();
 

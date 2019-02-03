@@ -12,14 +12,13 @@ unsigned long SBY_MILLS = 0L;
 TimingState FLASH(750L);
 TimingState FLASH_SBY(250L);
 
+
 MultiClick btn = MultiClick(IN2_PIN);
 
-const char *printToGo();
-
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
-                      PROPS.DEFAULT_PROPERTY, &printToGo);
+                      PROPS.DEFAULT_PROPERTY);
 
-Commands CMD(CTX);
+Commander CMD(CTX);
 Bt BT(CTX.id);
 
 #if !defined(NO_CONTROLLER)
@@ -36,18 +35,18 @@ void apply_timings() {
 }
 
 
-const char *printToGo() {
+void fillBanner() {
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
     long totalToGo = countDown ? timings.countdown_power.millsToGo() / 1000 : 0;
     uint8_t hrsToGo = totalToGo / 3600;
-    uint8_t minToGo = (totalToGo - hrsToGo * 3600) / 60;
-    uint8_t secToGo = (totalToGo - hrsToGo * 3600 - minToGo * 60);
+    long secToGoM = totalToGo - (hrsToGo * 3600);
+    uint8_t minToGo = secToGoM / 60;
+    uint8_t secToGo = secToGoM - (minToGo * 60);
     if (countDown){
-        sprintf(BUFF, "%02d:%02d:%02d", hrsToGo, minToGo, secToGo);
+        sprintf(BANNER, "%02d:%02d:%02d", hrsToGo, minToGo, secToGo);
     } else {
-        sprintf(BUFF, "%02d:%02d:%02d", RTC.get(2, true), RTC.get(1, false), RTC.get(0, false));
+        sprintf(BANNER, "%02d:%02d:%02d", RTC.get(2, true), RTC.get(1, false), RTC.get(0, false));
     };
-    return BUFF;
 }
 
 void run_state_power(McEvent event) {

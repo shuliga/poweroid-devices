@@ -171,7 +171,9 @@ void ACROBOTIC_SSD1306::outputTextXY(uint8_t row, uint8_t col, const char *_text
         int8_t c_width = xAdvance;
         int8_t c_height = pgh * 8 + yOffset - FONT_PULL_UP;
 
-        setPageMode(SSD1306_Set_PageCols_Cmd, col + (centered ? -(newWidth + 1) / 2 : 0) + cursor, col + (centered ? -(newWidth + 1) / 2 : 0) + cursor + c_width - 1);
+        int8_t col_x = col + (centered ? -(newWidth + 1) / 2 : 0) + cursor;
+
+        setPageMode(SSD1306_Set_PageCols_Cmd, col_x,  col_x + c_width - 1);
 
         cursor += xAdvance;
         for (uint8_t pg = 0; pg < pgh; pg++) {

@@ -14,7 +14,7 @@ const char *printDHT();
 Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
                   FAN_PROPS.DEFAULT_PROPERTY, printDHT);
 
-Commands CMD(CTX);
+Commander CMD(CTX);
 Bt BT(CTX.id);
 
 #if !defined(NO_CONTROLLER)

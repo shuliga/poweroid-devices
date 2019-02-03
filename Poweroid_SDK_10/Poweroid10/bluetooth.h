@@ -1,7 +1,6 @@
 #ifndef BT_H
 #define BT_H
 
-#include <Arduino.h>
 #include <context.h>
 
 #ifdef SSERIAL
@@ -48,8 +47,6 @@ private:
     void execReset();
 
     bool checkPeerType(const char *conn_type);
-
-    String getVerHC06() const;
 
     void cleanSerial() const;
 

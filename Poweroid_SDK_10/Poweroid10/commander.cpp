@@ -1,15 +1,18 @@
 
-#include "global.h"
+#include "commons.h"
+#include "context.h"
+#include "commands.h"
 #include "commander.h"
+#include "persistence.h"
 
 static const char *ORIGIN = "CMD";
 const char *STATE_FORMAT_BUFF = "[%i] State %s: %s";
 
-Commands::Commands(Context &_ctx) : ctx(&_ctx) {};
+Commander::Commander(Context &_ctx) : ctx(&_ctx) {};
 
-TimingState Commands::connection_check(CONNECTION_CHECK);
+TimingState Commander::connection_check(CONNECTION_CHECK);
 
-const char *Commands::printProperty(uint8_t i) {
+const char *Commander::printProperty(uint8_t i) {
     char _desc[64];
     flashStringHelperToChar(ctx->PROPERTIES[i].desc, _desc);
     sprintf(BUFF, "[%i] %s : %i", i, _desc,
@@ -17,14 +20,14 @@ const char *Commands::printProperty(uint8_t i) {
     return BUFF;
 }
 
-void Commands::printBinProperty(uint8_t i) {
+void Commander::printBinProperty(uint8_t i) {
     Serial.println(ctx->PROPERTIES[i].desc);
     for (uint8_t j = 0; j < sizeof(Property); j++) {
         Serial.write(*((uint8_t *) &ctx->PROPERTIES[i] + j));
     }
 }
 
-void Commands::listen() {
+void Commander::listen() {
     if (Serial.available()) {
         cmd = Serial.readStringUntil('\n');
         if (isCommand()) {
@@ -50,11 +53,14 @@ void Commands::listen() {
                 }
                 if (cmd.indexOf(MODE_CLIENT) > 0 && ctx->passive) {
                     int8_t i = cmd.indexOf(',');
-                    int8_t j = cmd.lastIndexOf(',');
-                    const char * c = cmd.c_str();
+                    int8_t j = cmd.indexOf(',', i + 1);
+                    int8_t k = cmd.lastIndexOf(',');
                     if (i > 0 ) {
                         ctx->props_size = cmd.substring(i + 1, j).toInt();
                         ctx->props_default_idx = cmd.substring(j + 1).toInt();
+                        if (k > j) {
+                            cmd.substring(k + 1).toCharArray(BANNER, LINE_SIZE);
+                        }
                     }
                 }
             }
@@ -175,19 +181,19 @@ void Commands::listen() {
     }
 }
 
-void Commands::storeProps() {
+void Commander::storeProps() {
     ctx->PERS.storeProperties(ctx->PROPERTIES);
 }
 
-void Commands::printChangedState(bool prev_state, bool state, uint8_t id) {
+void Commander::printChangedState(bool prev_state, bool state, uint8_t id) {
     if (prev_state != state) {
         printState(id);
     }
 }
 
-bool Commands::isConnected() {
+bool Commander::isConnected() {
     if (connection_check.isTimeAfter(true)) {
-        sprintf(BUFF,"%s,%i,%i",MODE_CLIENT, ctx->props_size, ctx->props_default_idx);
+        sprintf(BUFF,"%s,%i,%i,%s",MODE_CLIENT, ctx->props_size, ctx->props_default_idx, BANNER);
         printCmd(cu.cmd_str.MODE, ctx->passive ? MODE_SERVER : BUFF);
         connected = ctx->peerFound;
         ctx->peerFound = false;
@@ -201,7 +207,7 @@ bool Commands::isConnected() {
     return connected;
 }
 
-void Commands::disarmState(uint8_t i, bool disarm) {
+void Commander::disarmState(uint8_t i, bool disarm) {
     ctx->PERS.storeState(i, disarm);
     printCmdResponse(cmd, printState(i));
 }

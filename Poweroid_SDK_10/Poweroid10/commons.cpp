@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "commons.h"
-#include "global.h"
 
 #ifdef WATCH_DOG
 #include <avr/wdt.h>

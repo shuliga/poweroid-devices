@@ -1,15 +1,11 @@
 #ifndef COMMANDER_H
 #define COMMANDER_H
 
-#include "commons.h"
-#include "persistence.h"
-#include "context.h"
-#include "commands.h"
 
-class Commands {
+class Commander {
 public:
 
-    Commands(Context &_ctx);
+    Commander(Context &_ctx);
 
     void listen();
 

@@ -64,12 +64,6 @@ void Bt::cleanSerial() const {
 
 }
 
-String Bt::getVerHC06() const {
-    Serial.print(F("AT+VERSION"));
-    Serial.flush();
-    return Serial.readString();
-}
-
 String Bt::execBtAtCommand(const __FlashStringHelper *cmd) {
     return execBtAtCommand(cmd, 0, 0);
 }

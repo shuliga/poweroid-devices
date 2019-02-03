@@ -53,7 +53,7 @@ MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
 TimingState displayTiming = TimingState(1000L);
 
 
-Controller::Controller(Context &_ctx, Commands &_cmd) : cmd(&_cmd), ctx(&_ctx) {}
+Controller::Controller(Context &_ctx, Commander &_cmd) : cmd(&_cmd), ctx(&_ctx) {}
 
 void Controller::begin() {
     initDisplay();
@@ -216,7 +216,7 @@ void Controller::process() {
 
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
-                oled.outputTextXY(DISPLAY_BASE + 2, 64, ctx->printBanner(), true, dither);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, BANNER, true, dither);
             }
 
             // Exit SLEEP state on event

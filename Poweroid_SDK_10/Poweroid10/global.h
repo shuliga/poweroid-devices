@@ -2,10 +2,10 @@
 // Created by SHL on 18.11.2017.
 //
 
-#ifndef POWEROID_10_GLOBAL_H_H
-#define POWEROID_10_GLOBAL_H_H
+#ifndef GLOBAL_H
+#define GLOBAL_H
 
-#ifdef COMMONS_H
+#ifdef POWEROID_SDK_10_H
     #define EXTERN
 #else
     #define EXTERN extern
@@ -15,5 +15,7 @@
 #define LINE_SIZE 16
 
 EXTERN char BUFF[BUFF_SIZE];
+EXTERN char BANNER[LINE_SIZE];
 
-#endif //POWEROID_10_GLOBAL_H_H
+
+#endif //GLOBAL_H

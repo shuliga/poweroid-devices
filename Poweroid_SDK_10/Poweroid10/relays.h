@@ -5,6 +5,7 @@
 #ifndef POWEROID_10_RELAYS_H
 #define POWEROID_10_RELAYS_H
 
+#include "global.h"
 #include "commons.h"
 
 #define REL_PREFIX "Rel["

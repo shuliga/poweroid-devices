@@ -19,7 +19,7 @@ static const int PROP_SIZE = 4;
 class Controller {
 public:
 
-    Controller(Context &_ctx, Commands &_cmd);
+    Controller(Context &_ctx, Commander &_cmd);
 
     void begin();
 
@@ -27,7 +27,7 @@ public:
 
 private:
     Context *ctx;
-    Commands *cmd;
+    Commander *cmd;
 
     void initEncoderInterrupts();
 

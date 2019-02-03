@@ -5,6 +5,7 @@
 #ifndef INDICATORS_H
 #define INDICATORS_H
 
+#include "global.h"
 #include "commons.h"
 #include "timings.h"
 

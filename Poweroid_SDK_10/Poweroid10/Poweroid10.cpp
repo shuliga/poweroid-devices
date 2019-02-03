@@ -1,10 +1,11 @@
-#include "global.h"
 #include <avr/wdt.h>
 #include "Poweroid10.h"
 
 // volatile uint8_t semaphor = 0;
 
-Pwr::Pwr(Context &ctx, Commands *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
+static uint8_t count;
+
+Pwr::Pwr(Context &ctx, Commander *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
     REL = &ctx.RELAYS;
     SENS = &ctx.SENS;
 }
@@ -88,6 +89,11 @@ void Pwr::run() {
         updateConnected = newConnected != CTX->connected;
         CTX->refreshState = CTX->refreshState || updateConnected;
         CTX->connected = newConnected;
+    }
+
+    count++;
+    if (! CTX->passive && count == 0){
+        fillBanner();
     }
 
 //    semaphor = 4;

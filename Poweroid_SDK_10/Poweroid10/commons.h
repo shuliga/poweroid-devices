@@ -7,13 +7,14 @@
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include "global.h"
 
 #define PWR23
 
 //#define SPI
 //#define SAVE_RAM
 
-#define DEBUG
+//#define DEBUG
 //#define WATCH_DOG
 
 #ifdef DEBUG
@@ -115,5 +116,4 @@ uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst);
 
 void noInfoToBuff();
 
-#endif
-
+#endif // COMMONS_H
