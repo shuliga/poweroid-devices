@@ -2,7 +2,6 @@
 // Created by SHL on 25.03.2017.
 //
 
-#include "global.h"
 #include "relays.h"
 #include "commands.h"
 
@@ -17,7 +16,7 @@ void Relays::power(uint8_t i, bool _power)
         powered[i] = _power;
 
 #ifndef SSERIAL
-        digitalWrite(OUT_PINS[i], _power ? LOW : HIGH);
+        digitalWrite(OUT_PINS[i], _power ? REL_ON : REL_OFF);
 #endif
 
         int8_t mappedIdx = mappings[i];
@@ -53,7 +52,7 @@ void Relays::reset()
 {
     for(uint8_t i=0; i < size(); ++i)
     {
-        digitalWrite(OUT_PINS[i], HIGH);
+        digitalWrite(OUT_PINS[i], REL_OFF);
     }
 }
 

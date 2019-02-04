@@ -5,10 +5,16 @@
 #ifndef POWEROID_10_RELAYS_H
 #define POWEROID_10_RELAYS_H
 
-#include "global.h"
 #include "commons.h"
 
-#define REL_PREFIX "Rel["
+#ifdef RELAY_ON_LOW
+#define REL_ON LOW
+#define REL_OFF HIGH
+#else
+#define REL_ON HIGH
+#define REL_OFF LOW
+#endif
+
 #define REL_FMT "Rel[%i]: %s"
 
 const char *const REL_POWERED = "ON";

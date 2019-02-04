@@ -92,7 +92,7 @@ void Pwr::run() {
     }
 
     count++;
-    if (! CTX->passive && count == 0){
+    if (CTX->canAccessLocally() && count == 0){
         fillBanner();
     }
 

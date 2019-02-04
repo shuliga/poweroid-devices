@@ -11,21 +11,13 @@
 
 #define PWR23
 
+//#define RELAY_ON_LOW
+
 //#define SPI
 //#define SAVE_RAM
 
 //#define DEBUG
 //#define WATCH_DOG
-
-#ifdef DEBUG
-#define SSERIAL
-#define NO_CONTROLLER
-#endif
-
-#ifdef NO_CONTROLLER
-#undef SAVE_RAM
-#endif
-
 
 #ifdef PWR23
 
@@ -42,7 +34,7 @@
 #define IN2_PIN 6
 #define IN3_PIN 7
 
-//Connection for relays
+//Relay pins
 #define PWR1_PIN 8
 #define PWR2_PIN 9
 
@@ -69,6 +61,7 @@
 
 #define BOARD_VERSION "PWR20"
 
+//Discrete signal IN pins
 #define DHT_PIN 2
 
 #define IN1_PIN 2
@@ -77,9 +70,11 @@
 
 #define ENC_BTN_PIN 7
 
+//Relay pins
 #define PWR1_PIN 10
 #define PWR2_PIN 11
 
+//Analogue signal IN pins
 #define INA1_PIN 14
 #define INA2_PIN 15
 #define INA3_PIN 16
@@ -100,6 +95,15 @@
 
 #ifdef SSERIAL
 extern SoftwareSerial SSerial;
+#endif
+
+#ifdef DEBUG
+#define SSERIAL
+#define NO_CONTROLLER
+#endif
+
+#ifdef NO_CONTROLLER
+#undef SAVE_RAM
 #endif
 
 unsigned long hash(byte *data, unsigned long size);
