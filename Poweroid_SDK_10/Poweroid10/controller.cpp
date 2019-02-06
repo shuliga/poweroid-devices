@@ -18,7 +18,7 @@
 #define DISPLAY_BOTTOM 7
 
 static enum State {
-    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND
+    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND, FLAG
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
@@ -35,6 +35,7 @@ static volatile int state_idx_max = 0;
 
 static int8_t c_prop_idx = -1;
 static int8_t c_state_idx = -1;
+static uint8_t c_flag = 255;
 static long c_prop_value = -1;
 static long old_prop_value;
 static bool dither = false;
@@ -177,6 +178,39 @@ void Controller::process() {
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
                 state = BROWSE;
+            }
+
+            if (event == DOUBLE_CLICK ) {
+                state = FLAG;
+            }
+            break;
+        }
+
+        case FLAG: {
+            if (testControl(sleep_timer)) {
+                outputPropDescr("FLAGS");
+                outputStatus(F("Flags:"), PWR_FLAGS);
+                prop_max = FLAGS_MAX;
+                prop_value = PWR_FLAGS;
+                prop_min = 0;
+            }
+
+            if (prop_value != c_flag) {
+                PWR_FLAGS = (uint8_t) prop_value;
+                itoa(PWR_FLAGS, BUFF, 2);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
+                c_flag = PWR_FLAGS;
+                outputStatus(F("Flags:"), PWR_FLAGS);
+            }
+
+            if (event == HOLD) {
+                ctx->PERS.storeFLags();
+                c_flag = 255;
+                goToBrowse();
+            }
+
+            if (event == CLICK || sleep_timer.isTimeAfter(true)) {
+                goToBrowse();
             }
 
             break;
@@ -396,6 +430,7 @@ ISR(PCVECT) {
         if (!requestForRefresh) {
             switch (state) {
 
+                case FLAG:
                 case EDIT_PROP: {
                     input == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
                     break;

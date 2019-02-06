@@ -34,7 +34,10 @@ void Persistence::begin() {
 #ifdef DEBUG
     writeLog('I', ORIGIN, 101, eeprom_hash);
 #endif
-    FLAGS = EEPROM.read(FLAGS_OFFSET);
+    PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
+    if (PWR_FLAGS > FLAGS_MAX) {
+        PWR_FLAGS = 0;
+    }
     if (strcmp(given_sign_chr, signature) != 0)
     {
         strcpy(signature, given_sign_chr);
@@ -87,6 +90,7 @@ void Persistence::checkFactoryReset(Property *props) {
 #endif
         storeProperties(props);
         EEPROM.write(STATES_OFFSET, 0); // Clear state DISARM flags
+        EEPROM.write(FLAGS_OFFSET, 0); // Clear PWR_FLAGS
     }
 #endif
 }
@@ -98,5 +102,8 @@ bool Persistence::loadState(uint8_t id) {
 void Persistence::storeState(uint8_t id, bool state) {
     EEPROM.write(STATES_OFFSET,
                  static_cast<uint8_t>(state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & ~(1 << id)));
-    EEPROM.write(FLAGS_OFFSET, FLAGS);
+}
+
+void Persistence::storeFLags() {
+    EEPROM.write(FLAGS_OFFSET, PWR_FLAGS);
 }

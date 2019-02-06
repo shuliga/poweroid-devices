@@ -32,6 +32,8 @@ struct Persistence {
 
     void storeProperty(uint8_t i, long val);
 
+    void storeFLags();
+
     bool loadState(uint8_t id);
 
     void loadProperties(Property *prop);

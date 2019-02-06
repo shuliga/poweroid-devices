@@ -143,9 +143,11 @@ void Pwr::loadDisarmedStates() {
     for (uint8_t i = 0; i < state_count; i++) {
         bool disarm = CTX->PERS.loadState(i);
         disarmState(i, disarm);
+#ifdef DEBUG
         if (disarm) {
             Serial.println(printState(i));
         }
+#endif
     }
 }
 
