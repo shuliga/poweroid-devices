@@ -189,7 +189,6 @@ void Controller::process() {
         case FLAG: {
             if (testControl(sleep_timer)) {
                 outputPropDescr("FLAGS");
-                outputStatus(F("Flags:"), PWR_FLAGS);
                 prop_max = FLAGS_MAX;
                 prop_value = PWR_FLAGS;
                 prop_min = 0;
@@ -200,7 +199,7 @@ void Controller::process() {
                 itoa(PWR_FLAGS, BUFF, 2);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
                 c_flag = PWR_FLAGS;
-                outputStatus(F("Flags:"), PWR_FLAGS);
+                outputStatus(F("Decimal:"), PWR_FLAGS);
             }
 
             if (event == HOLD) {
@@ -210,6 +209,7 @@ void Controller::process() {
             }
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
+                c_flag = 255;
                 goToBrowse();
             }
 

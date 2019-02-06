@@ -5,11 +5,16 @@
 #include "relays.h"
 #include "commands.h"
 
+const char * REL_FMT="Rel[%i]: %i";
+unsigned char status[6] = ".. ..";
+
 bool Relays::powered[RELAYS];
 
 int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
 
-const char * REL_FMT="Rel[%i]: %i";
+Relays::Relays() {
+    relay_on_low = RELAY_ON_LOW;
+}
 
 void Relays::power(uint8_t i, bool _power)
 {

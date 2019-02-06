@@ -17,7 +17,17 @@ const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 
 class Relays {
 
+private:
+
+    static bool powered[4];
+
+    static int8_t mappings[VIRTUAL_RELAYS];
+
+    bool relay_on_low;
+
 public:
+
+    Relays();
 
     bool mapped = true;
 
@@ -38,16 +48,6 @@ public:
     bool isPowered(uint8_t idx);
 
     void castRelay(uint8_t idx);
-
-private:
-
-    static bool powered[4];
-
-    static int8_t mappings[VIRTUAL_RELAYS];
-
-    bool relay_on_low = RELAY_ON_LOW;
-
-    unsigned char status[6] = ".. ..";
 
 };
 

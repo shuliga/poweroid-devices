@@ -11,8 +11,6 @@
 
 #define PWR23
 
-#define RELAY_ON_LOW PWR_FLAGS & FLAG_RELAY_ON_LOW
-
 //#define SPI
 #define SAVE_RAM
 
@@ -89,6 +87,9 @@
 #define FLAG_REMOTE_STORE       16
 
 #define FLAGS_MAX 31
+
+#define RELAY_ON_LOW (PWR_FLAGS & FLAG_RELAY_ON_LOW) > 0
+
 
 #define DEBOUNCE_DELAY 500L
 #define SERIAL_READ_TIMEOUT 150
