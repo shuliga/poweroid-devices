@@ -34,6 +34,7 @@ void Persistence::begin() {
 #ifdef DEBUG
     writeLog('I', ORIGIN, 101, eeprom_hash);
 #endif
+    FLAGS = EEPROM.read(FLAGS_OFFSET);
     if (strcmp(given_sign_chr, signature) != 0)
     {
         strcpy(signature, given_sign_chr);
@@ -45,14 +46,16 @@ void Persistence::begin() {
     } else
         if (eeprom_hash != hashProp(props, size))
     {
-//        writeLog('W', ORIGIN, 301);
+#ifdef DEBUG
+        writeLog('W', ORIGIN, 301);
+#endif
         loadProperties(props);
     }
 }
 
 void Persistence::storeProperties(Property *props) {
     for (uint8_t i = 0; i < size; i++) {
-        storeValue(i, props[i].runtime);
+        storeProperty(i, props[i].runtime);
     }
     unsigned long hash = hashProp(props, size);
 #ifdef DEBUG
@@ -62,7 +65,7 @@ void Persistence::storeProperties(Property *props) {
     EEPROM.put(HASH_OFFSET, hash);
 }
 
-void Persistence::storeValue(uint8_t i, long val) {
+void Persistence::storeProperty(uint8_t i, long val) {
     EEPROM.put(PROP_ADDR(i), val);
 }
 
@@ -94,5 +97,6 @@ bool Persistence::loadState(uint8_t id) {
 
 void Persistence::storeState(uint8_t id, bool state) {
     EEPROM.write(STATES_OFFSET,
-               state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & ~(1 << id));
+                 static_cast<uint8_t>(state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & ~(1 << id)));
+    EEPROM.write(FLAGS_OFFSET, FLAGS);
 }

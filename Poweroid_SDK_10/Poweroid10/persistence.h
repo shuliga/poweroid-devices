@@ -7,10 +7,12 @@
 
 #define SIGNATURE_SIZE 4
 #define HASH_SIZE sizeof(unsigned long)
+#define FLAGS_SIZE 1
 #define STATES_SIZE 1
 
 #define HASH_OFFSET (BASE + SIGNATURE_SIZE)
-#define STATES_OFFSET (HASH_OFFSET + HASH_SIZE)
+#define FLAGS_OFFSET (HASH_OFFSET + HASH_SIZE)
+#define STATES_OFFSET (FLAGS_OFFSET + FLAGS_SIZE)
 #define PROPS_OFFSET (STATES_OFFSET + STATES_SIZE)
 #define PROP_ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
 
@@ -28,7 +30,7 @@ struct Persistence {
 
     void storeState(uint8_t id, bool state);
 
-    void storeValue(uint8_t i, long val);
+    void storeProperty(uint8_t i, long val);
 
     bool loadState(uint8_t id);
 

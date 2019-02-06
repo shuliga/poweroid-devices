@@ -9,6 +9,8 @@ bool Relays::powered[RELAYS];
 
 int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
 
+const char * REL_FMT="Rel[%i]: %i";
+
 void Relays::power(uint8_t i, bool _power)
 {
     if (i < size() && powered[i] != _power)
@@ -16,7 +18,7 @@ void Relays::power(uint8_t i, bool _power)
         powered[i] = _power;
 
 #ifndef SSERIAL
-        digitalWrite(OUT_PINS[i], _power ? REL_ON : REL_OFF);
+        digitalWrite(OUT_PINS[i], static_cast<uint8_t>((relay_on_low == !_power)));
 #endif
 
         int8_t mappedIdx = mappings[i];
@@ -34,7 +36,7 @@ uint8_t Relays::size()
 }
 
 void Relays::castRelay(uint8_t idx){
-    sprintf(BUFF, "%i:%s", idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+    sprintf(BUFF, "%i: %i", idx, powered[idx]);
     printCmd(cu.cmd_str.CMD_SET_RELAY, BUFF);
 }
 
@@ -52,7 +54,7 @@ void Relays::reset()
 {
     for(uint8_t i=0; i < size(); ++i)
     {
-        digitalWrite(OUT_PINS[i], REL_OFF);
+        digitalWrite(OUT_PINS[i], static_cast<uint8_t>(relay_on_low));
     }
 }
 
@@ -78,7 +80,7 @@ bool Relays::isPowered(uint8_t idx){
 
 char * Relays::printRelay(uint8_t idx)
 {
-    sprintf(BUFF, REL_FMT, idx, powered[idx] ? REL_POWERED : REL_NOT_POWERED);
+    sprintf(BUFF, REL_FMT, idx, powered[idx]);
 #ifdef SSERIAL
     SSerial.println(BUFF);
     SSerial.flush();

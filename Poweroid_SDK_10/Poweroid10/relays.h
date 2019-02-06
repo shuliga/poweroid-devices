@@ -7,24 +7,16 @@
 
 #include "commons.h"
 
-#ifdef RELAY_ON_LOW
-#define REL_ON LOW
-#define REL_OFF HIGH
-#else
-#define REL_ON HIGH
-#define REL_OFF LOW
+#ifndef RELAY_ON_LOW
+#define RELAY_ON_LOW false
 #endif
-
-#define REL_FMT "Rel[%i]: %s"
-
-const char *const REL_POWERED = "ON";
-const char *const REL_NOT_POWERED = "OFF";
 
 const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
 const uint8_t VIRTUAL_RELAYS = 2;
 const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 
 class Relays {
+
 public:
 
     bool mapped = true;
@@ -52,6 +44,8 @@ private:
     static bool powered[4];
 
     static int8_t mappings[VIRTUAL_RELAYS];
+
+    bool relay_on_low = RELAY_ON_LOW;
 
     unsigned char status[6] = ".. ..";
 

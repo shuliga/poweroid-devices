@@ -11,7 +11,7 @@
 
 #define PWR23
 
-//#define RELAY_ON_LOW
+#define RELAY_ON_LOW FLAGS & FLAG_RELAY_ON_LOW
 
 //#define SPI
 //#define SAVE_RAM
@@ -80,6 +80,13 @@
 #define INA3_PIN 16
 
 #endif // PWR20
+
+
+#define FLAG_RELAY_ON_LOW       1
+#define FLAG_REMOTE_DISABLE     2
+#define FLAG_REMOTE_OVERRIDE    4
+#define FLAG_REMOTE_SERVER      8
+#define FLAG_REMOTE_STORE       16
 
 #define DEBOUNCE_DELAY 500L
 #define SERIAL_READ_TIMEOUT 150

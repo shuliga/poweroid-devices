@@ -1,6 +1,7 @@
 //
 // Created by SHL on 18.11.2017.
 //
+#include <Arduino.h>
 
 #ifndef GLOBAL_H
 #define GLOBAL_H
@@ -16,6 +17,7 @@
 
 EXTERN char BUFF[BUFF_SIZE];
 EXTERN char BANNER[LINE_SIZE];
+EXTERN uint8_t FLAGS;
 
 
 #endif //GLOBAL_H

@@ -78,7 +78,7 @@ void Commander::listen() {
                 int8_t i = ctx->passive ? relays.getMappedFromVirtual(getIndex()) : getIndex();
                 if (i >= 0 && i < relays.size()) {
                     ctx->refreshState = true;
-                    bool power = cmd.indexOf(REL_POWERED) > 0;
+                    bool power = cmd.indexOf(": 1") > 0;
                     relays.power(static_cast<uint8_t>(i), power);
                     printCmdResponse(cmd, idxToChar(static_cast<uint8_t>(power)));
                 }
