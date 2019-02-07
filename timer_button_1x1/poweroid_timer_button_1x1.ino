@@ -21,31 +21,33 @@ Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, 
 Commander CMD(CTX);
 Bt BT(CTX.id);
 
-#if !defined(NO_CONTROLLER)
+#ifndef NO_CONTROLLER
 Controller CTRL(CTX, CMD);
 Pwr PWR(CTX, &CMD, &CTRL, &BT);
 #else
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
+const char * BANNER_FMT = "%02d:%02d:%02d";
+
 void apply_timings() {
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
                                       (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
-    SBY_MILLS =  PROPS.FACTORY[2].runtime * 60000L;
+    SBY_MILLS = static_cast<unsigned long>(PROPS.FACTORY[2].runtime * 60000L);
 }
 
 
 void fillBanner() {
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
-    long totalToGo = countDown ? timings.countdown_power.millsToGo() / 1000 : 0;
-    uint8_t hrsToGo = totalToGo / 3600;
-    long secToGoM = totalToGo - (hrsToGo * 3600);
-    uint8_t minToGo = secToGoM / 60;
-    uint8_t secToGo = secToGoM - (minToGo * 60);
+    uint16_t totalToGo = static_cast<uint16_t>(countDown ? timings.countdown_power.millsToGo() / 1000 : 0);
+    uint8_t hrsToGo = static_cast<uint8_t>(totalToGo / 3600);
+    uint16_t secToGoM = totalToGo - (hrsToGo * 3600);
+    uint8_t minToGo = static_cast<uint8_t>(secToGoM / 60);
+    uint8_t secToGo = static_cast<uint8_t>(secToGoM - (minToGo * 60));
     if (countDown){
-        sprintf(BANNER, "%02d:%02d:%02d", hrsToGo, minToGo, secToGo);
+        sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        sprintf(BANNER, "%02d:%02d:%02d", RTC.get(2, true), RTC.get(1, false), RTC.get(0, false));
+        sprintf(BANNER, BANNER_FMT, RTC.get(2, true), RTC.get(1, false), RTC.get(0, false));
     };
 }
 

@@ -23,11 +23,9 @@ private:
 
     static int8_t mappings[VIRTUAL_RELAYS];
 
-    bool relay_on_low;
+    static bool relay_on_low;
 
 public:
-
-    Relays();
 
     bool mapped = true;
 
@@ -35,19 +33,19 @@ public:
 
     uint8_t size();
 
+    void reset();
+
     char * printRelay(uint8_t idx);
 
     unsigned char * relStatus();
 
-    void reset();
+    void castRelay(uint8_t idx);
 
     void castMappedRelays();
 
     int8_t getMappedFromVirtual(uint8_t i);
 
     bool isPowered(uint8_t idx);
-
-    void castRelay(uint8_t idx);
 
 };
 

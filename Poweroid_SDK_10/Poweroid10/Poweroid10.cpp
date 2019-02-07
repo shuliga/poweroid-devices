@@ -21,8 +21,6 @@ void Pwr::begin() {
     sei();
 #endif
 
-    initPins();
-
     Serial.begin(DEFAULT_BAUD);
 
     if (BT) {
@@ -31,6 +29,9 @@ void Pwr::begin() {
         CTX->bt = BT->on;
     }
 
+    CTX->PERS.begin();
+
+    initPins();
 
 #ifdef SSERIAL
     SSerial.begin(DEFAULT_BAUD);
@@ -38,8 +39,6 @@ void Pwr::begin() {
 #endif
 
     printVersion();
-
-    CTX->PERS.begin();
 
 #ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
@@ -125,7 +124,9 @@ void Pwr::printVersion() {
 
 void Pwr::initPins() {
 
+#ifndef SPI
     pinMode(LED_PIN, OUTPUT);
+#endif
 
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);

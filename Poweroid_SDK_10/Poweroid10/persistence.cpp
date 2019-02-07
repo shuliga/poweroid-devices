@@ -34,10 +34,6 @@ void Persistence::begin() {
 #ifdef DEBUG
     writeLog('I', ORIGIN, 101, eeprom_hash);
 #endif
-    PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
-    if (PWR_FLAGS > FLAGS_MAX) {
-        PWR_FLAGS = 0;
-    }
     if (strcmp(given_sign_chr, signature) != 0)
     {
         strcpy(signature, given_sign_chr);
@@ -54,6 +50,7 @@ void Persistence::begin() {
 #endif
         loadProperties(props);
     }
+    PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
 }
 
 void Persistence::storeProperties(Property *props) {

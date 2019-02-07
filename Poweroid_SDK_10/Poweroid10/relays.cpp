@@ -12,9 +12,7 @@ bool Relays::powered[RELAYS];
 
 int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
 
-Relays::Relays() {
-    relay_on_low = RELAY_ON_LOW;
-}
+bool Relays::relay_on_low;
 
 void Relays::power(uint8_t i, bool _power)
 {
@@ -23,7 +21,7 @@ void Relays::power(uint8_t i, bool _power)
         powered[i] = _power;
 
 #ifndef SSERIAL
-        digitalWrite(OUT_PINS[i], static_cast<uint8_t>((relay_on_low == !_power)));
+        digitalWrite(OUT_PINS[i], static_cast<uint8_t>(relay_on_low == !_power));
 #endif
 
         int8_t mappedIdx = mappings[i];
@@ -57,6 +55,8 @@ unsigned char * Relays::relStatus()
 
 void Relays::reset()
 {
+    relay_on_low = RELAY_ON_LOW;
+
     for(uint8_t i=0; i < size(); ++i)
     {
         digitalWrite(OUT_PINS[i], static_cast<uint8_t>(relay_on_low));
