@@ -51,6 +51,9 @@ void Persistence::begin() {
         loadProperties(props);
     }
     PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
+    if (PWR_FLAGS > FLAGS_MAX) {
+        PWR_FLAGS = 0;
+    }
 }
 
 void Persistence::storeProperties(Property *props) {

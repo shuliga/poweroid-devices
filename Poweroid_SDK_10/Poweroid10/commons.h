@@ -106,6 +106,9 @@
 #define MODE_CLIENT "cnt"
 #define MODE_ASK "ask"
 
+#define CHAR_CONNECTED      130
+#define CHAR_DISCONNECTED   129
+
 #ifdef SSERIAL
 extern SoftwareSerial SSerial;
 #endif

@@ -91,7 +91,7 @@ void Controller::initDisplay() {
 void Controller::outputState() const {
     strcpy(BUFF, (const char *) ctx->RELAYS.relStatus());
     padLine(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) (ctx->bt ? (((ctx->connected ? 130 : 129) + (ctx->passive ? 0 : 2))) : '\0');
+    BUFF[15] = (unsigned char) (ctx->bt ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0');
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -188,7 +188,7 @@ void Controller::process() {
 
         case FLAG: {
             if (testControl(sleep_timer)) {
-                outputPropDescr("FLAGS");
+                outputPropDescr("FLAGS\0");
                 prop_max = FLAGS_MAX;
                 prop_value = PWR_FLAGS;
                 prop_min = 0;
@@ -204,12 +204,10 @@ void Controller::process() {
 
             if (event == HOLD) {
                 ctx->PERS.storeFLags();
-                c_flag = 255;
                 goToBrowse();
             }
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
-                c_flag = 255;
                 goToBrowse();
             }
 
@@ -308,8 +306,11 @@ bool Controller::testControl(TimingState &timer) const {
 }
 
 void Controller::goToBrowse() const {
-    c_prop_idx = -1; // invalidate cache
-    c_prop_value = -1; // invalidate cache
+    // invalidate cache
+    c_prop_idx = -1;
+    c_prop_value = -1;
+    c_flag = 255;
+
     state = BROWSE;
 }
 
