@@ -16,7 +16,7 @@ set(${CMAKE_PROJECT_NAME}_SKETCH ${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
 
 link_directories(Poweroid_SDK_10)
 
-### Fuses: (E:FD, H:DE, L:FF)
+### Fuses: (E:FC, H:DE, L:FF)
 #### Uncomment below additional settings as needed.
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
 set(${CMAKE_PROJECT_NAME}_PORT COM4)

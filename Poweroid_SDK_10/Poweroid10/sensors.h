@@ -10,10 +10,14 @@
 #include <DHT.h>
 
 #define DHTTYPE DHT22
+#define REMOTE_SENSORS_COUNT 3
 
 
 extern const uint8_t IN_PINS[];
 extern const uint8_t INA_PINS[];
+extern uint16_t REMOTE_SENSORS[];
+
+
 
 class Sensors {
 public:
@@ -40,7 +44,7 @@ public:
 
     bool isSensorOn(uint8_t index);
 
-    int getSensorVal(uint8_t index);
+    int16_t getSensorVal(uint8_t index);
 
     bool isSensorVal(uint8_t index, uint8_t val);
 

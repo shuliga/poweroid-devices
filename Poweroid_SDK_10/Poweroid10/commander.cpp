@@ -42,8 +42,8 @@ void Commander::listen() {
             castCommand(cu.cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
             if (cmd.startsWith(cu.cmd_str.CMD_SET_DHT)) {
-                int8_t i = static_cast<int8_t>(cmd.indexOf(':'));
-                ctx->SENS.setDHT(cmd.c_str()[i + 1], (uint8_t) cmd.c_str()[i + 2]);
+                int8_t i = getValIndex();
+                ctx->SENS.setDHT(cmd.c_str()[i], (uint8_t) cmd.c_str()[i + 1]);
             }
 
             if (cmd.startsWith(cu.cmd_str.MODE)) {
@@ -82,6 +82,10 @@ void Commander::listen() {
                     relays.power(static_cast<uint8_t>(i), power);
                     printCmdResponse(cmd, idxToChar(static_cast<uint8_t>(power)));
                 }
+            }
+
+            if (cmd.startsWith(cu.cmd_str.CMD_SET_SENSOR)) {
+                cmd.getBytes(reinterpret_cast<unsigned char *>(REMOTE_SENSORS + getIndex()), 2, getValIndex());
             }
 
             if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_PROP)) {

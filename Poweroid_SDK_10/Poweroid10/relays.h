@@ -11,8 +11,9 @@
 #define RELAY_ON_LOW false
 #endif
 
+#define VIRTUAL_RELAYS 2
+
 const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
-const uint8_t VIRTUAL_RELAYS = 2;
 const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 
 class Relays {

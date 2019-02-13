@@ -21,6 +21,7 @@ typedef struct CommandsStr {
     const char* CMD_STORE_PROPS;
     const char* CMD_RESET_PROPS;
     const char* CMD_SET_RELAY;
+    const char* CMD_SET_SENSOR;
     const char* MODE;
     const char* CMD_GET_ALL_PROP;
 #ifndef SAVE_RAM
@@ -45,7 +46,7 @@ void printCmd(const char *cmd, const char *suffix);
 
 uint8_t getIndex();
 
-int getValIndex();
+uint8_t getValIndex();
 
 bool castCommand(const char *prefix, const char *val);
 

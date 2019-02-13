@@ -19,10 +19,12 @@ const long INST_DELAY = 50L;
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
 
+uint16_t REMOTE_SENSORS[REMOTE_SENSORS_COUNT];
+
 static TimingState pollTiming = TimingState(5000L);
 static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
-
-static bool installed[ARRAY_SIZE(IN_PINS)];
+static const uint8_t  SENS_COUNT = ARRAY_SIZE(IN_PINS);
+static bool installed[SENS_COUNT];
 static bool dht_installed;
 static bool propagate = false;
 static bool dht_set = false;
@@ -37,7 +39,7 @@ void Sensors::searchDHT() {
 #ifdef DEBUG
         writeLog('I', ORIGIN, 200, DHT_PIN);
 #endif
-        for(int i = 0; i < ARRAY_SIZE(IN_PINS); i++){
+        for(int i = 0; i < SENS_COUNT; i++){
             if (IN_PINS[i] == DHT_PIN){
                 installed[i] = true;
             }
@@ -82,7 +84,7 @@ void Sensors::process() {
 }
 
 void Sensors::checkInstalled() {
-    for (uint8_t i = 0; i < ARRAY_SIZE(IN_PINS); i++) {
+    for (uint8_t i = 0; i < SENS_COUNT; i++) {
         installed[i] = checkInstalled(IN_PINS[i], installed[i]);
 #ifdef DEBUG
         writeLog('I', ORIGIN, installed[i] ? 201 : 501, i);
@@ -98,7 +100,11 @@ bool Sensors::isSensorOn(uint8_t index) {
     return hold_on[index].isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
 }
 
-int Sensors::getSensorVal(uint8_t index) {
+int16_t Sensors::getSensorVal(uint8_t index) {
+    if(index > SENS_COUNT){
+        return REMOTE_SENSORS[index - SENS_COUNT];
+    }
+
     if (installed[index]) {
         return analogRead(INA_PINS[index]);
     } else {

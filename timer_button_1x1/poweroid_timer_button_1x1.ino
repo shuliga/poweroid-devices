@@ -47,7 +47,7 @@ void fillBanner() {
     if (countDown){
         sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        sprintf(BANNER, BANNER_FMT, RTC.get(2, true), RTC.get(1, false), RTC.get(0, false));
+        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
     };
 }
 

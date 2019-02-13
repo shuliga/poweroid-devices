@@ -9,24 +9,25 @@ static const char *ORIGIN = "CMD";
 
 Cu cu{
     cu.cmd_str = {"get_ver",
-                           "get_dht",
-                           "set_dht",
-                           "get_state_",
-                           "disarm_state_",
-                           "get_prop_",
-                           "get_bin_prop_",
-                           "set_bin_prop_",
-                           "set_prop_",
-                           "load_props",
-                           "store_props",
-                           "reset_props",
-                           "set_relay_",
-                           "mode ",
-                           "get_all_prop",
+                  "get_dht",
+                  "set_dht",
+                  "get_state_",
+                  "disarm_state_",
+                  "get_prop_",
+                  "get_bin_prop_",
+                  "set_bin_prop_",
+                  "set_prop_",
+                  "load_props",
+                  "store_props",
+                  "reset_props",
+                  "set_relay_",
+                  "set_bin_sensor_",
+                  "mode ",
+                  "get_all_prop",
 #ifndef SAVE_RAM
-                           "get_all_state",
-                           "get_all_sensor",
-                           "get_all_relay",
+                    "get_all_state",
+                    "get_all_sensor",
+                    "get_all_relay",
 #endif
     }
 };
@@ -35,7 +36,7 @@ const char *cmd_arrow = " -> ";
 
 String cmd;
 
-int getValIndex() { return cmd.lastIndexOf(':') + 1; }
+uint8_t getValIndex() { return cmd.lastIndexOf(':') + 1; }
 
 void printCmdResponse(const String &cmd, const char *suffix) {
     Serial.print(cmd);

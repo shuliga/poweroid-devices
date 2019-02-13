@@ -11,7 +11,8 @@
 
 class Indicators{
 public:
-    static const uint8_t INDICATOR_PINS[2];
+
+    static const uint8_t INDICATOR_PINS[];
 
     void init();
     void set(uint8_t i, bool on);
