@@ -6,6 +6,7 @@
 #include "poweroid_timer_button_1x1_state.h"
 #include "poweroid_timer_button_1x1_prop.h"
 #include "DS1307.h"
+#include "ultrasonic.h"
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
@@ -47,7 +48,8 @@ void fillBanner() {
     if (countDown){
         sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
+//        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
+        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
     };
 }
 
@@ -121,6 +123,7 @@ void run_state_power(McEvent event) {
 
 void setup() {
     PWR.begin();
+    ULTRASONIC.begin();
 }
 
 void loop() {

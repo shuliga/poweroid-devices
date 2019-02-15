@@ -3,7 +3,7 @@
 
 // volatile uint8_t semaphor = 0;
 
-static uint8_t count;
+static uint16_t count;
 
 Pwr::Pwr(Context &ctx, Commander *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx), CMD(_cmd), CTRL(_ctrl), BT(_bt) {
     REL = &ctx.RELAYS;
@@ -91,7 +91,7 @@ void Pwr::run() {
     }
 
     count++;
-    if (CTX->canAccessLocally() && count == 0){
+    if (CTX->canAccessLocally() && count % 3276  == 0){
         fillBanner();
     }
 
