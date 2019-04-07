@@ -1,12 +1,12 @@
 
-#define ID "PWR-TMB-11"
+#define ID "PWR-PMS-32"
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
 #include <../Poweroid_SDK_10/src/global.h>
 #include <../Poweroid_SDK_10/src/Poweroid10.h>
-#include "poweroid_timer_button_1x1_state.h"
-#include "poweroid_timer_button_1x1_prop.h"
+#include "pump_station_3x2_state.h"
+#include "pump_station_3x2_prop.h"
 #include <../Poweroid_SDK_10/src//ultrasonic.h>
 #include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 #include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
@@ -54,6 +54,12 @@ void fillBanner() {
     if (countDown){
         sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
+//        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
+//        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
+//        sprintf(BANNER, "P=%dkPa", PWR.SENS->getNormalizedSensor(1, -100, 0, 102, 920));
+//        int16_t val = PWR.SENS->getNormalizedSensor(1, -100, 0, 102, 920);
+//        *BANNER = val;
+//        sprintf(BANNER + 2, "%dkPa", val);
         BANNER[0] = 0;
     };
 }
@@ -128,6 +134,8 @@ void run_state_power(McEvent event) {
 
 void setup() {
     PWR.begin();
+    ULTRASONIC.begin();
+//    CTX.gaugeMode = true;
 }
 
 void loop() {

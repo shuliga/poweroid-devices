@@ -11,8 +11,8 @@ void setup() {
     SSerial.println("BT TEST init");
     BT.begin();
     SSerial.println("Bluetooth init");
-    SSerial.println(BT.on);
-    SSerial.println(BT.server);
+    SSerial.println(BT.remote_on);
+    SSerial.println(BT.host);
 }
 
 void loop() {

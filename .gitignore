@@ -1,5 +1,6 @@
-cmake-build-debug/
-cmake-build-release/
+**/cmake-build-debug/
+**/cmake-build-release/
 **/.idea/workspace.xml
 **/.idea/tasks.xml
 **/.idea/libraries/
+**/.idea/serialmonitor_settings.xml

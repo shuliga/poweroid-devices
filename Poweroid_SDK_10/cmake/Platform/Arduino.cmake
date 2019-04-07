@@ -392,7 +392,7 @@ function(GENERATE_ARDUINO_LIBRARY INPUT_NAME)
     endif()
 
     list(APPEND ALL_LIBS ${CORE_LIB} ${INPUT_LIBS})
-
+    message(STATUS "External libraries: ${ALL_LIBS}")
     add_library(${INPUT_NAME} ${ALL_SRCS})
 
     get_arduino_flags(ARDUINO_COMPILE_FLAGS ARDUINO_LINK_FLAGS  ${INPUT_BOARD} ${INPUT_MANUAL})
