@@ -20,8 +20,9 @@ struct Persistence {
 
     const char *const ORIGIN = "EEPROM";
     uint8_t size;
-        char signature[SIGNATURE_SIZE];
+    char signature[SIGNATURE_SIZE];
     const char *given_sign_chr;
+
     Property *props;
 
     Persistence(const char *_sign, Property *props, uint8_t props_size);

@@ -36,11 +36,12 @@
 #define PWR1_PIN 8
 #define PWR2_PIN 9
 
+#undef FACTORY_RESET_PIN 13
+
 #ifndef SPI
 #define IND1_PIN 10
 #define IND2_PIN 11
 #define IND3_PIN 12
-#define FACTORY_RESET_PIN 12
 #define LED_PIN 13
 #endif
 
@@ -88,7 +89,7 @@
 #define FLAG_LOW_SPEED          5
 #define FLAG_REF_1V1            6
 
-#define FLAGS_MAX 31
+#define FLAGS_MAX 63
 
 #define RELAY_ON_LOW        PWR_FLAGS >> (FLAG_RELAY_ON_LOW - 1) & 0x1
 #define REMOTE_ENABLE       PWR_FLAGS >> (FLAG_REMOTE_ENABLE - 1) & 0x1
