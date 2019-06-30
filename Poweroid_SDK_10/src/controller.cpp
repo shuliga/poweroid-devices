@@ -252,13 +252,28 @@ void Controller::process() {
 
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
-                if (ctx->gaugeMode){
-                    int16_t val = static_cast<int16_t>(*BANNER);
-                    oled.outputLineGauge(1, static_cast<uint8_t>((val + 100) * 127 / 100), false);
-                    oled.outputTextXY(DISPLAY_BASE + 2, 64, BANNER+2, true, dither);
-                    oled.outputLineGauge(6, static_cast<uint8_t>((val + 100) * 127 / 100), true);
+                if (BANNER.mode > 0){
+                    for(uint8_t i = 0; i < BANNER.mode; i++){
+                        int16_t val = BANNER.data.gauges[i].val;
+                        int16_t min = BANNER.data.gauges[i].min;
+                        int16_t max = BANNER.data.gauges[i].max;
+                        int16_t col_min = normalizeGauge(min, -100, 0);
+                        int16_t col_max = normalizeGauge(max, -100, 0);
+                        uint8_t row = i == 1 ? 0 : 15;
+                        uint8_t char_col_min = col_min / 8 + 1;
+                        uint8_t char_col_max = col_max / 8 + 1;
+//                        sprintf(BUFF,  "%*d%*d", char_col_min, min, char_col_max - char_col_min, max);
+                        char FMT[9];
+                        sprintf(FMT, "%%%dd%%%dd", char_col_min, char_col_max - char_col_min);
+                        sprintf(BUFF, FMT, min, max);
+                        oled.setTextXY(row, 0);
+                        oled.putString(BUFF);
+                        oled.outputLineGauge(1, normalizeGauge(val, -100, 0), col_min, col_max, i);
+                        sprintf(BUFF, "%d %s", val, MEASURES[BANNER.data.gauges[i].measure]);
+                        oled.outputTextXY(DISPLAY_BASE + 1, 64, BUFF, true, dither);
+                    }
                 } else {
-                    oled.outputTextXY(DISPLAY_BASE + 2, 64, BANNER, true, dither);
+                    oled.outputTextXY(DISPLAY_BASE + 2, 64, BANNER.data.text, true, dither);
                 }
             }
 
@@ -303,6 +318,11 @@ void Controller::process() {
     ctx->refreshProps = false;
 
 }
+
+uint8_t Controller::normalizeGauge(uint16_t val, uint16_t min, uint16_t max){
+    return static_cast<uint8_t>((val - min) * 127 / (max - min));
+}
+
 
 bool Controller::testControl(TimingState &timer) const {
     bool fr = firstRun();
@@ -406,7 +426,7 @@ void Controller::outputPropDescr(char *_buff) {
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
-    uint8_t prop_size = static_cast<uint8_t>(val > 0 ? log10((double) val) + 1 : 1);
+    uint8_t prop_size = static_cast<uint8_t>(val > 0 ? log10((double) val) + 1 : log10((double) - val) + 2);
     padLine(BUFF, 1, prop_size);
     oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, (unsigned char) (LINE_SIZE - prop_size));

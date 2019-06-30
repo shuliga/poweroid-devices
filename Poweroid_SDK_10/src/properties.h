@@ -3,6 +3,16 @@
 
 #include <Arduino.h>
 
+#define TIMES 0
+#define DAY 1
+#define HOUR 2
+#define MIN 3
+#define SEC 4
+#define DEG_C 5
+#define PERCENT 6
+#define KPA 7
+
+
 extern const char* MEASURES[];
 
 typedef struct Property {

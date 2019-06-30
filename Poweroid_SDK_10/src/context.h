@@ -51,7 +51,6 @@ typedef struct Context {
     bool passive;
     bool connected = false;
     bool remote = false;
-    bool gaugeMode = false;
     bool peerFound;
 
     boolean canAccessLocally(){

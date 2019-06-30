@@ -137,12 +137,12 @@ uint8_t inline reverse(uint8_t b) {
     return b;
 }
 
-void ACROBOTIC_SSD1306::outputLineGauge(uint8_t row, const uint8_t mark_col, boolean inverse) {
+void ACROBOTIC_SSD1306::outputLineGauge(uint8_t row, const uint8_t mark_col, const uint8_t limit1, const uint8_t limit2, boolean inverse) {
     setWindow(row, row, 0, 127);
     uint8_t mark = 0;
     uint8_t line = 0;
     for(uint8_t col = 0; col < 128; col++){
-        line = static_cast<uint8_t>((col == 0 || col == 1 || col == 126 || col == 127 || col == 63) ? 0xF : 0x8);
+        line = static_cast<uint8_t>((col == 0 || col == limit1 || col == limit1 - 1 || col == limit1 + 1 || col == limit2 || col == limit2 + 1  || col == limit2 - 1  || col == 127 || col == 63) ? 0xF : 0x8);
         int8_t delta = mark_col - col;
         delta = delta >= 0 ? delta : -delta;
         mark = delta > 3 ? 0x0 : 0xF >> delta << (4 + delta);

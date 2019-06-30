@@ -11,6 +11,10 @@
 #define DHTTYPE DHT22
 #define REMOTE_SENSORS_COUNT 3
 
+#define SEN_1 0
+#define SEN_2 1
+#define SEN_3 2
+
 
 extern const uint8_t IN_PINS[];
 extern const uint8_t INA_PINS[];
