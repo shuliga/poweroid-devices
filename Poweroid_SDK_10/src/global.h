@@ -15,9 +15,26 @@
 #define BUFF_SIZE 65
 #define LINE_SIZE 16
 
-EXTERN char BUFF[BUFF_SIZE];
-EXTERN char BANNER[LINE_SIZE];
-EXTERN uint8_t PWR_FLAGS;
 
+typedef struct {
+    int16_t val;
+    int16_t min;
+    int16_t max;
+    uint8_t measure;
+} gauge_data;
+
+typedef union {
+    char text[LINE_SIZE];
+    gauge_data gauges[2];
+} banner_data;
+
+typedef struct {
+    uint8_t mode;
+    banner_data data;
+} banner;
+
+EXTERN char BUFF[BUFF_SIZE];
+EXTERN banner BANNER;
+EXTERN uint8_t PWR_FLAGS;
 
 #endif //GLOBAL_H

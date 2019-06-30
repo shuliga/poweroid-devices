@@ -4,9 +4,9 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_RULE_MESSAGES OFF)
 
-set(DEVICE_NAME timer_button_1x1)
+#set(DEVICE_NAME timer_button_1x1)
 #set(DEVICE_NAME fan_3x1_dht)
-#set(DEVICE_NAME pump_station_3x2)
+set(DEVICE_NAME pump_station_3x2)
 
 #set(BOARD uno_pro)
 set(BOARD pro)

@@ -92,7 +92,7 @@ class ACROBOTIC_SSD1306 {
 
     void setTextXY(unsigned char Row, unsigned char Column);
     void outputTextXY(uint8_t row, uint8_t col, const char *_text, bool centered, bool _dither);
-    void outputLineGauge(uint8_t row, uint8_t mark_col, boolean inverse);
+    void outputLineGauge(uint8_t row, uint8_t mark_col, const uint8_t limit1, const uint8_t limit2, boolean inverse);
     void clearDisplay();
     void setBrightness(unsigned char Brightness);
     bool putChar(unsigned char c);

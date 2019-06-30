@@ -5,8 +5,8 @@
 #include <Wire.h>
 #include <../Poweroid_SDK_10/src/global.h>
 #include <../Poweroid_SDK_10/src/Poweroid10.h>
-#include "pump_station_3x2_state.h"
-#include "pump_station_3x2_prop.h"
+#include "poweroid_pump_station_3x2_state.h"
+#include "poweroid_pump_station_3x2_prop.h"
 #include <../Poweroid_SDK_10/src//ultrasonic.h>
 #include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 #include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
@@ -34,8 +34,6 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
-const char * BANNER_FMT = "%02d:%02d:%02d";
-
 void apply_timings() {
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
                                       (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
@@ -45,22 +43,18 @@ void apply_timings() {
 uint16_t banner_value;
 
 void fillBanner() {
-    bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
-    uint16_t totalToGo = static_cast<uint16_t>(countDown ? timings.countdown_power.millsToGo() / 1000 : 0);
-    uint8_t hrsToGo = static_cast<uint8_t>(totalToGo / 3600);
-    uint16_t secToGoM = totalToGo - (hrsToGo * 3600);
-    uint8_t minToGo = static_cast<uint8_t>(secToGoM / 60);
-    uint8_t secToGo = static_cast<uint8_t>(secToGoM - (minToGo * 60));
-    if (countDown){
-        sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
+    if (state_power == SP_ALARM){
+        BANNER.mode = 0;
+        sprintf(BANNER.data.text, "%s" , "ALARM");
     } else {
+        BANNER.mode = 1;
 //        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
 //        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
-//        sprintf(BANNER, "P=%dkPa", PWR.SENS->getNormalizedSensor(1, -100, 0, 102, 920));
-//        int16_t val = PWR.SENS->getNormalizedSensor(1, -100, 0, 102, 920);
-//        *BANNER = val;
-//        sprintf(BANNER + 2, "%dkPa", val);
-        BANNER[0] = 0;
+        int16_t val = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
+        BANNER.data.gauges[0].val = val;
+        BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime;
+        BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime;
+        BANNER.data.gauges[0].measure = KPA;
     };
 }
 
@@ -83,20 +77,16 @@ void run_state_power(McEvent event) {
                 break;
             }
             if (event == CLICK) {
-                state_power = SP_POWER_SBY;
+                state_power = SP_PRE_POWER;
                 break;
             }
             if (!timings.countdown_power.countdown(true, false, false)) {
                 state_power = SP_OFF;
                 break;
             }
-            if (timings.countdown_power.millsToGo() < SBY_MILLS) {
-                state_power = SP_POWER_END;
-                break;
-            }
             break;
         }
-        case SP_POWER_SBY: {
+        case SP_PRE_POWER: {
             timings.countdown_power.countdown(true, true, false);
             if (event == CLICK) {
                 state_power = prev_state_power;
@@ -108,14 +98,14 @@ void run_state_power(McEvent event) {
             }
             break;
         }
-        case SP_POWER_END: {
-            prev_state_power = SP_POWER_END;
+        case SP_POST_POWER: {
+            prev_state_power = SP_POWER;
             if (event == HOLD) {
                 state_power = SP_OFF;
                 break;
             }
             if (event == CLICK) {
-                state_power = SP_POWER_SBY;
+                state_power = SP_POWER;
                 break;
             }
             if (!timings.countdown_power.countdown(true, false, false)) {
@@ -134,8 +124,7 @@ void run_state_power(McEvent event) {
 
 void setup() {
     PWR.begin();
-    ULTRASONIC.begin();
-//    CTX.gaugeMode = true;
+//    ULTRASONIC.begin();
 }
 
 void loop() {
@@ -146,7 +135,7 @@ void loop() {
 
     run_state_power(btn.checkButton());
 
-    bool power = (state_power == SP_POWER || state_power == SP_POWER_END);
+    bool power = (state_power == SP_POWER || state_power == SP_PRE_POWER  || state_power == SP_POST_POWER);
 
     PWR.power(REL_A, power);
     PWR.power(REL_B, power);
@@ -159,7 +148,7 @@ void loop() {
         }
 
     } else {
-        if (state_power == SP_POWER_SBY) {
+        if (state_power == SP_ALARM) {
             INDICATORS.flash(IND, &FLASH_SBY, true);
         } else {
             INDICATORS.set(IND, false);

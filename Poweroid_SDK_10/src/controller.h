@@ -58,6 +58,7 @@ private:
 
     bool canGoToEdit();
 
+    static uint8_t normalizeGauge(uint16_t val, uint16_t min, uint16_t max);
 };
 
 

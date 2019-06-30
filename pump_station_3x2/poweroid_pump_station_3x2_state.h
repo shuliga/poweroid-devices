@@ -10,13 +10,13 @@ typedef struct Timings {
 };
 
 enum StatePower {
-    SP_DISARM = 0, SP_OFF = 7, SP_POWER = 11, SP_POWER_SBY = 17, SP_POWER_END = 27
+    SP_DISARM = 0, SP_OFF = 7, SP_POWER = 11, SP_PRE_POWER = 17, SP_POST_POWER = 27, SP_ALARM = 27
 } state_power = SP_OFF, prev_state_power = SP_DISARM;
 
 uint8_t state_count = 1;
 
 const char *STATE_NAME_BUFF[] = {"Power"};
-const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0POWER-SBY\0POWER-END\0"}; // OFFSETS:0,7,11,17,27
+const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0POST-POWER\0ALARM\0"}; // OFFSETS:0,7,11,17,27,38
 
 RunState run_state;
 
