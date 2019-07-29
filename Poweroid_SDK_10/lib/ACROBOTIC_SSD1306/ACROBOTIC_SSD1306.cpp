@@ -138,7 +138,7 @@ uint8_t inline reverse(uint8_t b) {
 }
 
 void ACROBOTIC_SSD1306::outputLineGauge(uint8_t row, const uint8_t mark_col, const uint8_t limit1, const uint8_t limit2, boolean inverse) {
-    setWindow(row, row, 0, 127);
+    setTextXY(row, 0);
     uint8_t mark = 0;
     uint8_t line = 0;
     for(uint8_t col = 0; col < 128; col++){
