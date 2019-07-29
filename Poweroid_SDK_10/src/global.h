@@ -29,7 +29,7 @@ typedef union {
 } banner_data;
 
 typedef struct {
-    uint8_t mode;
+    int8_t mode;
     banner_data data;
 } banner;
 

@@ -47,7 +47,7 @@ void fillBanner() {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s" , "ALARM");
     } else {
-        BANNER.mode = 1;
+        BANNER.mode = 2;
 //        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
 //        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
         int16_t val = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
@@ -55,6 +55,11 @@ void fillBanner() {
         BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime;
         BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime;
         BANNER.data.gauges[0].measure = KPA;
+
+        BANNER.data.gauges[1].val = val;
+        BANNER.data.gauges[1].min = PROPS.FACTORY[1].runtime;
+        BANNER.data.gauges[1].max = PROPS.FACTORY[0].runtime;
+        BANNER.data.gauges[1].measure = KPA;
     };
 }
 
