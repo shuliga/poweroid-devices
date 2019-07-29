@@ -1,4 +1,3 @@
-
 #define ID "PWR-PMS-32"
 
 #include <SoftwareSerial.h>
@@ -12,12 +11,13 @@
 #include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
 
 
-Timings timings = {0};
-unsigned long SBY_MILLS = 0L;
-TimingState FLASH(750L);
-TimingState FLASH_SBY(250L);
+Timings timings = {0, 0, 0, 0};
 
-#define IND IND_3
+TimingState FLASH(750L);
+TimingState FLASH_ALARM(250L);
+
+#define IND_A IND_2
+#define IND_B IND_3
 
 MultiClick btn = MultiClick(IN3_PIN);
 
@@ -35,22 +35,22 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 void apply_timings() {
-    timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
-                                      (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
-    SBY_MILLS = static_cast<unsigned long>(PROPS.FACTORY[2].runtime * 60000L);
+    timings.alarm_pump.interval = (unsigned long) PROPS.FACTORY[3].runtime;
+    timings.countdown_pump.interval = (unsigned long) PROPS.FACTORY[4].runtime;
+    timings.countdown_lost_power.interval = (unsigned long) PROPS.FACTORY[4].runtime;
+    timings.countdown_pre_power.interval = (unsigned long) PROPS.FACTORY[4].runtime;
 }
 
-uint16_t banner_value;
-
 void fillBanner() {
-    if (state_power == SP_ALARM){
+    if (state_power == SI_ALARM) {
         BANNER.mode = 0;
-        sprintf(BANNER.data.text, "%s" , "ALARM");
+        sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
         BANNER.mode = 2;
 //        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
 //        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
         int16_t val = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
+
         BANNER.data.gauges[0].val = val;
         BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime;
         BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime;
@@ -61,6 +61,14 @@ void fillBanner() {
         BANNER.data.gauges[1].max = PROPS.FACTORY[0].runtime;
         BANNER.data.gauges[1].measure = KPA;
     };
+}
+
+bool testLevel(){
+    return ULTRASONIC.getDistance() < PROPS.FACTORY[0].runtime;
+}
+
+bool testPreassure(){
+    return ULTRASONIC.getDistance() < PROPS.FACTORY[0].runtime;
 }
 
 void run_state_power(McEvent event) {
@@ -74,7 +82,7 @@ void run_state_power(McEvent event) {
         }
         case SP_POWER: {
             if (prev_state_power == SP_OFF) {
-                timings.countdown_power.reset();
+                timings.countdown_pump.reset();
             }
             prev_state_power = SP_POWER;
             if (event == HOLD) {
@@ -85,14 +93,12 @@ void run_state_power(McEvent event) {
                 state_power = SP_PRE_POWER;
                 break;
             }
-            if (!timings.countdown_power.countdown(true, false, false)) {
-                state_power = SP_OFF;
-                break;
-            }
             break;
         }
         case SP_PRE_POWER: {
-            timings.countdown_power.countdown(true, true, false);
+            if (timings.countdown_pre_power.countdown(true, true, false)) {
+//
+            }
             if (event == CLICK) {
                 state_power = prev_state_power;
                 break;
@@ -103,7 +109,7 @@ void run_state_power(McEvent event) {
             }
             break;
         }
-        case SP_POST_POWER: {
+        case SP_LOST_POWER: {
             prev_state_power = SP_POWER;
             if (event == HOLD) {
                 state_power = SP_OFF;
@@ -113,7 +119,7 @@ void run_state_power(McEvent event) {
                 state_power = SP_POWER;
                 break;
             }
-            if (!timings.countdown_power.countdown(true, false, false)) {
+            if (!timings.countdown_lost_power.countdown(true, false, false)) {
                 state_power = SP_OFF;
                 break;
             }
@@ -127,36 +133,79 @@ void run_state_power(McEvent event) {
     CMD.printChangedState(prev_state_power, state_power, 0);
 }
 
+
+void run_state_pump(McEvent event) {
+    switch (state_pump) {
+        case SPM_PUMP_1: {
+            prev_state_pump = SPM_PUMP_BOTH;
+            if (event == HOLD || state_info == SI_ALARM) {
+                state_pump = SPM_PUMP_2;
+            }
+            break;
+        }
+        case SPM_PUMP_2: {
+            if (prev_state_pump == SPM_PUMP_1) {
+                timings.countdown_pump.reset();
+            }
+            prev_state_pump = SPM_PUMP_1;
+
+            if (state_info == SI_ALARM && timings.alarm_pump.countdown(true, false, false)) {
+                state_pump = SPM_PUMP_1;
+                break;
+            }
+            if (event == HOLD) {
+                state_pump = SPM_PUMP_BOTH;
+                break;
+            }
+
+            break;
+        }
+        case SPM_PUMP_BOTH: {
+            if (timings.countdown_pre_power.countdown(true, true, false)) {
+  //              state_pump
+            }
+            if (event == CLICK) {
+                state_power = prev_state_power;
+                break;
+            }
+            if (event == HOLD) {
+                state_power = SP_OFF;
+                break;
+            }
+            break;
+        }
+    }
+    CMD.printChangedState(prev_state_power, state_power, 0);
+}
+
 void setup() {
     PWR.begin();
-//    ULTRASONIC.begin();
+    ULTRASONIC.begin(INA1_PIN);
 }
 
 void loop() {
-
     apply_timings();
 
     PWR.run();
 
     run_state_power(btn.checkButton());
 
-    bool power = (state_power == SP_POWER || state_power == SP_PRE_POWER  || state_power == SP_POST_POWER);
+    bool powerWarning = state_power == SP_PRE_POWER || state_power == SP_LOST_POWER;
+    bool power = state_power || powerWarning;
+    bool powerA = power && (state_pump == SPM_PUMP_1 || state_pump == SPM_PUMP_BOTH);
+    bool powerB = power && (state_pump == SPM_PUMP_2 || state_pump == SPM_PUMP_BOTH);
 
-    PWR.power(REL_A, power);
-    PWR.power(REL_B, power);
+    PWR.power(REL_A, powerA);
+    PWR.power(REL_B, powerB);
 
-    if (power) {
-        if (state_power == SP_POWER) {
-            INDICATORS.set(IND, true);
-        } else {
-            INDICATORS.flash(IND, &FLASH, true);
-        }
+    INDICATORS.set(IND_A, powerA);
+    INDICATORS.set(IND_B, powerB);
 
+    if (state_info == SI_ALARM) {
+        INDICATORS.flash(IND_1, &FLASH_ALARM, true);
+    } else if (powerWarning){
+        INDICATORS.flash(IND_1, &FLASH, true);
     } else {
-        if (state_power == SP_ALARM) {
-            INDICATORS.flash(IND, &FLASH_SBY, true);
-        } else {
-            INDICATORS.set(IND, false);
-        }
+        INDICATORS.set(IND_1, false);
     }
 }
