@@ -6,10 +6,7 @@
 #include <../Poweroid_SDK_10/src/timings.h>
 
 typedef struct Timings {
-    TimingState countdown_pump;
-    TimingState alarm_pump;
-    TimingState countdown_pre_power;
-    TimingState countdown_lost_power;
+    TimingState countdown_power;
 };
 
 enum StatePower {

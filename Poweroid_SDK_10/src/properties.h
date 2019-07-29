@@ -11,6 +11,7 @@
 #define DEG_C 5
 #define PERCENT 6
 #define KPA 7
+#define CM 8
 
 
 extern const char* MEASURES[];
