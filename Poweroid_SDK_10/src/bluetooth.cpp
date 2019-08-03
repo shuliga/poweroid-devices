@@ -19,20 +19,18 @@ Bt::Bt(const char *id) {
 
 void Bt::begin() {
 
-    remote_on = REMOTE_ENABLE;
-    host = REMOTE_SERVER;
-
     delay(2500);
 
-    if(remote_on){
-        if(host){
-            Serial.begin(HC_06_BAUD);
+    if(REMOTE_ENABLE){
+        if(REMOTE_SERVER){
+            Serial.begin(LOW_SPEED ? LOW_SPEED_BAUD : HC_06_BAUD);
+
             String ver = execCommand(F("AT+VERSION"), 0, false);
             if (ver.startsWith(BT_VER_06)) {
                 execCommand(F("AT+NAME"), name, false);
             }
         } else {
-//            Serial.begin(HC_05_AT_BAUD);
+            Serial.begin(HC_05_AT_BAUD);
 //
 //            writeLog('I', ORIGIN, 210, HC_05_AT_BAUD);
 //

@@ -74,9 +74,28 @@ bool testPreassure(){
 void run_state_power(McEvent event) {
     switch (state_power) {
         case SP_OFF: {
-            prev_state_power = SP_OFF;
             if (event == HOLD) {
+                state_power = SP_PRE_POWER;
+            }
+            break;
+        }
+        case SP_PRE_POWER: {
+            prev_state_power = SP_OFF;
+            if (timings.countdown_pre_power.isTimeAfter(true)) {
+                timings.countdown_pre_power.reset();
+                if(!testPreassure()){
+                    state_info = SI_ALARM;
+                    break;
+                }
                 state_power = SP_POWER;
+            }
+            if(!testLevel()){
+                state_power = SP_LOW_LEVEL;
+                break;
+            }
+            if (event == HOLD) {
+                state_power = SP_OFF;
+                break;
             }
             break;
         }
@@ -89,37 +108,43 @@ void run_state_power(McEvent event) {
                 state_power = SP_OFF;
                 break;
             }
-            if (event == CLICK) {
-                state_power = SP_PRE_POWER;
+            if(!testPreassure()){
+                state_power = SP_LOST_POWER;
                 break;
             }
-            break;
-        }
-        case SP_PRE_POWER: {
-            if (timings.countdown_pre_power.countdown(true, true, false)) {
-//
-            }
-            if (event == CLICK) {
-                state_power = prev_state_power;
-                break;
-            }
-            if (event == HOLD) {
-                state_power = SP_OFF;
+            if(!testLevel()){
+                state_power = SP_LOW_LEVEL;
                 break;
             }
             break;
         }
         case SP_LOST_POWER: {
-            prev_state_power = SP_POWER;
+            prev_state_power = SP_LOST_POWER;
+            if (timings.countdown_lost_power.isTimeAfter(true)) {
+                state_power = SP_OFF;
+                timings.countdown_lost_power.reset();
+            }
+            if(testPreassure()){
+                state_power = SP_POWER;
+                prev_state_power = SP_LOST_POWER;
+                break;
+            }
+            if(!testLevel()){
+                state_power = SP_LOW_LEVEL;
+                break;
+            }
             if (event == HOLD) {
                 state_power = SP_OFF;
                 break;
             }
-            if (event == CLICK) {
-                state_power = SP_POWER;
+            break;
+        }
+        case SP_LOW_LEVEL: {
+            if(testLevel()){
+                state_power = SP_PRE_POWER;
                 break;
             }
-            if (!timings.countdown_lost_power.countdown(true, false, false)) {
+            if (event == HOLD) {
                 state_power = SP_OFF;
                 break;
             }
@@ -138,7 +163,7 @@ void run_state_pump(McEvent event) {
     switch (state_pump) {
         case SPM_PUMP_1: {
             prev_state_pump = SPM_PUMP_BOTH;
-            if (event == HOLD || state_info == SI_ALARM) {
+            if (event == CLICK ||  timings.countdown_pump.isTimeAfter(true) || state_info == SI_ALARM) {
                 state_pump = SPM_PUMP_2;
             }
             break;
@@ -160,6 +185,13 @@ void run_state_pump(McEvent event) {
 
             break;
         }
+        case SPM_PUMP_1_ONLY: {
+            prev_state_pump = SPM_PUMP_BOTH;
+            if (event == CLICK ||  timings.countdown_pump.isTimeAfter(true) || state_info == SI_ALARM) {
+                state_pump = SPM_PUMP_2;
+            }
+            break;
+        }
         case SPM_PUMP_BOTH: {
             if (timings.countdown_pre_power.countdown(true, true, false)) {
   //              state_pump
@@ -175,7 +207,7 @@ void run_state_pump(McEvent event) {
             break;
         }
     }
-    CMD.printChangedState(prev_state_power, state_power, 0);
+    CMD.printChangedState(prev_state_pump, state_pump, 1);
 }
 
 void setup() {
@@ -188,7 +220,9 @@ void loop() {
 
     PWR.run();
 
-    run_state_power(btn.checkButton());
+    McEvent event = btn.checkButton();
+    run_state_power(event);
+    run_state_pump(event);
 
     bool powerWarning = state_power == SP_PRE_POWER || state_power == SP_LOST_POWER;
     bool power = state_power || powerWarning;
