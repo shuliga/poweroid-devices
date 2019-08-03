@@ -17,17 +17,17 @@ enum StatePower {
 } state_power = SP_OFF, prev_state_power = SP_DISARM;
 
 enum StatePump {
-    SPM_PUMP_1 = 48, SPM_PUMP_2 = 55, SPM_PUMP_BOTH = 62
+    SPM_PUMP_1 = 48, SPM_PUMP_2 = 55, SPM_PUMP_1_ONLY = 62, SPM_PUMP_2_ONLY = 74, SPM_PUMP_BOTH = 86, SPM_ALL_FAILED = 96
 } state_pump = SPM_PUMP_1, prev_state_pump = SPM_PUMP_2;
 
 enum StateInfo {
-    SI_DISARM = 0, SI_ALARM = 62
+    SI_DISARM = 0, SI_ALARM = 112
 } state_info = SI_DISARM, prev_state_info = SI_ALARM;
 
 uint8_t state_count = 2;
 
 const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Info"};
-const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0LOST-POWER\0ALARM\0LOW_LEVEL\0PUMP_1\0PUMP_2\0PUMP_BOTH\0ALARM\0",}; // OFFSETS:0,7,11,17,27,38,48,55,62
+const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0LOST-POWER\0ALARM\0LOW_LEVEL\0PUMP 1\0PUMP 2\0PUMP 1 ONLY\0PUMP 2 ONLY\0PUMP BOTH\0PUMP ALL FAILED\0ALARM\0",}; // OFFSETS:0,7,11,17,27,38,48,55,62,74,86,96,112
 
 RunState run_state;
 
