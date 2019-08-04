@@ -20,6 +20,8 @@ typedef struct {
     int16_t val;
     int16_t min;
     int16_t max;
+    int16_t g_min;
+    int16_t g_max;
     uint8_t measure;
 } gauge_data;
 

@@ -6,34 +6,25 @@
 #include <../Poweroid_SDK_10/src/timings.h>
 
 typedef struct Timings {
-    TimingState countdown_power;
+    TimingState fill_time;
+    TimingState alarm_time;
 };
 
 enum StatePower {
-    SP_DISARM = 0, SP_OFF = 7, SP_POWER = 11, SP_PRE_POWER = 17, SP_LOST_POWER = 27, SP_LOW_LEVEL = 38
-} state_power = SP_OFF, prev_state_power = SP_DISARM;
+    SV_DISARM = 0, SV_READY = 7, SV_OPEN = 13, SP_OPEN_ALARM = 18, SP_ALARM_SHUT = 29
+} state_valve = SV_READY, prev_state_power = SV_DISARM;
 
-enum StatePump {
-    SPM_PUMP_1 = 48, SPM_PUMP_2 = 55, SPM_PUMP_BOTH = 62
-} state_pump = SPM_PUMP_1, prev_state_pump = SPM_PUMP_2;
+uint8_t state_count = 1;
 
-enum StateInfo {
-    SI_DISARM = 0, SI_ALARM = 62
-} state_info = SI_DISARM, prev_state_info = SI_ALARM;
-
-uint8_t state_count = 2;
-
-const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Info"};
-const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0LOST-POWER\0ALARM\0LOW_LEVEL\0PUMP_1\0PUMP_2\0PUMP_BOTH\0ALARM\0",}; // OFFSETS:0,7,11,17,27,38,48,55,62
+const char *STATE_NAME_BUFF[] = {"Valve"};
+const char *STATE_BUFF = {"DISARM\0READY\0OPEN\0OPEN-ALARM\0ALARM-SHUT\0",}; // OFFSETS:0,7,13,18,29
 
 RunState run_state;
 
 RunState *getState(uint8_t i) {
     uint8_t offset = 0;
     switch (i) {
-        case 0: {offset = state_power;break;}
-        case 1: {offset = state_pump;break;}
-        case 3: {offset = state_info;break;}
+        case 0: {offset = state_valve;break;}
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
@@ -44,7 +35,7 @@ RunState *getState(uint8_t i) {
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
         case 0: {
-            state_power = _disarm ? SP_DISARM : SP_OFF;
+            state_valve = _disarm ? SV_DISARM : SV_READY;
             break;
         }
     }

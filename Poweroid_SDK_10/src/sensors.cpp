@@ -75,11 +75,12 @@ bool Sensors::checkInstalled(uint8_t pin, bool inst) {
 
 void Sensors::initSensors(bool _propagate) {
     propagate = _propagate;
-#if defined(__AVR_ATmega1280__)
+#if defined(__AVR_ATmega1284P__)
 #define INTERNAL_REF INTERNAL1V1
 #else
 #define INTERNAL_REF INTERNAL
 #endif
+
     analogReference(REF_1V1 ? INTERNAL_REF : DEFAULT);
     for(uint8_t i = 0; i < ARRAY_SIZE(INA_PINS); i++){
         pinMode(INA_PINS[i], INPUT_PULLUP);

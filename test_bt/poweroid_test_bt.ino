@@ -1,26 +1,26 @@
-#include "global.h"
-#include "Poweroid10.h"
-#include "bluetooth.h"
+#include <SoftwareSerial.h>
+#include <Wire.h>
+#include <../Poweroid_SDK_10/src/global.h>
+#include <../Poweroid_SDK_10/src/Poweroid10.h>
 
 #define ID "TEST_BT"
 
-Bt BT(ID);
+TimingState countdown(250);
+
+static uint8_t current_out = 0;
 
 void setup() {
-    SSerial.begin(9600);
-    SSerial.println("BT TEST init");
-    BT.begin();
-    SSerial.println("Bluetooth init");
-    SSerial.println(BT.remote_on);
-    SSerial.println(BT.host);
+    for(uint8_t i = 0; i < 3; i++){
+        pinMode(INA_PINS[i], OUTPUT);
+    }
+    digitalWrite(INA_PINS[current_out], HIGH);
 }
 
 void loop() {
-    if (Serial.available()){
-        SSerial.write((uint8_t) Serial.read());
+    if(countdown.ping()){
+        digitalWrite(INA_PINS[current_out], LOW);
+        current_out++;
+        current_out == 3 ? current_out = 0 : current_out = current_out;
+        digitalWrite(INA_PINS[current_out], HIGH);
     }
-    if (SSerial.available()){
-        Serial.write(SSerial.read());
-    }
-    delay(20);
 }

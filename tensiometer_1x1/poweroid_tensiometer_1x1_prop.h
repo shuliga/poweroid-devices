@@ -11,12 +11,13 @@ static struct Properties {
 
     int8_t DEFAULT_PROPERTY = 1;
 
-    Property FACTORY[3] = {
+    Property FACTORY[4] = {
 
-            //val      minV     maxV       scale
-            {-15L,      -24L,    0L,     1L},
-            {-40L,      -99L,    -25L,   1L},
-            {10L,       5L,      59L,    1L}
+            //val      minV       maxV        scale
+            {-40L,      -99L,     -25L,       1L},
+            {-15L,      -24L,     0L,         1L},
+            {36000000L, 3600000L, 180000000L, 3600000L},
+            {36000000L, 3600000L, 180000000L, 3600000L}
     };
 
     uint8_t props_size = ARRAY_SIZE(FACTORY);
@@ -26,14 +27,17 @@ static struct Properties {
 // Using F() macros here
     Properties() {
         factoryReset();
-        FACTORY[0].desc = F("P-IN min (kPa)");
+        FACTORY[0].desc = F("P-tens min");
         FACTORY[0].measure = KPA;
 
-        FACTORY[1].desc = F("P-IN max (kPa)");
+        FACTORY[1].desc = F("P-tens max");
         FACTORY[1].measure = KPA;
 
-        FACTORY[2].desc = F("P-IN timeout (sec)");
-        FACTORY[2].measure = SEC;
+        FACTORY[2].desc = F("Fill time");
+        FACTORY[2].measure = HOUR;
+
+        FACTORY[3].desc = F("Alarm time-out");
+        FACTORY[3].measure = HOUR;
     }
 
     void factoryReset() {

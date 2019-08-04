@@ -45,6 +45,7 @@ void apply_timings() {
 uint16_t banner_value;
 
 void fillBanner() {
+    BANNER.mode=0;
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
     uint16_t totalToGo = static_cast<uint16_t>(countDown ? timings.countdown_power.millsToGo() / 1000 : 0);
     uint8_t hrsToGo = static_cast<uint8_t>(totalToGo / 3600);
@@ -52,9 +53,9 @@ void fillBanner() {
     uint8_t minToGo = static_cast<uint8_t>(secToGoM / 60);
     uint8_t secToGo = static_cast<uint8_t>(secToGoM - (minToGo * 60));
     if (countDown){
-        sprintf(BANNER, BANNER_FMT , hrsToGo, minToGo, secToGo);
+        sprintf(BANNER.data.text, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        BANNER[0] = 0;
+        BANNER.data.text[0] = 0;
     };
 }
 

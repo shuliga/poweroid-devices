@@ -259,8 +259,10 @@ void Controller::process() {
                         int16_t val = BANNER.data.gauges[i].val;
                         int16_t min = BANNER.data.gauges[i].min;
                         int16_t max = BANNER.data.gauges[i].max;
-                        int16_t col_min = normalizeGauge(min, -100, 0);
-                        int16_t col_max = normalizeGauge(max, -100, 0);
+                        int16_t g_min = BANNER.data.gauges[i].g_min;
+                        int16_t g_max = BANNER.data.gauges[i].g_max;
+                        int16_t col_min = normalizeGauge(min, g_min, g_max);
+                        int16_t col_max = normalizeGauge(max, g_min, g_max);
                         uint8_t row = i == 0 ? 0 : DISPLAY_BOTTOM;
                         int8_t direction = i == 0 ? 1 : -1;
                         uint8_t char_col_min = col_min / 8 + 1;
@@ -270,7 +272,7 @@ void Controller::process() {
                         sprintf(BUFF, FMT, min, max);
                         oled.setTextXY(row, 0);
                         oled.putString(BUFF);
-                        oled.outputLineGauge(row + direction, normalizeGauge(val, -100, 0), col_min, col_max,
+                        oled.outputLineGauge(row + direction, normalizeGauge(val, g_min, g_max), col_min, col_max,
                                              direction == -1);
                         sprintf(BUFF, "%d %s", val, MEASURES[BANNER.data.gauges[i].measure]);
                         if (BANNER.mode == 1) {
