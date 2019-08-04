@@ -51,12 +51,14 @@ void Commander::listen() {
                 if (cmd.indexOf(REMOTE_HOST) > 0 && ctx->passive) {
                     int8_t i = cmd.indexOf(',');
                     int8_t j = cmd.indexOf(',', i + 1);
-                    int8_t k = cmd.lastIndexOf(',');
+                    int8_t k = cmd.indexOf(',', j + 1);
+                    int8_t l = cmd.lastIndexOf(',');
                     if (i > 0 ) {
                         ctx->props_size = cmd.substring(i + 1, j).toInt();
-                        ctx->props_default_idx = cmd.substring(j + 1).toInt();
-                        if (k > j) {
-                            cmd.substring(k + 1, cmd.indexOf('\r')).toCharArray(BANNER.data.text, LINE_SIZE);
+                        ctx->props_default_idx = cmd.substring(j + 1, k).toInt();
+                        BANNER.mode = cmd.substring(k + 1, l).toInt();
+                        if (l > k) {
+                            cmd.substring(l + 1, cmd.indexOf('\r')).toCharArray(BANNER.data.text, LINE_SIZE);
                         }
                     }
                 }
@@ -194,7 +196,7 @@ void Commander::printChangedState(bool prev_state, bool state, uint8_t id) {
 
 bool Commander::isConnected() {
     if (connection_check.isTimeAfter(true)) {
-        sprintf(BUFF,"%s,%i,%i,%s",REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.data.text);
+        sprintf(BUFF,"%s,%i,%i, %i, %s",REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode, BANNER.data.text);
         printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
         connected = ctx->peerFound;
         ctx->peerFound = false;

@@ -1,6 +1,8 @@
 
 #define ID "PWR-PMS-32"
 
+#include <SoftwareSerial.h>
+#include <Wire.h>
 #include <../Poweroid_SDK_10/src/global.h>
 #include <../Poweroid_SDK_10/src/Poweroid10.h>
 #include "poweroid_tensiometer_1x1_state.h"
@@ -9,14 +11,7 @@
 #include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
 
 
-Timings timings = {0};
-unsigned long SBY_MILLS = 0L;
-TimingState FLASH(750L);
-TimingState FLASH_SBY(250L);
-
-#define IND IND_3
-
-MultiClick btn = MultiClick(IN3_PIN);
+Timings timings = {0, 0};
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
                       PROPS.DEFAULT_PROPERTY);
@@ -32,101 +27,93 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 void apply_timings() {
-    timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
-                                      (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
-    SBY_MILLS = static_cast<unsigned long>(PROPS.FACTORY[2].runtime * 60000L);
+    timings.fill_time.interval = (unsigned long) PROPS.FACTORY[2].runtime;
+    timings.alarm_time.interval = (unsigned long) PROPS.FACTORY[3].runtime;
 }
 
-uint16_t banner_value;
+static uint16_t pressure;
+static uint16_t pressure_min;
+static uint16_t pressure_max;
+
+void processSensors() {
+    pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
+    pressure_min = PROPS.FACTORY[0].runtime;
+    pressure_max = PROPS.FACTORY[1].runtime;
+}
 
 void fillBanner() {
-    if (state_power == SI_ALARM){
+    processSensors();
+    if (state_valve == SP_ALARM_SHUT) {
         BANNER.mode = 0;
-        sprintf(BANNER.data.text, "%s" , "ALARM");
+        sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
-        BANNER.mode = 2;
-//        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
-//        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
-        int16_t val = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
-        BANNER.data.gauges[0].val = val;
-        BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime;
-        BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime;
+        BANNER.mode = 1;
+        BANNER.data.gauges[0].val = pressure;
+        BANNER.data.gauges[0].min = pressure_min;
+        BANNER.data.gauges[0].max = pressure_max;
+        BANNER.data.gauges[0].g_min = PROPS.FACTORY[0].minv / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[0].g_max = PROPS.FACTORY[1].maxv / PROPS.FACTORY[1].scale;
         BANNER.data.gauges[0].measure = KPA;
 
-        BANNER.data.gauges[1].val = val;
-        BANNER.data.gauges[1].min = PROPS.FACTORY[1].runtime;
-        BANNER.data.gauges[1].max = PROPS.FACTORY[0].runtime;
-        BANNER.data.gauges[1].measure = KPA;
     };
 }
 
-void run_state_power(McEvent event) {
-    switch (state_power) {
-        case SP_OFF: {
-            prev_state_power = SP_OFF;
-            if (event == HOLD) {
-                state_power = SP_POWER;
+void run_state_power() {
+    switch (state_valve) {
+        case SV_READY: {
+            if (pressure < pressure_min) {
+                prev_state_power = SV_READY;
+                state_valve = SV_OPEN;
+                timings.fill_time.reset();
             }
             break;
         }
-        case SP_POWER: {
-            if (prev_state_power == SP_OFF) {
-                timings.countdown_power.reset();
-            }
-            prev_state_power = SP_POWER;
-            if (event == HOLD) {
-                state_power = SP_OFF;
-                break;
-            }
-            if (event == CLICK) {
-                state_power = SP_PRE_POWER;
-                break;
-            }
-            if (!timings.countdown_power.countdown(true, false, false)) {
-                state_power = SP_OFF;
-                break;
+        case SV_OPEN: {
+            prev_state_power = SV_OPEN;
+            if (timings.fill_time.isTimeAfter(true)) {
+                if (pressure < pressure_min) {
+                    state_valve = SP_OPEN_ALARM;
+                    timings.alarm_time.reset();
+                } else {
+                    state_valve = SV_READY;
+                }
+            } else {
+                if (pressure > pressure_max) {
+                    state_valve = SV_READY;
+                    timings.alarm_time.reset();
+                }
             }
             break;
         }
-        case SP_PRE_POWER: {
-            timings.countdown_power.countdown(true, true, false);
-            if (event == CLICK) {
-                state_power = prev_state_power;
-                break;
-            }
-            if (event == HOLD) {
-                state_power = SP_OFF;
-                break;
-            }
-            break;
-        }
-        case SP_POST_POWER: {
-            prev_state_power = SP_POWER;
-            if (event == HOLD) {
-                state_power = SP_OFF;
-                break;
-            }
-            if (event == CLICK) {
-                state_power = SP_POWER;
-                break;
-            }
-            if (!timings.countdown_power.countdown(true, false, false)) {
-                state_power = SP_OFF;
-                break;
+        case SP_OPEN_ALARM: {
+            prev_state_power = SP_OPEN_ALARM;
+            if (pressure >= pressure_min) {
+                state_valve = SV_OPEN;
+                timings.fill_time.reset();
+            } else {
+                if (timings.alarm_time.isTimeAfter(true)) {
+                    state_valve = SP_ALARM_SHUT;
+                }
             }
             break;
         }
-        case SP_DISARM: {
-            prev_state_power = SP_DISARM;
+        case SP_ALARM_SHUT: {
+            prev_state_power = SP_ALARM_SHUT;
+            if (pressure >= pressure_min) {
+                state_valve = SV_READY;
+            }
+            break;
+        }
+        case SV_DISARM: {
+            prev_state_power = SV_DISARM;
             break;
         }
     }
-    CMD.printChangedState(prev_state_power, state_power, 0);
+    CMD.printChangedState(prev_state_power, state_valve, 0);
 }
 
 void setup() {
     PWR.begin();
-//    ULTRASONIC.begin();
 }
 
 void loop() {
@@ -135,25 +122,10 @@ void loop() {
 
     PWR.run();
 
-    run_state_power(btn.checkButton());
+    run_state_power();
 
-    bool power = (state_power == SP_POWER || state_power == SP_PRE_POWER  || state_power == SP_POST_POWER);
+    bool power = (state_valve == SP_OPEN_ALARM || state_valve == SV_OPEN);
 
     PWR.power(REL_A, power);
-    PWR.power(REL_B, power);
 
-    if (power) {
-        if (state_power == SP_POWER) {
-            INDICATORS.set(IND, true);
-        } else {
-            INDICATORS.flash(IND, &FLASH, true);
-        }
-
-    } else {
-        if (state_power == SP_ALARM) {
-            INDICATORS.flash(IND, &FLASH_SBY, true);
-        } else {
-            INDICATORS.set(IND, false);
-        }
-    }
 }

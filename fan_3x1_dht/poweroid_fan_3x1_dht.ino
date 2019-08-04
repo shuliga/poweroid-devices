@@ -1,8 +1,10 @@
 
 #define ID "PWR-FAN-FLR-32-DHT"
 
-#include "global.h"
-#include "Poweroid10.h"
+#include <SoftwareSerial.h>
+#include <Wire.h>
+#include <../Poweroid_SDK_10/src/global.h>
+#include <../Poweroid_SDK_10/src/Poweroid10.h>
 #include "poweroid_fan_3x1_dht_state.h"
 #include "poweroid_fan_3x1_dht_prop.h"
 
@@ -32,7 +34,8 @@ void apply_timings() {
 }
 
 void fillBanner() {
-    return strcpy(BANNER, PWR.SENS->printDht());
+    BANNER.mode = 0;
+    strcpy(BANNER.data.text, PWR.SENS->printDht());
 }
 
 void run_state_light(bool light) {

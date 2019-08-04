@@ -74,15 +74,12 @@ void Pwr::run() {
     bool newConnected = false;
     bool updateConnected = false;
 
-//    semaphor = 1;
     SENS->process();
 
-//    semaphor = 2;
     if (CMD) {
         CMD->listen();
     }
 
-//    semaphor = 3;
     if (BT && CTX->remote) {
         newConnected = CMD->isConnected();
         updateConnected = newConnected != CTX->connected;
@@ -95,14 +92,12 @@ void Pwr::run() {
         fillBanner();
     }
 
-//    semaphor = 4;
 #ifndef NO_CONTROLLER
     if (CTRL) {
         CTRL->process();
     }
 #endif
 
-//    semaphor = 5;
     if (updateConnected && newConnected) {
         REL->castMappedRelays();
     }
@@ -180,4 +175,3 @@ ISR(TIMER1_COMPA_vect) {
 //    writeLog('E', "OVERTIME", semaphor);
 }
 #endif
-

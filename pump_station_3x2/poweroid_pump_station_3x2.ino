@@ -34,41 +34,51 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
+static uint16_t distance;
+static uint16_t pressure;
+
+void processSensors(){
+    distance = ULTRASONIC.getDistance();
+    pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
+}
+
 void apply_timings() {
     timings.alarm_pump.interval = (unsigned long) PROPS.FACTORY[3].runtime;
     timings.countdown_pump.interval = (unsigned long) PROPS.FACTORY[4].runtime;
-    timings.countdown_lost_power.interval = (unsigned long) PROPS.FACTORY[4].runtime;
-    timings.countdown_pre_power.interval = (unsigned long) PROPS.FACTORY[4].runtime;
+    timings.countdown_lost_power.interval = (unsigned long) PROPS.FACTORY[5].runtime;
+    timings.countdown_pre_power.interval = (unsigned long) PROPS.FACTORY[6].runtime;
 }
 
 void fillBanner() {
+    processSensors();
     if (state_power == SI_ALARM) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
         BANNER.mode = 2;
-//        sprintf(BANNER, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, false), RTC.get(DS1307_SEC, false));
-//        sprintf(BANNER, "L=%dcm", ULTRASONIC.getDistance());
-        int16_t val = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
 
-        BANNER.data.gauges[0].val = val;
-        BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime;
-        BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime;
-        BANNER.data.gauges[0].measure = KPA;
+        BANNER.data.gauges[0].val = distance;
+        BANNER.data.gauges[0].min = PROPS.FACTORY[0].minv / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[0].g_min = 0;
+        BANNER.data.gauges[0].g_max = PROPS.FACTORY[0].maxv / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[0].measure = PROPS.FACTORY[0].measure;
 
-        BANNER.data.gauges[1].val = val;
-        BANNER.data.gauges[1].min = PROPS.FACTORY[1].runtime;
-        BANNER.data.gauges[1].max = PROPS.FACTORY[0].runtime;
-        BANNER.data.gauges[1].measure = KPA;
-    };
+        BANNER.data.gauges[1].val = pressure;
+        BANNER.data.gauges[1].min = PROPS.FACTORY[1].runtime / PROPS.FACTORY[1].scale;
+        BANNER.data.gauges[1].max = PROPS.FACTORY[2].runtime / PROPS.FACTORY[2].scale;
+        BANNER.data.gauges[1].g_min = 0;
+        BANNER.data.gauges[1].g_max = PROPS.FACTORY[2].maxv/ PROPS.FACTORY[2].scale;
+        BANNER.data.gauges[1].measure = PROPS.FACTORY[1].measure;
+    }
 }
 
 bool testLevel(){
-    return ULTRASONIC.getDistance() < PROPS.FACTORY[0].runtime;
+    return distance > PROPS.FACTORY[0].runtime;
 }
 
-bool testPreassure(){
-    return ULTRASONIC.getDistance() < PROPS.FACTORY[0].runtime;
+bool testPressure(){
+    return pressure < PROPS.FACTORY[0].runtime;
 }
 
 void run_state_power(McEvent event) {
@@ -83,7 +93,7 @@ void run_state_power(McEvent event) {
             prev_state_power = SP_OFF;
             if (timings.countdown_pre_power.isTimeAfter(true)) {
                 timings.countdown_pre_power.reset();
-                if(!testPreassure()){
+                if(!testPressure()){
                     state_info = SI_ALARM;
                     break;
                 }
@@ -108,7 +118,7 @@ void run_state_power(McEvent event) {
                 state_power = SP_OFF;
                 break;
             }
-            if(!testPreassure()){
+            if(!testPressure()){
                 state_power = SP_LOST_POWER;
                 break;
             }
@@ -124,7 +134,7 @@ void run_state_power(McEvent event) {
                 state_power = SP_OFF;
                 timings.countdown_lost_power.reset();
             }
-            if(testPreassure()){
+            if(testPressure()){
                 state_power = SP_POWER;
                 prev_state_power = SP_LOST_POWER;
                 break;
@@ -212,7 +222,7 @@ void run_state_pump(McEvent event) {
 
 void setup() {
     PWR.begin();
-    ULTRASONIC.begin(INA1_PIN);
+    ULTRASONIC.begin(1);
 }
 
 void loop() {
