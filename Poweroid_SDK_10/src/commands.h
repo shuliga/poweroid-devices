@@ -13,6 +13,8 @@ typedef struct CommandsStr {
     const char* CMD_SET_DHT;
     const char* CMD_GET_STATE;
     const char* CMD_DISARM_STATE;
+    const char* CMD_SET_TOKEN;
+    const char* CMD_PASS_TOKEN;
     const char* CMD_GET_PROP;
     const char* CMD_GET_BIN_PROP;
     const char* CMD_SET_BIN_PROP;
@@ -33,7 +35,7 @@ typedef struct CommandsStr {
 
 extern union Cu{
     CommandsStr cmd_str;
-    char * cmd_array[19];
+    char * cmd_array[21];
 } cu;
 
 extern const char *cmd_arrow;

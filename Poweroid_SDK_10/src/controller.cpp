@@ -19,7 +19,7 @@
 #define DISPLAY_BOTTOM 7
 
 static enum State {
-    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND, FLAG
+    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND, FLAG, TOKEN
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
@@ -36,7 +36,7 @@ static volatile int state_idx_max = 0;
 
 static int8_t c_prop_idx = -1;
 static int8_t c_state_idx = -1;
-static uint8_t c_flag = 255;
+static uint8_t c_byte_value = 255;
 static long c_prop_value = -1;
 static long old_prop_value;
 static bool dither = false;
@@ -192,22 +192,59 @@ void Controller::process() {
         case FLAG: {
             if (testControl(sleep_timer)) {
                 outputState(false);
-                outputPropDescr("FLAGS\0");
+                outputDescr("FLAGS\0");
                 prop_max = FLAGS_MAX;
                 prop_value = PWR_FLAGS;
                 prop_min = 0;
             }
 
-            if (prop_value != c_flag) {
+            if (prop_value != c_byte_value) {
                 PWR_FLAGS = (uint8_t) prop_value;
                 itoa(PWR_FLAGS, BUFF, 2);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
-                c_flag = PWR_FLAGS;
+                c_byte_value = PWR_FLAGS;
                 outputStatus(F("Decimal:"), PWR_FLAGS);
             }
 
+            if (event == HOLD ) {
+                ctx->PERS.storeFlags();
+                if (TOKEN_ENABLE){
+                    state = TOKEN;
+                } else {
+                    goToBrowse();
+                }
+            }
+
+            if (event == CLICK || sleep_timer.isTimeAfter(true)) {
+                goToBrowse();
+            }
+
+            if (TOKEN_ENABLE && event == DOUBLE_CLICK ) {
+                state = TOKEN;
+            }
+
+            break;
+        }
+
+        case TOKEN: {
+            if (firstRun()) {
+                outputState(false);
+                outputDescr("TOKEN\0");
+                prop_max = TOKEN_MAX;
+                prop_value = COM_TOKEN;
+                prop_min = 0;
+            }
+
+            if (prop_value != c_byte_value) {
+                COM_TOKEN = (uint8_t) prop_value;
+                itoa(COM_TOKEN, BUFF, 10);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
+                c_byte_value = COM_TOKEN;
+                outputStatus(F("Decimal:"), COM_TOKEN);
+            }
+
             if (event == HOLD) {
-                ctx->PERS.storeFLags();
+                ctx->PERS.storeToken();
                 goToBrowse();
             }
 
@@ -349,7 +386,7 @@ void Controller::goToBrowse() const {
     // invalidate cache
     c_prop_idx = -1;
     c_prop_value = -1;
-    c_flag = 255;
+    c_byte_value = 255;
 
     state = BROWSE;
 }
@@ -426,10 +463,14 @@ void Controller::switchDisplay(boolean inverse) const {
 
 void Controller::outputPropDescr(char *_buff) {
     if (canGoToEdit()) {
-        oled.setTextXY(DISPLAY_BASE, 0);
-        padLine(_buff, 2, 0);
-        oled.putString(_buff);
+        outputDescr(_buff);
     }
+}
+
+void Controller::outputDescr(char *_buff) const {
+    oled.setTextXY(DISPLAY_BASE, 0);
+    padLine(_buff, 2, 0);
+    oled.putString(_buff);
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
@@ -489,6 +530,7 @@ ISR(PCVECT) {
             switch (state) {
 
                 case FLAG:
+                case TOKEN:
                 case EDIT_PROP: {
                     input == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
                     break;
