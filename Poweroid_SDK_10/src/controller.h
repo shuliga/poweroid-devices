@@ -32,6 +32,8 @@ private:
 
     void outputPropDescr(char * _buff);
 
+    void outputDescr(char *_buff) const;
+
     void outputStatus(const __FlashStringHelper *txt, const long val);
 
     void outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure);
@@ -61,6 +63,7 @@ private:
     bool canGoToEdit();
 
     static uint8_t normalizeGauge(uint16_t val, uint16_t min, uint16_t max);
+
 };
 
 

@@ -46,6 +46,7 @@ typedef struct Context {
     Persistence PERS;
 
     int8_t props_default_idx;
+    bool hasToken;
     bool refreshProps;
     bool refreshState;
     bool passive;

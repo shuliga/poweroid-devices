@@ -57,19 +57,19 @@ void fillBanner() {
     } else {
         BANNER.mode = 2;
 
-        BANNER.data.gauges[0].val = distance;
-        BANNER.data.gauges[0].min = PROPS.FACTORY[0].minv / PROPS.FACTORY[0].scale;
-        BANNER.data.gauges[0].max = PROPS.FACTORY[0].runtime / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[0].val = pressure;
+        BANNER.data.gauges[0].min = PROPS.FACTORY[1].runtime / PROPS.FACTORY[1].scale;
+        BANNER.data.gauges[0].max = PROPS.FACTORY[2].runtime / PROPS.FACTORY[2].scale;
         BANNER.data.gauges[0].g_min = 0;
-        BANNER.data.gauges[0].g_max = PROPS.FACTORY[0].maxv / PROPS.FACTORY[0].scale;
-        BANNER.data.gauges[0].measure = PROPS.FACTORY[0].measure;
+        BANNER.data.gauges[0].g_max = PROPS.FACTORY[2].maxv/ PROPS.FACTORY[2].scale;
+        BANNER.data.gauges[0].measure = PROPS.FACTORY[1].measure;
 
-        BANNER.data.gauges[1].val = pressure;
-        BANNER.data.gauges[1].min = PROPS.FACTORY[1].runtime / PROPS.FACTORY[1].scale;
-        BANNER.data.gauges[1].max = PROPS.FACTORY[2].runtime / PROPS.FACTORY[2].scale;
+        BANNER.data.gauges[1].val = distance;
+        BANNER.data.gauges[1].min = PROPS.FACTORY[0].minv / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[1].max = PROPS.FACTORY[0].runtime / PROPS.FACTORY[0].scale;
         BANNER.data.gauges[1].g_min = 0;
-        BANNER.data.gauges[1].g_max = PROPS.FACTORY[2].maxv/ PROPS.FACTORY[2].scale;
-        BANNER.data.gauges[1].measure = PROPS.FACTORY[1].measure;
+        BANNER.data.gauges[1].g_max = PROPS.FACTORY[0].maxv / PROPS.FACTORY[0].scale;
+        BANNER.data.gauges[1].measure = PROPS.FACTORY[0].measure;
     }
 }
 

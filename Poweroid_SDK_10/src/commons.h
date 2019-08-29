@@ -85,18 +85,21 @@
 #define FLAG_RELAY_ON_LOW       1
 #define FLAG_REMOTE_ENABLE      2
 #define FLAG_REMOTE_SERVER      3
-#define FLAG_PROPAGATE_SENSORS  4
+#define FLAG_TOKEN_ENABLE       4
 #define FLAG_LOW_SPEED          5
 #define FLAG_REF_1V1            6
 
 #define FLAGS_MAX 63
+#define TOKEN_MAX 8
 
-#define RELAY_ON_LOW        PWR_FLAGS >> (FLAG_RELAY_ON_LOW - 1) & 0x1
-#define REMOTE_ENABLE       PWR_FLAGS >> (FLAG_REMOTE_ENABLE - 1) & 0x1
-#define REMOTE_SERVER       PWR_FLAGS >> (FLAG_REMOTE_SERVER - 1) & 0x1
-#define PROPAGATE_SENSORS   PWR_FLAGS >> (FLAG_PROPAGATE_SENSORS - 1) & 0x1
-#define LOW_SPEED           PWR_FLAGS >> (FLAG_LOW_SPEED - 1) & 0x1
-#define REF_1V1             PWR_FLAGS >> (FLAG_REF_1V1 - 1) & 0x1
+#define ExtractFlag(flag)   PWR_FLAGS >> ((flag) - 1) & 0x1
+
+#define RELAY_ON_LOW        ExtractFlag(FLAG_RELAY_ON_LOW)
+#define REMOTE_ENABLE       ExtractFlag(FLAG_REMOTE_ENABLE)
+#define REMOTE_SERVER       ExtractFlag(FLAG_REMOTE_SERVER)
+#define TOKEN_ENABLE        ExtractFlag(FLAG_TOKEN_ENABLE)
+#define LOW_SPEED           ExtractFlag(FLAG_LOW_SPEED)
+#define REF_1V1             ExtractFlag(FLAG_REF_1V1)
 
 #define DEBOUNCE_DELAY 500L
 #define SERIAL_READ_TIMEOUT 150

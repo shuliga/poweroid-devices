@@ -13,6 +13,8 @@ Cu cu{
                   "set_dht",
                   "get_state_",
                   "disarm_state_",
+                  "set_token",
+                  "pass_token",
                   "get_prop_",
                   "get_bin_prop_",
                   "set_bin_prop_",

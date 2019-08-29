@@ -51,6 +51,7 @@ void Persistence::begin() {
         loadProperties(props);
     }
     PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
+    COM_TOKEN = EEPROM.read(TOKEN_OFFSET);
     if (PWR_FLAGS > FLAGS_MAX) {
         PWR_FLAGS = 0;
     }
@@ -104,6 +105,10 @@ void Persistence::storeState(uint8_t id, bool state) {
                  static_cast<uint8_t>(state ? EEPROM.read(STATES_OFFSET) | (1 << id) : EEPROM.read(STATES_OFFSET) & ~(1 << id)));
 }
 
-void Persistence::storeFLags() {
+void Persistence::storeFlags() {
     EEPROM.write(FLAGS_OFFSET, PWR_FLAGS);
+}
+
+void Persistence::storeToken() {
+    EEPROM.write(TOKEN_OFFSET, COM_TOKEN);
 }

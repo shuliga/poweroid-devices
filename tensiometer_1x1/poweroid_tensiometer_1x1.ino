@@ -1,5 +1,5 @@
 
-#define ID "PWR-PMS-32"
+#define ID "PWR-TM-11"
 
 #include <SoftwareSerial.h>
 #include <Wire.h>

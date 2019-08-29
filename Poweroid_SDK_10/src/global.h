@@ -38,5 +38,6 @@ typedef struct {
 EXTERN char BUFF[BUFF_SIZE];
 EXTERN banner BANNER;
 EXTERN uint8_t PWR_FLAGS;
+EXTERN uint8_t COM_TOKEN;
 
 #endif //GLOBAL_H

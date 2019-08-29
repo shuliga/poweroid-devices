@@ -17,9 +17,9 @@ unsigned long SBY_MILLS = 0L;
 TimingState FLASH(750L);
 TimingState FLASH_ALARM(250L);
 
-#define IND IND_3
+#define IND IND_1
 
-MultiClick btn = MultiClick(IN3_PIN);
+MultiClick btn = MultiClick(IN1_PIN);
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
                       PROPS.DEFAULT_PROPERTY);
