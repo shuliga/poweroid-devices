@@ -42,7 +42,6 @@ void processSensors() {
 }
 
 void fillBanner() {
-    processSensors();
     if (state_valve == SP_ALARM_SHUT) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
@@ -62,15 +61,15 @@ void run_state_power() {
     switch (state_valve) {
         case SV_READY: {
             if (pressure < pressure_min) {
-                prev_state_power = SV_READY;
+                prev_state_valve = SV_READY;
                 state_valve = SV_OPEN;
                 timings.fill_time.reset();
             }
             break;
         }
         case SV_OPEN: {
-            prev_state_power = SV_OPEN;
             if (timings.fill_time.isTimeAfter(true)) {
+                prev_state_valve = SV_OPEN;
                 if (pressure < pressure_min) {
                     state_valve = SP_OPEN_ALARM;
                     timings.alarm_time.reset();
@@ -79,6 +78,7 @@ void run_state_power() {
                 }
             } else {
                 if (pressure > pressure_max) {
+                    prev_state_valve = SV_OPEN;
                     state_valve = SV_READY;
                     timings.alarm_time.reset();
                 }
@@ -86,30 +86,31 @@ void run_state_power() {
             break;
         }
         case SP_OPEN_ALARM: {
-            prev_state_power = SP_OPEN_ALARM;
             if (pressure >= pressure_min) {
+                prev_state_valve = SP_OPEN_ALARM;
                 state_valve = SV_OPEN;
                 timings.fill_time.reset();
             } else {
                 if (timings.alarm_time.isTimeAfter(true)) {
+                    prev_state_valve = SP_OPEN_ALARM;
                     state_valve = SP_ALARM_SHUT;
                 }
             }
             break;
         }
         case SP_ALARM_SHUT: {
-            prev_state_power = SP_ALARM_SHUT;
             if (pressure >= pressure_min) {
+                prev_state_valve = SP_ALARM_SHUT;
                 state_valve = SV_READY;
             }
             break;
         }
         case SV_DISARM: {
-            prev_state_power = SV_DISARM;
+            prev_state_valve = SV_DISARM;
             break;
         }
     }
-    CMD.printChangedState(prev_state_power, state_valve, 0);
+    CMD.printChangedState(prev_state_valve, state_valve, 0);
 }
 
 void setup() {
@@ -119,6 +120,8 @@ void setup() {
 void loop() {
 
     apply_timings();
+
+    processSensors();
 
     PWR.run();
 

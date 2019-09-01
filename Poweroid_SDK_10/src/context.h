@@ -20,9 +20,8 @@ typedef struct RunState {
 
 extern uint8_t state_count;
 
-RunState *getState(uint8_t i);
 void disarmState(uint8_t i, bool _disarm);
-const char * printState(uint8_t i);
+RunState *getState(uint8_t i);
 
 typedef struct Context {
     Context(const char *_signature, const char *_version, Property *_factory_props, const uint8_t _props_size,
@@ -58,6 +57,9 @@ typedef struct Context {
         return !remote || !passive;
     }
 
+    boolean canInteract(){
+        return !TOKEN_ENABLE || hasToken;
+    }
 };
 
 #endif //POWEROID_10_CONTEXT_H

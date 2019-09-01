@@ -92,7 +92,7 @@ void Controller::initDisplay() {
 void Controller::outputState(bool relays) const {
     strcpy(BUFF, relays ? (const char *) ctx->RELAYS.relStatus() : ctx->id);
     padLine(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) (ctx->remote ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0');
+    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remote ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -174,8 +174,7 @@ void Controller::process() {
 
             if (event == HOLD) {
                 bool disarm = strcmp(getState(state_idx)->state, "DISARM") != 0;
-                disarmState(state_idx, disarm);
-                cmd->disarmState(state_idx, disarm);
+                cmd->disarmStateCmd(state_idx, disarm);
                 c_state_idx = -1;
             }
 
@@ -192,7 +191,7 @@ void Controller::process() {
         case FLAG: {
             if (testControl(sleep_timer)) {
                 outputState(false);
-                outputDescr("FLAGS\0");
+                outputDescr("FLAGS\0", 1);
                 prop_max = FLAGS_MAX;
                 prop_value = PWR_FLAGS;
                 prop_min = 0;
@@ -229,7 +228,7 @@ void Controller::process() {
         case TOKEN: {
             if (firstRun()) {
                 outputState(false);
-                outputDescr("TOKEN\0");
+                outputDescr("TOKEN\0", 1);
                 prop_max = TOKEN_MAX;
                 prop_value = COM_TOKEN;
                 prop_min = 0;
@@ -463,13 +462,13 @@ void Controller::switchDisplay(boolean inverse) const {
 
 void Controller::outputPropDescr(char *_buff) {
     if (canGoToEdit()) {
-        outputDescr(_buff);
+        outputDescr(_buff, 2);
     }
 }
 
-void Controller::outputDescr(char *_buff) const {
+void Controller::outputDescr(char *_buff, uint8_t lines) const {
     oled.setTextXY(DISPLAY_BASE, 0);
-    padLine(_buff, 2, 0);
+    padLine(_buff, lines, 0);
     oled.putString(_buff);
 }
 
