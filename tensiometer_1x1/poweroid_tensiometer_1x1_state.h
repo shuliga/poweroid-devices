@@ -36,6 +36,7 @@ void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
         case 0: {
             state_valve = _disarm ? SV_DISARM : SV_READY;
+            prev_state_valve = !_disarm ? SV_DISARM : SV_READY;
             break;
         }
     }

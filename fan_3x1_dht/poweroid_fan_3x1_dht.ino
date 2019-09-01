@@ -24,7 +24,7 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
-void apply_timings() {
+void applyTimings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
     timings.delay_power.interval = (unsigned long) FAN_PROPS.FACTORY[1].runtime;
     timings.light1_standby.interval = (unsigned long) FAN_PROPS.FACTORY[2].runtime;
@@ -150,7 +150,7 @@ void setup() {
 
 void loop() {
 
-    apply_timings();
+    applyTimings();
 
     PWR.run();
 
