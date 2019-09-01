@@ -26,14 +26,14 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
-void apply_timings() {
+void applyTimings() {
     timings.fill_time.interval = (unsigned long) PROPS.FACTORY[2].runtime;
     timings.alarm_time.interval = (unsigned long) PROPS.FACTORY[3].runtime;
 }
 
-static uint16_t pressure;
-static uint16_t pressure_min;
-static uint16_t pressure_max;
+static int16_t pressure;
+static int16_t pressure_min;
+static int16_t pressure_max;
 
 void processSensors() {
     pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
@@ -57,7 +57,7 @@ void fillBanner() {
     };
 }
 
-void run_state_power() {
+void runStatePower() {
     switch (state_valve) {
         case SV_READY: {
             if (pressure < pressure_min) {
@@ -105,9 +105,8 @@ void run_state_power() {
             }
             break;
         }
-        case SV_DISARM: {
-            prev_state_valve = SV_DISARM;
-            break;
+        default: {
+                prev_state_valve = state_valve == SV_DISARM ? SV_DISARM : prev_state_valve;
         }
     }
     CMD.printChangedState(prev_state_valve, state_valve, 0);
@@ -119,13 +118,13 @@ void setup() {
 
 void loop() {
 
-    apply_timings();
-
-    processSensors();
+    applyTimings();
 
     PWR.run();
 
-    run_state_power();
+    processSensors();
+
+    runStatePower();
 
     bool power = (state_valve == SP_OPEN_ALARM || state_valve == SV_OPEN);
 

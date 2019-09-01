@@ -42,7 +42,7 @@ void processSensors(){
     pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
 }
 
-void apply_timings() {
+void applyTimings() {
     timings.alarm_pump.interval = (unsigned long) PROPS.FACTORY[3].runtime;
     timings.countdown_pump.interval = (unsigned long) PROPS.FACTORY[4].runtime;
     timings.countdown_lost_power.interval = (unsigned long) PROPS.FACTORY[5].runtime;
@@ -226,7 +226,7 @@ void setup() {
 }
 
 void loop() {
-    apply_timings();
+    applyTimings();
 
     PWR.run();
 

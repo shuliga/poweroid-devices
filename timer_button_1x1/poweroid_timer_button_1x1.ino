@@ -36,7 +36,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 
 const char * BANNER_FMT = "%02d:%02d:%02d";
 
-void apply_timings() {
+void applyTimings() {
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
                                       (unsigned long) PROPS.FACTORY[1].runtime * 60000L;
     SBY_MILLS = static_cast<unsigned long>(PROPS.FACTORY[2].runtime * 60000L);
@@ -133,7 +133,7 @@ void setup() {
 
 void loop() {
 
-    apply_timings();
+    applyTimings();
 
     PWR.run();
 
