@@ -105,9 +105,6 @@ void runStatePower() {
             }
             break;
         }
-        default: {
-                prev_state_valve = state_valve == SV_DISARM ? SV_DISARM : prev_state_valve;
-        }
     }
     CMD.printChangedState(prev_state_valve, state_valve, 0);
 }
