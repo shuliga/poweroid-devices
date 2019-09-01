@@ -32,7 +32,7 @@ private:
 
     void outputPropDescr(char * _buff);
 
-    void outputDescr(char *_buff) const;
+    void outputDescr(char *_buff, uint8_t lines) const;
 
     void outputStatus(const __FlashStringHelper *txt, const long val);
 

@@ -27,7 +27,6 @@
 #define ENC_BTN_PIN 4
 
 //Discrete signal IN pins
-#define DHT_PIN 5 //DHT sensor default pin
 #define IN1_PIN 5
 #define IN2_PIN 6
 #define IN3_PIN 7

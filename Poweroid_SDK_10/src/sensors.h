@@ -9,6 +9,8 @@
 #include "timings.h"
 
 #define DHTTYPE DHT22
+#define DHT_PIN IN1_PIN
+
 #define REMOTE_SENSORS_COUNT 3
 
 #define SEN_1 0

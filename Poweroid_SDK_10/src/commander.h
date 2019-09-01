@@ -13,7 +13,7 @@ public:
 
     void printChangedState(bool prev_state, bool state, uint8_t id);
 
-    void disarmState(uint8_t i, bool disarm);
+    void disarmStateCmd(uint8_t i, bool disarm);
 
     bool isConnected();
 
@@ -28,6 +28,11 @@ private:
     void printBinProperty(uint8_t i);
 
     static TimingState connection_check;
+
+    const char *fillStateBuff(uint8_t i);
+
+    const char *printState(uint8_t i);
+
 };
 
 #endif // COMMANDER_H

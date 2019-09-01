@@ -51,7 +51,7 @@ void Commander::listen() {
 
             }
 
-            if (!TOKEN_ENABLE || ctx->hasToken) {
+            if (ctx->canInteract()) {
 
                 castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);
 
@@ -157,20 +157,22 @@ void Commander::listen() {
                 if (cmd.startsWith(cu.cmd_str.CMD_GET_STATE)) {
                     uint8_t i = getIndex();
                     if (i < state_count) {
-                        printCmdResponse(cmd, printState(i));
+                        printCmdResponse(cmd, NULL);
+                        printState(i);
                     }
                 }
 
                 if (cmd.startsWith(cu.cmd_str.CMD_DISARM_STATE)) {
                     uint8_t i = (uint8_t) getIndex();
                     bool trigger = (bool) cmd.substring((unsigned int) getValIndex()).toInt();
-                    disarmState(i, trigger);
+                    disarmStateCmd(i, trigger);
                 }
 
 #ifndef SAVE_RAM
                 if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_STATE)) {
                     for (uint8_t i = 0; i < state_count; i++) {
-                        printCmdResponse(cmd, printState(i));
+                        printCmdResponse(cmd, NULL);
+                        printState(i);
                     }
                 }
 
@@ -228,12 +230,19 @@ bool Commander::isConnected() {
     return connected;
 }
 
-void Commander::disarmState(uint8_t i, bool disarm) {
-    ctx->PERS.storeState(i, disarm);
-    printCmdResponse(cmd, printState(i));
-}
-
-const char *printState(uint8_t i) {
+const char *Commander::fillStateBuff(uint8_t i) {
     sprintf(BUFF, STATE_FORMAT_BUFF, i, getState(i)->name, getState(i)->state);
     return BUFF;
+}
+
+const char *Commander::printState(uint8_t i) {
+    if (ctx->canInteract()){
+        Serial.println(fillStateBuff(i));
+    }
+}
+
+void Commander::disarmStateCmd(uint8_t i, bool disarm) {
+    disarmState(i, disarm);
+    ctx->PERS.storeState(i, disarm);
+    printState(i);
 }
