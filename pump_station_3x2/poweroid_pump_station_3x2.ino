@@ -49,9 +49,9 @@ void applyTimings() {
     timings.countdown_pre_power.interval = (unsigned long) PROPS.FACTORY[6].runtime;
 }
 
-void fillBanner() {
+void fillOutput() {
     processSensors();
-    if (state_power == SI_ALARM) {
+    if (state_info == SI_ALARM) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
@@ -90,21 +90,20 @@ void run_state_power(McEvent event) {
             break;
         }
         case SP_PRE_POWER: {
-            prev_state_power = SP_OFF;
             if (timings.countdown_pre_power.isTimeAfter(true)) {
                 timings.countdown_pre_power.reset();
                 if(!testPressure()){
-                    state_info = SI_ALARM;
+                    gotoStateInfo(SI_ALARM);
                     break;
                 }
-                state_power = SP_POWER;
+                gotoStatePower(SP_POWER);
             }
             if(!testLevel()){
-                state_power = SP_LOW_LEVEL;
+                gotoStatePower(SP_LOW_LEVEL);
                 break;
             }
             if (event == HOLD) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 break;
             }
             break;
@@ -113,59 +112,51 @@ void run_state_power(McEvent event) {
             if (prev_state_power == SP_OFF) {
                 timings.countdown_pump.reset();
             }
-            prev_state_power = SP_POWER;
             if (event == HOLD) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 break;
             }
             if(!testPressure()){
-                state_power = SP_LOST_POWER;
+                gotoStatePower(SP_LOST_POWER);
                 break;
             }
             if(!testLevel()){
-                state_power = SP_LOW_LEVEL;
+                gotoStatePower(SP_LOW_LEVEL);
                 break;
             }
             break;
         }
         case SP_LOST_POWER: {
-            prev_state_power = SP_LOST_POWER;
             if (timings.countdown_lost_power.isTimeAfter(true)) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 timings.countdown_lost_power.reset();
             }
             if(testPressure()){
-                state_power = SP_POWER;
-                prev_state_power = SP_LOST_POWER;
+                gotoStatePower(SP_POWER);
                 break;
             }
             if(!testLevel()){
-                state_power = SP_LOW_LEVEL;
+                gotoStatePower(SP_LOW_LEVEL);
                 break;
             }
             if (event == HOLD) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 break;
             }
             break;
         }
         case SP_LOW_LEVEL: {
             if(testLevel()){
-                state_power = SP_PRE_POWER;
+                gotoStatePower(SP_PRE_POWER);
                 break;
             }
             if (event == HOLD) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 break;
             }
             break;
         }
-        case SP_DISARM: {
-            prev_state_power = SP_DISARM;
-            break;
-        }
     }
-    CMD.printChangedState(prev_state_power, state_power, 0);
 }
 
 
@@ -182,23 +173,21 @@ void run_state_pump(McEvent event) {
             if (prev_state_pump == SPM_PUMP_1) {
                 timings.countdown_pump.reset();
             }
-            prev_state_pump = SPM_PUMP_1;
 
             if (state_info == SI_ALARM && timings.alarm_pump.countdown(true, false, false)) {
-                state_pump = SPM_PUMP_1;
+                gotoStatePump(SPM_PUMP_1);
                 break;
             }
             if (event == HOLD) {
-                state_pump = SPM_PUMP_BOTH;
+                gotoStatePump(SPM_PUMP_BOTH);
                 break;
             }
 
             break;
         }
         case SPM_PUMP_1_ONLY: {
-            prev_state_pump = SPM_PUMP_BOTH;
             if (event == CLICK ||  timings.countdown_pump.isTimeAfter(true) || state_info == SI_ALARM) {
-                state_pump = SPM_PUMP_2;
+                gotoStatePump(SPM_PUMP_2);
             }
             break;
         }
@@ -211,13 +200,18 @@ void run_state_pump(McEvent event) {
                 break;
             }
             if (event == HOLD) {
-                state_power = SP_OFF;
+                gotoStatePower(SP_OFF);
                 break;
             }
             break;
         }
     }
-    CMD.printChangedState(prev_state_pump, state_pump, 1);
+}
+
+void runPowerStates() {
+    McEvent event = btn.checkButton();
+    run_state_power(event);
+    run_state_pump(event);
 }
 
 void setup() {
@@ -226,13 +220,8 @@ void setup() {
 }
 
 void loop() {
-    applyTimings();
 
     PWR.run();
-
-    McEvent event = btn.checkButton();
-    run_state_power(event);
-    run_state_pump(event);
 
     bool powerWarning = state_power == SP_PRE_POWER || state_power == SP_LOST_POWER;
     bool power = state_power || powerWarning;

@@ -25,6 +25,7 @@ enum StateInfo {
 } state_info = SI_DISARM, prev_state_info = SI_ALARM;
 
 uint8_t state_count = 2;
+bool changedState[3] = {false, false, false};
 
 const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Info"};
 const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0LOST-POWER\0LOW_LEVEL\0PUMP 1\0PUMP 2\0PUMP 1 ONLY\0PUMP 2 ONLY\0PUMP BOTH\0PUMP ALL FAILED\0ALARM\0",};
@@ -37,13 +38,32 @@ RunState *getState(uint8_t i) {
     switch (i) {
         case 0: {offset = state_power;break;}
         case 1: {offset = state_pump;break;}
-        case 3: {offset = state_info;break;}
+        case 2: {offset = state_info;break;}
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
     run_state.state = (char *) STATE_BUFF + offset;
     return &run_state;
 }
+
+void gotoStatePower(StatePower newState) {
+    prev_state_power = state_power;
+    state_power = newState;
+    changedState[0] = true;
+}
+
+void gotoStatePump(StatePump newState) {
+    prev_state_pump = state_pump;
+    state_pump = newState;
+    changedState[1] = true;
+}
+
+void gotoStateInfo(StateInfo newState) {
+    prev_state_info = state_info;
+    state_info = newState;
+    changedState[2] = true;
+}
+
 
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {

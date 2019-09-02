@@ -23,7 +23,6 @@ void Relays::power(uint8_t i, bool _power)
 #ifndef SSERIAL
         digitalWrite(OUT_PINS[i], static_cast<uint8_t>(relay_on_low == !_power));
 #endif
-
         int8_t mappedIdx = mappings[i];
         if (mapped && mappedIdx >= 0)
         {

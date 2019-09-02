@@ -19,6 +19,7 @@ typedef struct RunState {
 };
 
 extern uint8_t state_count;
+extern bool changedState[];
 
 void disarmState(uint8_t i, bool _disarm);
 RunState *getState(uint8_t i);

@@ -11,11 +11,11 @@ public:
 
     void storeProps();
 
-    void printChangedState(bool prev_state, bool state, uint8_t id);
-
     void disarmStateCmd(uint8_t i, bool disarm);
 
     bool isConnected();
+
+    const char *printState(uint8_t i);
 
 private:
 
@@ -30,8 +30,6 @@ private:
     static TimingState connection_check;
 
     const char *fillStateBuff(uint8_t i);
-
-    const char *printState(uint8_t i);
 
 };
 

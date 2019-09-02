@@ -35,6 +35,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 const char * BANNER_FMT = "%02d:%02d:%02d";
+McEvent event;
 
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
@@ -42,9 +43,11 @@ void applyTimings() {
     SBY_MILLS = static_cast<unsigned long>(PROPS.FACTORY[2].runtime * 60000L);
 }
 
-uint16_t banner_value;
+void processSensors() {
+    event = btn.checkButton();
+}
 
-void fillBanner() {
+void fillOutput() {
     BANNER.mode=0;
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
     uint16_t totalToGo = static_cast<uint16_t>(countDown ? timings.countdown_power.millsToGo() / 1000 : 0);
@@ -124,7 +127,10 @@ void run_state_power(McEvent event) {
             break;
         }
     }
-    CMD.printChangedState(prev_state_power, state_power, 0);
+}
+
+void runPowerStates() {
+    run_state_power(event);
 }
 
 void setup() {
@@ -133,11 +139,7 @@ void setup() {
 
 void loop() {
 
-    applyTimings();
-
     PWR.run();
-
-    run_state_power(btn.checkButton());
 
     bool power = (state_power == SP_POWER || state_power == SP_POWER_END);
 

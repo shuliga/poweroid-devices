@@ -55,6 +55,9 @@ void Persistence::begin() {
     if (PWR_FLAGS > FLAGS_MAX) {
         PWR_FLAGS = 0;
     }
+    if (COM_TOKEN > TOKEN_MAX) {
+        COM_TOKEN = 0;
+    }
 }
 
 void Persistence::storeProperties(Property *props) {

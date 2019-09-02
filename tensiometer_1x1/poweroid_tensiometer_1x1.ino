@@ -26,14 +26,14 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
+static int16_t pressure;
+static int16_t pressure_min;
+static int16_t pressure_max;
+
 void applyTimings() {
     timings.fill_time.interval = (unsigned long) PROPS.FACTORY[2].runtime;
     timings.alarm_time.interval = (unsigned long) PROPS.FACTORY[3].runtime;
 }
-
-static int16_t pressure;
-static int16_t pressure_min;
-static int16_t pressure_max;
 
 void processSensors() {
     pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
@@ -41,8 +41,8 @@ void processSensors() {
     pressure_max = PROPS.FACTORY[1].runtime;
 }
 
-void fillBanner() {
-    if (state_valve == SP_ALARM_SHUT) {
+void fillOutput() {
+    if (state_power == SP_ALARM_SHUT) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
@@ -57,29 +57,26 @@ void fillBanner() {
     };
 }
 
-void runStatePower() {
-    switch (state_valve) {
+void runPowerStates() {
+    switch (state_power) {
         case SV_READY: {
             if (pressure < pressure_min) {
-                prev_state_valve = SV_READY;
-                state_valve = SV_OPEN;
+                gotoStatePower(SV_OPEN);
                 timings.fill_time.reset();
             }
             break;
         }
         case SV_OPEN: {
             if (timings.fill_time.isTimeAfter(true)) {
-                prev_state_valve = SV_OPEN;
                 if (pressure < pressure_min) {
-                    state_valve = SP_OPEN_ALARM;
+                    gotoStatePower(SP_OPEN_ALARM);
                     timings.alarm_time.reset();
                 } else {
-                    state_valve = SV_READY;
+                    gotoStatePower(SV_READY);
                 }
             } else {
                 if (pressure > pressure_max) {
-                    prev_state_valve = SV_OPEN;
-                    state_valve = SV_READY;
+                    gotoStatePower(SV_READY);
                     timings.alarm_time.reset();
                 }
             }
@@ -87,26 +84,22 @@ void runStatePower() {
         }
         case SP_OPEN_ALARM: {
             if (pressure >= pressure_min) {
-                prev_state_valve = SP_OPEN_ALARM;
-                state_valve = SV_OPEN;
+                gotoStatePower(SV_OPEN);
                 timings.fill_time.reset();
             } else {
                 if (timings.alarm_time.isTimeAfter(true)) {
-                    prev_state_valve = SP_OPEN_ALARM;
-                    state_valve = SP_ALARM_SHUT;
+                    gotoStatePower(SP_ALARM_SHUT);
                 }
             }
             break;
         }
         case SP_ALARM_SHUT: {
             if (pressure >= pressure_min) {
-                prev_state_valve = SP_ALARM_SHUT;
-                state_valve = SV_READY;
+                gotoStatePower(SV_READY);
             }
             break;
         }
     }
-    CMD.printChangedState(prev_state_valve, state_valve, 0);
 }
 
 void setup() {
@@ -115,15 +108,9 @@ void setup() {
 
 void loop() {
 
-    applyTimings();
-
     PWR.run();
 
-    processSensors();
-
-    runStatePower();
-
-    bool power = (state_valve == SP_OPEN_ALARM || state_valve == SV_OPEN);
+    bool power = (state_power == SP_OPEN_ALARM || state_power == SV_OPEN);
 
     PWR.power(REL_A, power);
 

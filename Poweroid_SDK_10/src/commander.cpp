@@ -207,12 +207,6 @@ void Commander::storeProps() {
     ctx->PERS.storeProperties(ctx->PROPERTIES);
 }
 
-void Commander::printChangedState(bool prev_state, bool state, uint8_t id) {
-    if (prev_state != state) {
-        printState(id);
-    }
-}
-
 bool Commander::isConnected() {
     if (connection_check.isTimeAfter(true)) {
         sprintf(BUFF, "%s,%i,%i, %i, %s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,

@@ -14,6 +14,7 @@ enum StatePower {
 } state_power = SP_OFF, prev_state_power = SP_DISARM;
 
 uint8_t state_count = 1;
+bool changedState[1] = {false};
 
 const char *STATE_NAME_BUFF[] = {"Power"};
 const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0POWER-SBY\0POWER-END\0"}; // OFFSETS:0,7,11,17,27
@@ -29,6 +30,12 @@ RunState *getState(uint8_t i) {
     run_state.name = (char *) STATE_NAME_BUFF[i];
     run_state.state = (char *) STATE_BUFF + offset;
     return &run_state;
+}
+
+void gotoStatePower(StatePower newState) {
+    prev_state_power = state_power;
+    state_power = newState;
+    changedState[0] = true;
 }
 
 void disarmState(uint8_t i, bool _disarm) {

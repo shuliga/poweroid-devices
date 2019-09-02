@@ -1,8 +1,9 @@
 #ifndef FAN_STATE_H
 #define FAN_STATE_H
 
-#include "commons.h"
-#include "timings.h"
+#include <../Poweroid_SDK_10/src/commons.h>
+#include <../Poweroid_SDK_10/src/context.h>
+#include <../Poweroid_SDK_10/src/timings.h>
 
 typedef struct Timings {
     TimingState debounce_delay, countdown_power, delay_power, light1_standby, humidity_delay, humidity_runtime, temperature_delay;
@@ -21,6 +22,7 @@ enum StateTemp {
 } state_temp = ST_OFF, prev_state_temp = ST_DISARM;
 
 uint8_t state_count = 3;
+bool changedState[3] = {false, false, false};
 
 const char *STATE_NAME_BUFF[] = {"Lightning", "Humidity", "Temperature"};
 const char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
@@ -39,6 +41,27 @@ RunState *getState(uint8_t i) {
     run_state.state = (char *) STATE_BUFF + offset;
     return &run_state;
 }
+
+
+void gotoStateLight(StateLight newState) {
+    prev_state_light = state_light;
+    state_light = newState;
+    changedState[0] = true;
+}
+
+void gotoStateHumid(StateHumid newState) {
+    prev_state_humid = state_humid;
+    state_humid = newState;
+    changedState[1] = true;
+}
+
+void gotoStateTemp(StateTemp newState) {
+    prev_state_temp = state_temp;
+    state_temp = newState;
+    changedState[2] = true;
+}
+
+
 
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
