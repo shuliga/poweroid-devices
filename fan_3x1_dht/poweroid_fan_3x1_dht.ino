@@ -24,6 +24,12 @@ Pwr PWR(CTX, &CMD, &CTRL, &BT);
 Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
+bool light1;
+bool light2;
+bool humidity;
+bool temperature;
+
+
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
     timings.delay_power.interval = (unsigned long) FAN_PROPS.FACTORY[1].runtime;
@@ -33,7 +39,7 @@ void applyTimings() {
     timings.temperature_delay.interval = (unsigned long) FAN_PROPS.FACTORY[7].runtime;
 }
 
-void fillBanner() {
+void fillOutput() {
     BANNER.mode = 0;
     strcpy(BANNER.data.text, PWR.SENS->printDht());
 }
@@ -41,107 +47,96 @@ void fillBanner() {
 void run_state_light(bool light) {
     switch (state_light) {
         case SL_OFF: {
-            prev_state_light = SL_OFF;
             if (timings.light1_standby.isTimeAfter(light)) {
-                state_light = AL;
+                gotoStateLight(AL);
             }
             break;
         }
         case AL: {
-            prev_state_light =  AL;
             if (timings.delay_power.isTimeAfter(!light)) {
                 timings.countdown_power.reset();
-                state_light = SL_POWER;
+                gotoStateLight(SL_POWER);
             }
             break;
         }
         case SL_POWER: {
             bool firstRun = prev_state_light != SL_POWER;
-            prev_state_light = SL_POWER;
             if (timings.countdown_power.countdown(firstRun, false, false)) {
                 if (timings.debounce_delay.isTimeAfter(light)) {
-                    state_light = SL_POWER_SBY;
+                    gotoStateLight(SL_POWER_SBY);
                 }
 
             } else {
                 timings.countdown_power.reset();
-                state_light = SL_OFF;
+                gotoStateLight(SL_OFF);
             }
             break;
         }
         case SL_POWER_SBY: {
             bool firstRun = prev_state_light != SL_POWER_SBY;
-            prev_state_light = SL_POWER_SBY;
             if (timings.countdown_power.countdown(false, true, false)) {
                 if (timings.debounce_delay.isTimeAfter(!light)) {
-                    state_light = SL_POWER;
+                    gotoStateLight(SL_POWER);
                 }
                 if (firstRun) {
                     timings.light1_standby.reset();
                 }
                 if (timings.light1_standby.isTimeAfter(light)) {
-                    state_light = AL;
+                    gotoStateLight(AL);
                 }
             }
             break;
         }
-        case SL_DISARM: {
-            prev_state_light = SL_DISARM;
-            break;
-        }
-
     }
-    CMD.printChangedState(prev_state_light, state_light, 0);
 }
 
 void run_state_humid(bool humidity) {
     switch (state_humid) {
         case SH_OFF: {
-            prev_state_humid = SH_OFF;
-            if (humidity) state_humid = AH;
+            if (humidity) gotoStateHumid(AH);
             break;
         }
         case AH: {
-            prev_state_humid = AH;
-            if (timings.humidity_delay.isTimeAfter(humidity)) state_humid =  SH_POWER;
-            if (!humidity) state_humid = SH_OFF;
+            if (timings.humidity_delay.isTimeAfter(humidity)) gotoStateHumid(SH_POWER);
+            if (!humidity) gotoStateHumid(SH_OFF);
             break;
         }
         case SH_POWER: {
             bool firstRun = prev_state_humid != SH_POWER;
-            prev_state_humid = SH_POWER;
             if (!timings.humidity_runtime.countdown(firstRun, false, !humidity)) {
                 timings.humidity_runtime.reset();
-                state_humid = SH_OFF;
+                gotoStateHumid(SH_OFF);
             }
             break;
         }
-        case SH_DISARM: {
-            prev_state_humid = SH_DISARM;
-            break;
-        }
     }
-    CMD.printChangedState(prev_state_humid, state_humid, 1);
 }
 
 void run_state_temp(bool temperature) {
     switch (state_temp) {
         case ST_OFF: {
-            prev_state_temp = ST_OFF;
-            if (timings.temperature_delay.isTimeAfter(temperature))state_temp = ST_POWER;
+            if (timings.temperature_delay.isTimeAfter(temperature))gotoStateTemp(ST_POWER);
             break;
         }
         case ST_POWER: {
-            prev_state_temp = ST_POWER;
-            if (timings.temperature_delay.isTimeAfter(!temperature)) state_temp =  ST_OFF;
-            break;
-        }
-        case ST_DISARM: {
-            prev_state_temp = ST_DISARM;
+            if (timings.temperature_delay.isTimeAfter(!temperature)) gotoStateTemp(ST_OFF);
             break;
         }
     }
-    CMD.printChangedState(prev_state_temp, state_temp, 2);
+}
+
+void processSensors() {
+    light1 = PWR.SENS->isSensorOn(1);
+    light2 = PWR.SENS->isSensorOn(2);
+    humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
+    temperature = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
+}
+
+void runPowerStates(){
+    run_state_light(light1 || light2);
+    run_state_humid(humidity);
+    run_state_temp(temperature);
+
 }
 
 void setup() {
@@ -150,18 +145,7 @@ void setup() {
 
 void loop() {
 
-    applyTimings();
-
     PWR.run();
-
-    bool light1 = PWR.SENS->isSensorOn(1);
-    bool light2 = PWR.SENS->isSensorOn(2);
-    bool humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
-    bool temperature = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
-
-    run_state_light(light1 || light2);
-    run_state_humid(humidity);
-    run_state_temp(temperature);
 
     bool fan_power = (state_light == SL_POWER || state_humid == SH_POWER) &&
                      (state_light != SL_POWER_SBY && state_light != AL);

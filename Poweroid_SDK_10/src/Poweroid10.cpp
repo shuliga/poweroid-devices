@@ -65,16 +65,22 @@ void Pwr::begin() {
 }
 
 void Pwr::run() {
+
+    applyTimings();
+
 #ifdef WATCH_DOG
     wdt_reset();
 #endif
 #ifdef DEBUG
     initTimer();
 #endif
+
     bool newConnected = false;
     bool updateConnected = false;
 
     SENS->process();
+
+    processSensors();
 
     if (CMD) {
         CMD->listen();
@@ -89,7 +95,7 @@ void Pwr::run() {
 
     count++;
     if (CTX->canAccessLocally() && count % 3276  == 0){
-        fillBanner();
+        fillOutput();
     }
 
 #ifndef NO_CONTROLLER
@@ -105,6 +111,12 @@ void Pwr::run() {
         writeLog('I', SIGNATURE, 100 + CTX->passive, (unsigned long)0);
         firstRun = false;
     }
+
+    runPowerStates();
+
+    printChangedStates();
+
+
 #ifdef DEBUG
     cli();
     TCCR1B &= ~((1 << CS12) | (1 << CS10));
@@ -114,7 +126,9 @@ void Pwr::run() {
 }
 
 void Pwr::printVersion() {
-    Serial.println(CTX->version);
+    if (CTX->canInteract()){
+        Serial.println(CTX->version);
+    }
 }
 
 void Pwr::initPins() {
@@ -153,6 +167,17 @@ void Pwr::power(uint8_t i, bool power) {
         REL->power(i, power);
     }
 }
+
+void Pwr::printChangedStates() {
+    for(uint8_t i = 0; i < state_count; i++){
+        if (changedState[i]) {
+            CMD->printState(i);
+            changedState[i] = false;
+        }
+    }
+}
+
+
 
 #ifdef DEBUG
 

@@ -29,7 +29,10 @@
 const char SIGNATURE[] = "PWR";
 
 
-extern void fillBanner();
+extern void applyTimings();
+extern void fillOutput();
+extern void processSensors();
+extern void runPowerStates();
 
 const int DEFAULT_BAUD = 9600;
 
@@ -58,6 +61,8 @@ private:
     bool firstRun = true;
 
     void initPins();
+
+    void printChangedStates();
 
     void loadDisarmedStates();
 

@@ -10,7 +10,10 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME pump_station_3x2)
 
+### Atmega1284p
 #set(BOARD uno_pro)
+
+### Atmega328p
 set(BOARD pro)
 
 project(${DEVICE_NAME}_${BOARD})
