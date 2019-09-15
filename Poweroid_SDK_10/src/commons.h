@@ -14,6 +14,10 @@
 //#define SPI
 //#define SAVE_RAM
 
+#ifndef SAVE_RAM
+    #define ALLOW_TOKEN
+#endif
+
 //#define DEBUG
 //#define WATCH_DOG
 

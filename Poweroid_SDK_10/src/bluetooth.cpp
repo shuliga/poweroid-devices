@@ -29,6 +29,7 @@ void Bt::begin() {
             if (ver.startsWith(BT_VER_06)) {
                 execCommand(F("AT+NAME"), name, false);
             }
+            host = true;
         } else {
             Serial.begin(HC_05_AT_BAUD);
 //
@@ -43,6 +44,7 @@ void Bt::begin() {
 //                applyBt05();
 //            }
         }
+        remote_on = true;
         Serial.end();
         Serial.begin(HIGH_SPEED_BAUD);
     } else {

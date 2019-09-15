@@ -5,16 +5,18 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 #set(CMAKE_RULE_MESSAGES OFF)
 
 #set(DEVICE_NAME test_bt)
-#set(DEVICE_NAME timer_button_1x1)
+set(DEVICE_NAME timer_button_1x1)
 #set(DEVICE_NAME fan_3x1_dht)
-set(DEVICE_NAME tensiometer_1x1)
+#set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME pump_station_3x2)
 
 ### Atmega1284p
-#set(BOARD uno_pro)
+### Fuses: (E:FC, H:DE, L:FF)
+set(BOARD uno_pro)
 
 ### Atmega328p
-set(BOARD pro)
+### Fuses: (E:FC, H:DC, L:FF)
+#set(BOARD pro)
 
 project(${DEVICE_NAME}_${BOARD})
 
@@ -30,16 +32,13 @@ set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
 #find_library(MC_LIB "${BOARD}_MultiClick" PATHS "${SDK_BUILD_PATH}" NO_DEFAULT_PATH)
 add_subdirectory(${SDK_NAME})
 
-### Fuses: (E:FC, H:DE, L:FF)
 #### Uncomment below additional settings as needed.
 set(${CMAKE_PROJECT_NAME}_PORT COM3)
 set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
-# set(pro.build.mcu atmega2560)
-# set(pro.upload.protocol wiring)
-set(pro.upload.speed 115200)
-
 file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
 file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
+
+print_board_settings(${BOARD})
 
 #set(LIB_HRDS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib)
 #set(SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src)
