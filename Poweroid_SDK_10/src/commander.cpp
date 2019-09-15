@@ -37,6 +37,9 @@ void Commander::listen() {
 #ifndef SPI
             digitalWrite(LED_PIN, HIGH);
 #endif
+
+#ifdef ALLOW_TOKEN
+
             if (TOKEN_ENABLE && cmd.startsWith(cu.cmd_str.CMD_SET_TOKEN)) {
                 printCmdResponse(cmd, NULL);
                 COM_TOKEN = cmd.substring((unsigned int) getValIndex()).toInt();
@@ -50,7 +53,7 @@ void Commander::listen() {
                 }
 
             }
-
+#endif
             if (ctx->canInteract()) {
 
                 castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);
@@ -209,7 +212,7 @@ void Commander::storeProps() {
 
 bool Commander::isConnected() {
     if (connection_check.isTimeAfter(true)) {
-        sprintf(BUFF, "%s,%i,%i, %i, %s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
+        sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
                 BANNER.data.text);
         printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
         connected = ctx->peerFound;

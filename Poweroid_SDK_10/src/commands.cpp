@@ -13,8 +13,10 @@ Cu cu{
                   "set_dht",
                   "get_state_",
                   "disarm_state_",
+#ifdef ALLOW_TOKEN
                   "set_token",
                   "pass_token",
+#endif
                   "get_prop_",
                   "get_bin_prop_",
                   "set_bin_prop_",
