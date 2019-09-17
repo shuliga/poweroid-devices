@@ -211,18 +211,22 @@ void Commander::storeProps() {
 }
 
 bool Commander::isConnected() {
-    if (connection_check.isTimeAfter(true)) {
-        sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
-                BANNER.data.text);
-        printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
-        connected = ctx->peerFound;
-        ctx->peerFound = false;
-        connection_check.reset();
+    if (ctx->canInteract()){
+        if (connection_check.isTimeAfter(true)) {
+            sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
+                    BANNER.data.text);
+            printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
+            connected = TOKEN_ENABLE ? true : ctx->peerFound;
+            ctx->peerFound = false;
+            connection_check.reset();
 #ifdef DEBUG
-        if (ctx->passive && !connected) {
+            if (ctx->passive && !connected) {
             writeLog('W', ORIGIN, 410);
         }
 #endif
+        }
+    } else {
+        connected = false;
     }
     return connected;
 }

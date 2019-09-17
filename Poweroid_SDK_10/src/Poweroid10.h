@@ -5,12 +5,17 @@
 
 
 #ifndef DHT_PIN
-    #define DHTPIN 5
+    #define DHT_PIN 5
 #endif
 #ifndef ENC_BTN_PIN
     #define ENC_BTN_PIN 7
 #endif
 
+#if defined(__AVR_ATmega1284P__)
+#define HZ_TIMER_CONST 19530  // 65536 - 19530; // 20000000L / 1024 / FRQ - 1; // set timer value 20MHz/1024/1Hz-1
+#else
+#define HZ_TIMER_CONST 15624  // 65536 - 15624; // 16000000L / 1024 / FRQ - 1; // set timer value 16MHz/1024/1Hz-1
+#endif
 
 #include "commons.h"
 #include "context.h"

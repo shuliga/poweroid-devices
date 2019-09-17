@@ -12,11 +12,11 @@ set(DEVICE_NAME timer_button_1x1)
 
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-set(BOARD uno_pro)
+#set(BOARD uno_pro)
 
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-#set(BOARD pro)
+set(BOARD pro)
 
 project(${DEVICE_NAME}_${BOARD})
 

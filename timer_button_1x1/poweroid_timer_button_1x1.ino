@@ -5,8 +5,8 @@
 #include <Wire.h>
 #include <../Poweroid_SDK_10/src/global.h>
 #include <../Poweroid_SDK_10/src/Poweroid10.h>
-#include "poweroid_timer_button_1x1_state.h"
-#include "poweroid_timer_button_1x1_prop.h"
+#include <poweroid_timer_button_1x1_state.h>
+#include <poweroid_timer_button_1x1_prop.h>
 #include <../Poweroid_SDK_10/src//ultrasonic.h>
 #include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 #include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
@@ -58,7 +58,7 @@ void fillOutput() {
     if (countDown){
         sprintf(BANNER.data.text, BANNER_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        BANNER.data.text[0] = 0;
+        sprintf(BANNER.data.text, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, true), RTC.get(DS1307_SEC, true));
     };
 }
 
@@ -134,6 +134,7 @@ void runPowerStates() {
 }
 
 void setup() {
+    RTC.start();
     PWR.begin();
 }
 
