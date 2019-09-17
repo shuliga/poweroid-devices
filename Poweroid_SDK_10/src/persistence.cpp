@@ -95,6 +95,7 @@ void Persistence::checkFactoryReset(Property *props) {
         storeProperties(props);
         EEPROM.write(STATES_OFFSET, 0); // Clear state DISARM flags
         EEPROM.write(FLAGS_OFFSET, 0); // Clear PWR_FLAGS
+        EEPROM.write(TOKEN_OFFSET, 0); // Clear Token
     }
 #endif
 }
