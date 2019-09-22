@@ -2,27 +2,48 @@
 #include <DS1307/DS1307.h>
 #include "Poweroid10.h"
 
-volatile uint16_t oneHzCounter = 0;
-uint16_t currentCounter = 0;
-bool oneHzFlag = false;
+volatile uint8_t timerCounter = 0;
+uint8_t pastTimerCounter = 0;
 
-void initOneHzTimer() {
+uint8_t timerFlags;
+uint8_t timerCounter_1Hz;
+uint8_t timerCounter_4Hz;
+
+void initTimer1() {
     cli();
+
     TCCR1A = 0;
     TCCR1B = 0;
 
-    OCR1A = HZ_TIMER_CONST;
+    OCR1A = CONST_4_HZ_TIMER;
 
     TCCR1B |= (1 << WGM12);                 // turn on CTC mode. clear timer on compare match
-    TCCR1B |= (1 << CS12) | (1 << CS10);    // 1024 pre-scaler
+    TCCR1B |= TIMER_PRESCALER;              // pre-scaler
     TIMSK1 |= (1 << OCIE1A);                // enable timer compare interrupt
 
-#ifdef DEBUG
-    TCCR1B &= ~((1 << CS12) | (1 << CS10));
-    TIMSK1 &= ~(1 << OCIE1A); // disable timer overflow interrupt
-#endif
-
     sei();
+
+}
+
+void setTimerFlags(){
+    if (timerCounter != pastTimerCounter){
+        for(uint8_t i = 0; i < TIMERS_COUNT; i++){
+            timerFlags = timerCounter % (1U << i ) == 0 ? timerFlags | 1U << i : timerFlags;
+        }
+        pastTimerCounter = timerCounter;
+    }
+}
+
+void setFlashCounters(){
+    if (test_timer(TIMER_1HZ)){
+        timerCounter_1Hz++;
+        timerCounter_1Hz = timerCounter_1Hz >= TIMERS_FLASH_COUNTS ? 0 : timerCounter_1Hz;
+    }
+
+    if (test_timer(TIMER_4HZ)){
+        timerCounter_4Hz++;
+        timerCounter_4Hz = timerCounter_4Hz >= TIMERS_FLASH_COUNTS ? 0 : timerCounter_4Hz;
+    }
 
 }
 
@@ -58,6 +79,7 @@ void Pwr::begin() {
 #ifdef WATCH_DOG
     wdt_enable(WDTO_8S);
 #endif
+
     SENS->initSensors(!CTX->passive);
 
     loadDisarmedStates();
@@ -67,7 +89,8 @@ void Pwr::begin() {
 #ifdef DEBUG
     writeLog('I', "PWR", 200 + CTX->passive, (unsigned long)0);
 #endif
-#ifdef WATCH_DOG
+
+    #ifdef WATCH_DOG
     wdt_enable(WDTO_2S);
 #endif
 
@@ -79,19 +102,18 @@ void Pwr::begin() {
 
     Serial.setTimeout(SERIAL_READ_TIMEOUT);
 
+    initTimer1();
 }
 
 void Pwr::run() {
 
-    oneHzFlag = oneHzCounter != currentCounter;
-    currentCounter = oneHzFlag ? oneHzCounter : currentCounter;
-
+    setTimerFlags();
+    setFlashCounters();
     applyTimings();
 
 #ifdef WATCH_DOG
     wdt_reset();
 #endif
-    initOneHzTimer();
 
     bool newConnected = false;
     bool updateConnected = false;
@@ -111,7 +133,7 @@ void Pwr::run() {
         CTX->connected = newConnected;
     }
 
-    if (CTX->canAccessLocally() && oneHzFlag){
+    if (CTX->canAccessLocally() && test_timer(TIMER_1HZ)){
         fillOutput();
     }
 
@@ -135,7 +157,7 @@ void Pwr::run() {
 
     printChangedStates();
 
-    oneHzFlag = false;
+    timerFlags = 0;
 }
 
 void Pwr::printVersion() {
@@ -191,5 +213,6 @@ void Pwr::printChangedStates() {
 }
 
 ISR(TIMER1_COMPA_vect) {
-    oneHzCounter ++;
+    timerCounter++;
+    timerCounter = timerCounter > TIMER_COUNTER_MAX ? 0 : timerCounter;
 }
