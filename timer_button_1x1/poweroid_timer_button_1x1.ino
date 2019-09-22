@@ -14,8 +14,6 @@
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
-TimingState FLASH(750L);
-TimingState FLASH_ALARM(250L);
 
 #define IND IND_1
 
@@ -151,12 +149,12 @@ void loop() {
         if (state_power == SP_POWER) {
             INDICATORS.set(IND, true);
         } else {
-            INDICATORS.flash(IND, &FLASH, true);
+            INDICATORS.flash(IND, !flash_accent(timerCounter_1Hz), true);
         }
 
     } else {
         if (state_power == SP_POWER_SBY) {
-            INDICATORS.flash(IND, &FLASH_ALARM, true);
+            INDICATORS.flash(IND, !flash_accent(timerCounter_4Hz), true);
         } else {
             INDICATORS.set(IND, false);
         }

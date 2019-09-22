@@ -124,6 +124,7 @@ void DS1307::stop(void)
 {
 	// set the ClockHalt bit high to stop the rtc
 	// this bit is part of the seconds byte
+    read();
     rtc_bcd[DS1307_SEC]=rtc_bcd[DS1307_SEC] | DS1307_CLOCKHALT;
     save();
 }
@@ -131,7 +132,7 @@ void DS1307::stop(void)
 void DS1307::start(void)
 {
 	// unset the ClockHalt bit to start the rtc
-	// TODO : preserve existing seconds
+    read();
     rtc_bcd[DS1307_SEC]=rtc_bcd[DS1307_SEC] & (~DS1307_CLOCKHALT);
 	save();
 }

@@ -19,6 +19,6 @@ void Indicators::set(uint8_t i, bool on) {
     digitalWrite(INDICATOR_PINS[i], on ? HIGH : LOW);
 }
 
-void Indicators::flash(uint8_t i, TimingState *ts, bool trigger) {
-    digitalWrite(INDICATOR_PINS[i], trigger ? (ts->flash() ? HIGH : LOW) : LOW);
+void Indicators::flash(uint8_t i, bool flash, bool trigger) {
+    digitalWrite(INDICATOR_PINS[i], trigger ? (flash ? HIGH : LOW) : LOW);
 }

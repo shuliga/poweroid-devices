@@ -20,7 +20,7 @@ public:
 
     void init();
     void set(uint8_t i, bool on);
-    void flash(uint8_t i, TimingState *ts, bool trigger);
+    void flash(uint8_t i, bool flash, bool trigger);
 };
 
 extern Indicators INDICATORS;
