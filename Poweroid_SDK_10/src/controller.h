@@ -54,9 +54,9 @@ private:
 
     void copyProperty(Property &prop, uint8_t idx) const;
 
-    static void padLine(char *_buff, uint8_t lines, uint8_t tail);
+    static void padLineInBuff(char *_buff, uint8_t lines, uint8_t tail);
 
-    void padLineCentered(char *_buff);
+    void padLineCenteredInBuff(char *_buff);
 
     void outputState(bool relays) const;
 

@@ -15,6 +15,13 @@
 #define BUFF_SIZE 65
 #define LINE_SIZE 16
 
+#ifdef CONTROLLER_ONLY
+#define FLAGS_DEFAULT 2
+#endif
+
+#ifndef FLAGS_DEFAULT
+#define FLAGS_DEFAULT 0
+#endif
 
 typedef struct {
     int16_t val;

@@ -7,17 +7,20 @@
 #include <../Poweroid_SDK_10/src/Poweroid10.h>
 #include <poweroid_timer_button_1x1_state.h>
 #include <poweroid_timer_button_1x1_prop.h>
-#include <../Poweroid_SDK_10/src//ultrasonic.h>
+#include <../Poweroid_SDK_10/src/ultrasonic.h>
 #include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
-#include <../Poweroid_SDK_10/lib/DS1307/DS1307.h>
+#include <../Poweroid_SDK_10/src/datetime.h>
 
+#define IND IND_3
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
 
-#define IND IND_1
+MultiClick btn(IN3_PIN);
 
-MultiClick btn = MultiClick(IN1_PIN);
+#ifndef CONTROLLER_ONLY
+DateTime DT;
+#endif
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
                       PROPS.DEFAULT_PROPERTY);
@@ -26,13 +29,16 @@ Commander CMD(CTX);
 Bt BT(CTX.id);
 
 #ifndef NO_CONTROLLER
+
 Controller CTRL(CTX, CMD);
 Pwr PWR(CTX, &CMD, &CTRL, &BT);
+
 #else
+
 Pwr PWR(CTX, &CMD, NULL, &BT);
+
 #endif
 
-const char * BANNER_FMT = "%02d:%02d:%02d";
 McEvent event;
 
 void applyTimings() {
@@ -54,9 +60,13 @@ void fillOutput() {
     uint8_t minToGo = static_cast<uint8_t>(secToGoM / 60);
     uint8_t secToGo = static_cast<uint8_t>(secToGoM - (minToGo * 60));
     if (countDown){
-        sprintf(BANNER.data.text, BANNER_FMT , hrsToGo, minToGo, secToGo);
+        sprintf(BANNER.data.text, TIME_FMT , hrsToGo, minToGo, secToGo);
     } else {
-        sprintf(BANNER.data.text, BANNER_FMT, RTC.get(DS1307_HR, true), RTC.get(DS1307_MIN, true), RTC.get(DS1307_SEC, true));
+#ifdef CONTROLLER_ONLY
+        strcpy(BANNER.data.text, NO_INFO_STR);
+#else
+        DT.getTimeString(BANNER.data.text);
+#endif
     };
 }
 
@@ -132,7 +142,6 @@ void runPowerStates() {
 }
 
 void setup() {
-    RTC.start();
     PWR.begin();
 }
 

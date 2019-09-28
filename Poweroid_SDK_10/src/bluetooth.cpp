@@ -25,10 +25,13 @@ void Bt::begin() {
         if(REMOTE_SERVER){
             Serial.begin(LOW_SPEED ? LOW_SPEED_BAUD : HC_06_BAUD);
 
-            String ver = execCommand(F("AT+VERSION"), 0, false);
-            if (ver.startsWith(BT_VER_06)) {
-                execCommand(F("AT+NAME"), name, false);
+            if(!TOKEN_ENABLE){
+                String ver = execCommand(F("AT+VERSION"), 0, false);
+                if (ver.startsWith(BT_VER_06)) {
+                    execCommand(F("AT+NAME"), name, false);
+                }
             }
+
             host = true;
         } else {
             Serial.begin(HC_05_AT_BAUD);

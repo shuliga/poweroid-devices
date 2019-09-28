@@ -1,5 +1,4 @@
 #include <avr/wdt.h>
-#include <DS1307/DS1307.h>
 #include "Poweroid10.h"
 
 volatile uint8_t timerCounter = 0;
@@ -64,7 +63,7 @@ void Pwr::begin() {
     if (BT) {
         BT->begin();
         CTX->passive = !BT->host;
-        CTX->remote = BT->remote_on;
+        CTX->remoteMode = BT->remote_on;
     }
 
     initPins();
@@ -126,7 +125,7 @@ void Pwr::run() {
         CMD->listen();
     }
 
-    if (BT && CTX->remote) {
+    if (BT && CTX->remoteMode) {
         newConnected = CMD->isConnected();
         updateConnected = newConnected != CTX->connected;
         CTX->refreshState = CTX->refreshState || updateConnected;
@@ -143,7 +142,7 @@ void Pwr::run() {
     }
 #endif
 
-    if (updateConnected && newConnected) {
+    if (updateConnected && newConnected && CTX->canInteract()) {
         REL->castMappedRelays();
     }
     if (firstRun) {
@@ -153,7 +152,9 @@ void Pwr::run() {
         firstRun = false;
     }
 
+#ifndef CONTROLLER_ONLY
     runPowerStates();
+#endif
 
     printChangedStates();
 

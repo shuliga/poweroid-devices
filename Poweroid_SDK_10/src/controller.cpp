@@ -91,8 +91,8 @@ void Controller::initDisplay() {
 
 void Controller::outputState(bool relays) const {
     strcpy(BUFF, relays ? (const char *) ctx->RELAYS.relStatus() : ctx->id);
-    padLine(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remote ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
+    padLineInBuff(BUFF, 1, 0);
+    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remoteMode ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -140,6 +140,8 @@ void Controller::process() {
             bool prop_id_changed = c_prop_idx != prop_idx;
 
             if (testControl(sleep_timer) || prop_id_changed || ctx->refreshProps || ctx->refreshState) {
+                outputState(true);
+                outputDescr("", 2);
                 if (loadProperty(prop_idx)) {
                     outputPropDescr(BUFF);
                     outputPropVal(prop_measure, (int16_t) prop_value, false, true);
@@ -191,7 +193,7 @@ void Controller::process() {
         case FLAG: {
             if (testControl(sleep_timer)) {
                 outputState(false);
-                outputDescr("FLAGS\0", 1);
+                outputDescr("FLAGS", 1);
                 prop_max = FLAGS_MAX;
                 prop_value = PWR_FLAGS;
                 prop_min = 0;
@@ -228,7 +230,7 @@ void Controller::process() {
         case TOKEN: {
             if (firstRun()) {
                 outputState(false);
-                outputDescr("TOKEN\0", 1);
+                outputDescr("TOKEN", 1);
                 prop_max = TOKEN_MAX;
                 prop_value = COM_TOKEN;
                 prop_min = 0;
@@ -289,7 +291,8 @@ void Controller::process() {
             // Output Sleep Screen
             if (displayTiming.ping() && oled.getConnected()) {
                 if (BANNER.mode == 0) {
-                    oled.outputTextXY(DISPLAY_BASE + 2, 64, BANNER.data.text, true, dither);
+                    padLineCenteredInBuff(BANNER.data.text);
+                    oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, dither);
                 } else {
                     for (uint8_t i = 0; i < BANNER.mode; i++) {
                         int16_t val = BANNER.data.gauges[i].val;
@@ -311,10 +314,10 @@ void Controller::process() {
                         oled.outputLineGauge(row + direction, normalizeGauge(val, g_min, g_max), col_min, col_max,
                                              direction == -1);
                         sprintf(BUFF, "%d %s", val, MEASURES[BANNER.data.gauges[i].measure]);
+                        padLineCenteredInBuff(BUFF);
                         if (BANNER.mode == 1) {
                             oled.outputTextXY(DISPLAY_BASE + 1, 64, BUFF, true, dither);
                         } else {
-                            padLineCentered(BUFF);
                             oled.setTextXY(row + (direction * 2), 0);
                             oled.putString(BUFF);
                         }
@@ -405,7 +408,7 @@ void Controller::goToEditProp(uint8_t i) const {
 }
 
 bool inline Controller::canGoToEdit() {
-    return !(ctx->passive && !ctx->connected && ctx->remote);
+    return !ctx->passive || ctx->connected || !ctx->remoteMode;
 }
 
 
@@ -468,42 +471,45 @@ void Controller::outputPropDescr(char *_buff) {
 
 void Controller::outputDescr(char *_buff, uint8_t lines) const {
     oled.setTextXY(DISPLAY_BASE, 0);
-    padLine(_buff, lines, 0);
-    oled.putString(_buff);
+    padLineInBuff(_buff, lines, 0);
+    oled.putString(BUFF);
 }
 
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
     uint8_t prop_size = static_cast<uint8_t>(val > 0 ? log10((double) val) + 1 : log10((double) - val) + 2);
-    padLine(BUFF, 1, prop_size);
+    padLineInBuff(BUFF, 1, prop_size);
     oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, (unsigned char) (LINE_SIZE - prop_size));
     oled.putNumber(val);
 }
 
-void Controller::padLine(char *_buff, uint8_t lines, uint8_t tail) {
+void Controller::padLineInBuff(char *_buff, uint8_t lines, uint8_t tail) {
     uint8_t t = LINE_SIZE * lines - tail;
-    for (uint8_t i = strlen(_buff); i < t; i++) {
-        _buff[i] = ' ';
+    for (uint8_t i = 0; i < strlen(_buff); i++) {
+        BUFF[i] = _buff[i];
     }
-    _buff[t] = 0;
+    for (uint8_t i = strlen(_buff); i < t; i++) {
+        BUFF[i] = ' ';
+    }
+    BUFF[t] = '\0';
 }
 
-void Controller::padLineCentered(char *_buff) {
+void Controller::padLineCenteredInBuff(char *_buff) {
     const uint8_t text_size = strlen(_buff);
     const uint8_t text_start = (LINE_SIZE - text_size ) / 2;
     for (uint8_t i = 0; i < LINE_SIZE; i++) {
         if (i < text_size) {
             uint8_t text_base = text_size - 1 - i;
-            _buff[text_base + text_start] = _buff[text_base];
+            BUFF[text_base + text_start] = _buff[text_base];
         }
         uint8_t index = LINE_SIZE - i - 1;
         if (index < text_start || index >= (LINE_SIZE + text_size ) / 2) {
-            _buff[index] = ' ';
+            BUFF[index] = ' ';
         }
     }
-    _buff[LINE_SIZE] = 0;
+    BUFF[LINE_SIZE] = 0;
 }
 
 void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brackets, bool measure) {

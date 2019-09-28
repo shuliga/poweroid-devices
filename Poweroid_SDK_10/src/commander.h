@@ -27,8 +27,6 @@ private:
 
     void printBinProperty(uint8_t i);
 
-    static TimingState connection_check;
-
     const char *fillStateBuff(uint8_t i);
 
 };

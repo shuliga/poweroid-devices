@@ -95,7 +95,7 @@
 #define FLAGS_MAX 63
 #define TOKEN_MAX 8
 
-#define ExtractFlag(flag)   PWR_FLAGS >> ((flag) - 1) & 0x1
+#define ExtractFlag(flag)   (PWR_FLAGS >> ((flag) - 1) & 1U)
 
 #define RELAY_ON_LOW        ExtractFlag(FLAG_RELAY_ON_LOW)
 #define REMOTE_ENABLE       ExtractFlag(FLAG_REMOTE_ENABLE)
@@ -130,6 +130,8 @@ extern SoftwareSerial SSerial;
 #ifdef NO_CONTROLLER
 #undef SAVE_RAM
 #endif
+
+static const char *const NO_INFO_STR = "--\0";
 
 unsigned long hash(byte *data, unsigned long size);
 

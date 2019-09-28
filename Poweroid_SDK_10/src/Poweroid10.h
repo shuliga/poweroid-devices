@@ -30,7 +30,6 @@
 #include "controller.h"
 #include "indicators.h"
 
-
 #define FULL_VERSION VERSION "-" BOARD_VERSION
 
 const char SIGNATURE[] = "PWR";
