@@ -1,5 +1,14 @@
 #include <avr/wdt.h>
 #include "Poweroid10.h"
+#include <I2C/I2C.h>
+
+#if defined(__AVR_ATmega1284P__)
+#define CONST_4_HZ_TIMER 19530  // 65536 - 19530; // 20000000L / 256 / FRQ - 1; // set timer value 20MHz/256/4Hz-1
+#define TIMER_PRESCALER (1 << CS12) | (0 << CS11) | (0 << CS10)  // 256 prescaler
+#else
+#define CONST_4_HZ_TIMER 62499  // 65536 - 62499; // 16000000L / 64 / FRQ - 1; // set timer value 16MHz/64/4Hz-1
+#define TIMER_PRESCALER (0 << CS12) | (1 << CS11) | (1 << CS10) // 64 prescaler
+#endif
 
 volatile uint8_t timerCounter = 0;
 uint8_t pastTimerCounter = 0;
@@ -55,6 +64,9 @@ void Pwr::begin() {
 #ifdef WATCH_DOG
     wdt_disable();
 #endif
+
+    I2c.begin();
+    I2c.setSpeed(true);
 
     Serial.begin(DEFAULT_BAUD);
 

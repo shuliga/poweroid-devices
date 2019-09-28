@@ -9,7 +9,7 @@
 
 static struct Properties {
 
-    int8_t DEFAULT_PROPERTY = 1;
+    int8_t DEFAULT_PROPERTY = -1;
 
     Property FACTORY[3] = {
 

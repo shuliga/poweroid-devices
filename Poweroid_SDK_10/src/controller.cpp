@@ -92,7 +92,8 @@ void Controller::initDisplay() {
 void Controller::outputState(bool relays) const {
     strcpy(BUFF, relays ? (const char *) ctx->RELAYS.relStatus() : ctx->id);
     padLineInBuff(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remoteMode ? (((ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
+    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remoteMode ? ((
+            (ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }
@@ -141,7 +142,6 @@ void Controller::process() {
 
             if (testControl(sleep_timer) || prop_id_changed || ctx->refreshProps || ctx->refreshState) {
                 outputState(true);
-                outputDescr("", 2);
                 if (loadProperty(prop_idx)) {
                     outputPropDescr(BUFF);
                     outputPropVal(prop_measure, (int16_t) prop_value, false, true);
@@ -157,7 +157,7 @@ void Controller::process() {
                 state = SLEEP;
             }
 
-            if (event == DOUBLE_CLICK ) {
+            if (event == DOUBLE_CLICK) {
                 state = ctx->canAccessLocally() ? STATES : FLAG;
             }
 
@@ -168,6 +168,7 @@ void Controller::process() {
             if (testControl(sleep_timer) || c_state_idx != state_idx) {
                 strcpy(BUFF, getState(state_idx)->name);
                 outputPropDescr(BUFF);
+                padLineCenteredInBuff(BUFF);
                 strcpy(BUFF, getState(state_idx)->state);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
                 outputStatus(F("State:"), state_idx);
@@ -184,7 +185,7 @@ void Controller::process() {
                 state = BROWSE;
             }
 
-            if (event == DOUBLE_CLICK ) {
+            if (event == DOUBLE_CLICK) {
                 state = FLAG;
             }
             break;
@@ -202,14 +203,15 @@ void Controller::process() {
             if (prop_value != c_byte_value) {
                 PWR_FLAGS = (uint8_t) prop_value;
                 itoa(PWR_FLAGS, BUFF, 2);
+                padLineCenteredInBuff(BUFF);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
                 c_byte_value = PWR_FLAGS;
                 outputStatus(F("Decimal:"), PWR_FLAGS);
             }
 
-            if (event == HOLD ) {
+            if (event == HOLD) {
                 ctx->PERS.storeFlags();
-                if (TOKEN_ENABLE){
+                if (TOKEN_ENABLE) {
                     state = TOKEN;
                 } else {
                     goToBrowse();
@@ -220,7 +222,7 @@ void Controller::process() {
                 goToBrowse();
             }
 
-            if (TOKEN_ENABLE && event == DOUBLE_CLICK ) {
+            if (TOKEN_ENABLE && event == DOUBLE_CLICK) {
                 state = TOKEN;
             }
 
@@ -356,7 +358,7 @@ void Controller::process() {
         }
     }
     if (ctx->refreshState) {
-        if(state == SUSPEND || state == SLEEP) {
+        if (state == SUSPEND || state == SLEEP) {
             state = SLEEP;
         } else {
             outputState(true);
@@ -367,7 +369,7 @@ void Controller::process() {
 
 }
 
-uint8_t Controller::normalizeGauge(uint16_t val, uint16_t min, uint16_t max){
+uint8_t Controller::normalizeGauge(uint16_t val, uint16_t min, uint16_t max) {
     return static_cast<uint8_t>((val - min) * 127 / (max - min));
 }
 
@@ -414,8 +416,8 @@ bool inline Controller::canGoToEdit() {
 
 bool Controller::loadProperty(uint8_t idx) const {
     c_prop_idx = idx;
+    flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
     if (ctx->canAccessLocally()) {
-        flashStringHelperToChar(ctx->PROPERTIES[idx].desc, BUFF);
         copyProperty(ctx->PROPERTIES[idx], idx);
     } else {
         if (ctx->connected) {
@@ -478,7 +480,7 @@ void Controller::outputDescr(char *_buff, uint8_t lines) const {
 void Controller::outputStatus(const __FlashStringHelper *txt, const long val) {
     flashStringHelperToChar(txt, BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, 0);
-    uint8_t prop_size = static_cast<uint8_t>(val > 0 ? log10((double) val) + 1 : log10((double) - val) + 2);
+    uint8_t prop_size = static_cast<uint8_t>(val > 0 ? log10((double) val) + 1 : (val == 0 ? 1 : log10((double) -val) + 2));
     padLineInBuff(BUFF, 1, prop_size);
     oled.putString(BUFF);
     oled.setTextXY(DISPLAY_BOTTOM, (unsigned char) (LINE_SIZE - prop_size));
@@ -498,14 +500,14 @@ void Controller::padLineInBuff(char *_buff, uint8_t lines, uint8_t tail) {
 
 void Controller::padLineCenteredInBuff(char *_buff) {
     const uint8_t text_size = strlen(_buff);
-    const uint8_t text_start = (LINE_SIZE - text_size ) / 2;
+    const uint8_t text_start = (LINE_SIZE - text_size) / 2;
     for (uint8_t i = 0; i < LINE_SIZE; i++) {
         if (i < text_size) {
             uint8_t text_base = text_size - 1 - i;
             BUFF[text_base + text_start] = _buff[text_base];
         }
         uint8_t index = LINE_SIZE - i - 1;
-        if (index < text_start || index >= (LINE_SIZE + text_size ) / 2) {
+        if (index < text_start || index >= (LINE_SIZE + text_size) / 2) {
             BUFF[index] = ' ';
         }
     }
@@ -521,6 +523,7 @@ void Controller::outputPropVal(uint8_t measure_idx, int16_t _prop_val, bool brac
     } else {
         noInfoToBuff();
     }
+    padLineCenteredInBuff(BUFF);
     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
 }
 

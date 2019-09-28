@@ -9,21 +9,19 @@
 #include <poweroid_timer_button_1x1_prop.h>
 #include <../Poweroid_SDK_10/src/ultrasonic.h>
 #include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
-#include <../Poweroid_SDK_10/src/datetime.h>
 
-#define IND IND_3
+#define IND IND_1
+
+MultiClick btn(IN1_PIN);
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
-
-MultiClick btn(IN3_PIN);
 
 #ifndef CONTROLLER_ONLY
 DateTime DT;
 #endif
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
-                      PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);
