@@ -18,7 +18,14 @@ set(BOARD uno_pro)
 ### Fuses: (E:FC, H:DC, L:FF)
 #set(BOARD pro)
 
+#set(CD_CO CONTROLLER_ONLY)
+
+if(CD_CO)
+project(${DEVICE_NAME}_${BOARD}_CO)
+add_compile_definitions(${CD_CO})
+else()
 project(${DEVICE_NAME}_${BOARD})
+endif()
 
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
 set(${CMAKE_PROJECT_NAME}_SKETCH ${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
@@ -26,10 +33,6 @@ set(${CMAKE_PROJECT_NAME}_SKETCH ${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
 set(SDK_NAME Poweroid_SDK_10)
 set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
 
-#find_library(SDK_LIB "${BOARD}_${SDK_NAME}" PATHS "${SDK_BUILD_PATH}" NO_DEFAULT_PATH)
-#message(STATUS "SDK library found: ${SDK_LIB}")
-
-#find_library(MC_LIB "${BOARD}_MultiClick" PATHS "${SDK_BUILD_PATH}" NO_DEFAULT_PATH)
 add_subdirectory(${SDK_NAME})
 
 #### Uncomment below additional settings as needed.

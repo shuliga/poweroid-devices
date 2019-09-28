@@ -60,7 +60,7 @@ uint8_t flashStringHelperToChar(const __FlashStringHelper *ifsh, char *dst) {
     return n;
 }
 
-void noInfoToBuff() { strcpy(BUFF, "--"); }
+void noInfoToBuff() { strcpy(BUFF, NO_INFO_STR); }
 
 
 #ifdef WATCH_DOG

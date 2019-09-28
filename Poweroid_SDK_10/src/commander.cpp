@@ -10,8 +10,6 @@ const char *STATE_FORMAT_BUFF = "[%i] State %s: %s";
 
 Commander::Commander(Context &_ctx) : ctx(&_ctx) {};
 
-TimingState Commander::connection_check(CONNECTION_CHECK);
-
 const char *Commander::printProperty(uint8_t i) {
     char _desc[64];
     flashStringHelperToChar(ctx->PROPERTIES[i].desc, _desc);
@@ -212,13 +210,12 @@ void Commander::storeProps() {
 
 bool Commander::isConnected() {
     if (ctx->canInteract()){
-        if (connection_check.isTimeAfter(true)) {
+        if (test_timer(TIMER_0_25HZ)) {
             sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
                     BANNER.data.text);
             printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
             connected = TOKEN_ENABLE ? true : ctx->peerFound;
             ctx->peerFound = false;
-            connection_check.reset();
 #ifdef DEBUG
             if (ctx->passive && !connected) {
             writeLog('W', ORIGIN, 410);

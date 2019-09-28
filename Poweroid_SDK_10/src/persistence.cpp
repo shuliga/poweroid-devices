@@ -53,7 +53,7 @@ void Persistence::begin() {
     PWR_FLAGS = EEPROM.read(FLAGS_OFFSET);
     COM_TOKEN = EEPROM.read(TOKEN_OFFSET);
     if (PWR_FLAGS > FLAGS_MAX) {
-        PWR_FLAGS = 0;
+        PWR_FLAGS = FLAGS_DEFAULT;
     }
     if (COM_TOKEN > TOKEN_MAX) {
         COM_TOKEN = 0;

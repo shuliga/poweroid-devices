@@ -34,7 +34,7 @@ const int TIMEOUT_STEP = 100;
 class Bt {
 
 public:
-  const char *name;
+    const char *name;
     bool remote_on;
     bool host;
 

@@ -51,11 +51,11 @@ typedef struct Context {
     bool refreshState;
     bool passive;
     bool connected = false;
-    bool remote = false;
+    bool remoteMode = false;
     bool peerFound;
 
     boolean canAccessLocally(){
-        return !remote || !passive;
+        return !remoteMode || !passive;
     }
 
     boolean canInteract(){
