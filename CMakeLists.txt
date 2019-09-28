@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.14.3)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -12,19 +12,26 @@ set(DEVICE_NAME timer_button_1x1)
 
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-set(BOARD uno_pro)
+#set(BOARD uno_pro)
 
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-#set(BOARD pro)
+set(BOARD pro)
 
-#set(CD_CO CONTROLLER_ONLY)
+set(CD_CTRL CONTROLLER_ONLY)
+#set(CD_CTRL NO_CONTROLLER)
 
-if(CD_CO)
-project(${DEVICE_NAME}_${BOARD}_CO)
-add_compile_definitions(${CD_CO})
+add_compile_definitions(SAVE_RAM)
+
+if(CD_CTRL)
+    if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")
+        project(${DEVICE_NAME}_${BOARD}_CO)
+    elseif(${CD_CTRL} STREQUAL "NO_CONTROLLER")
+        project(${DEVICE_NAME}_${BOARD}_NC)
+    endif()
+    add_compile_definitions(${CD_CTRL})
 else()
-project(${DEVICE_NAME}_${BOARD})
+    project(${DEVICE_NAME}_${BOARD})
 endif()
 
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
