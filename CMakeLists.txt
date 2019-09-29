@@ -5,31 +5,38 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 #set(CMAKE_RULE_MESSAGES OFF)
 
 #set(DEVICE_NAME test_bt)
-set(DEVICE_NAME timer_button_1x1)
-#set(DEVICE_NAME fan_3x1_dht)
+#set(DEVICE_NAME timer_button_1x1)
+set(DEVICE_NAME fan_3x1_dht)
 #set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME pump_station_3x2)
 
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-#set(BOARD uno_pro)
+set(BOARD uno_pro)
 
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-set(BOARD pro)
+#set(BOARD pro)
 
-set(CD_CTRL CONTROLLER_ONLY)
-#set(CD_CTRL NO_CONTROLLER)
+#set(CD_CTRL CONTROLLER_ONLY)
+set(CD_CTRL NO_CONTROLLER)
 
-add_compile_definitions(SAVE_RAM)
+#set(BRD MINI)
+set(RAM SAVE_RAM)
+set(STATES ARMED)
+
+add_compile_definitions(${CD_CTRL} ${BRD} ${RAM} ${STATES})
 
 if(CD_CTRL)
     if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")
-        project(${DEVICE_NAME}_${BOARD}_CO)
+        set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_CO")
     elseif(${CD_CTRL} STREQUAL "NO_CONTROLLER")
-        project(${DEVICE_NAME}_${BOARD}_NC)
+        set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_NC")
     endif()
-    add_compile_definitions(${CD_CTRL})
+    if(BRD)
+        set(PRJ_NAME "${PRJ_NAME}_${BRD}")
+    endif()
+    project(${PRJ_NAME})
 else()
     project(${DEVICE_NAME}_${BOARD})
 endif()
@@ -48,6 +55,9 @@ set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
 file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
 file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
 
+message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
+
+message(STATUS "Board settings")
 print_board_settings(${BOARD})
 
 #set(LIB_HRDS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib)

@@ -168,8 +168,8 @@ void Controller::process() {
             if (testControl(sleep_timer) || c_state_idx != state_idx) {
                 strcpy(BUFF, getState(state_idx)->name);
                 outputPropDescr(BUFF);
-                padLineCenteredInBuff(BUFF);
                 strcpy(BUFF, getState(state_idx)->state);
+                padLineCenteredInBuff(BUFF);
                 oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
                 outputStatus(F("State:"), state_idx);
                 c_state_idx = state_idx;

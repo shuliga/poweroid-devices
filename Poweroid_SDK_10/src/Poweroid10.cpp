@@ -91,7 +91,7 @@ void Pwr::begin() {
     wdt_enable(WDTO_8S);
 #endif
 
-    SENS->initSensors(!CTX->passive);
+    SENS->initSensors();
 
     loadDisarmedStates();
 

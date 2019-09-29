@@ -10,7 +10,11 @@ unsigned char status[6] = ".. ..";
 
 bool Relays::powered[RELAYS];
 
+#ifndef MINI
 int8_t Relays::mappings[VIRTUAL_RELAYS] = {2, 3};
+#else
+int8_t Relays::mappings[VIRTUAL_RELAYS] = {2};
+#endif
 
 bool Relays::relay_on_low;
 

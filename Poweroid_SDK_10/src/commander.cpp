@@ -58,18 +58,13 @@ void Commander::listen() {
 
                 castCommand(cu.cmd_str.CMD_GET_DHT, ctx->SENS.printDht());
 
-                if (cmd.startsWith(cu.cmd_str.CMD_SET_DHT)) {
-                    int8_t i = getValIndex();
-                    ctx->SENS.setDHT(cmd.c_str()[i], (uint8_t) cmd.c_str()[i + 1]);
-                }
-
                 if (REMOTE_ENABLE && cmd.startsWith(cu.cmd_str.CMD_REMOTE_STATE)) {
-                    ctx->peerFound = true;
+                    ctx->peerFound = 2;
                     if (cmd.indexOf(REMOTE_HOST) > 0 && ctx->passive) {
                         int8_t i = cmd.indexOf(',');
                         int8_t j = cmd.indexOf(',', i + 1);
                         int8_t k = cmd.indexOf(',', j + 1);
-                        int8_t l = cmd.lastIndexOf(',');
+                        int8_t l =  cmd.indexOf(',', k + 1);
                         if (i > 0) {
                             ctx->props_size = cmd.substring(i + 1, j).toInt();
                             ctx->props_default_idx = cmd.substring(j + 1, k).toInt();
@@ -214,8 +209,8 @@ bool Commander::isConnected() {
             sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
                     BANNER.data.text);
             printCmd(cu.cmd_str.CMD_REMOTE_STATE, ctx->passive ? REMOTE_CONTROL : BUFF);
-            connected = TOKEN_ENABLE ? true : ctx->peerFound;
-            ctx->peerFound = false;
+            connected = TOKEN_ENABLE ? true : ctx->peerFound > 0;
+            ctx->peerFound > 0 ? ctx->peerFound-- : ctx->peerFound;
 #ifdef DEBUG
             if (ctx->passive && !connected) {
             writeLog('W', ORIGIN, 410);

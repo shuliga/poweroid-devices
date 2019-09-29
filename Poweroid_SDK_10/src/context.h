@@ -52,7 +52,7 @@ typedef struct Context {
     bool passive;
     bool connected = false;
     bool remoteMode = false;
-    bool peerFound;
+    int8_t peerFound;
 
     boolean canAccessLocally(){
         return !remoteMode || !passive;

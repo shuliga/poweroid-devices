@@ -15,21 +15,25 @@
 // 501 - Sensor not installed (pin)
 
 #define MAX_ANALOG_VALUE 1023
+
 const long INST_DELAY = 50L;
 
+#ifndef MINI
 const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN, IN3_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN, INA3_PIN};
+#else
+const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN};
+const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN};
+#endif
 
 uint16_t REMOTE_SENSORS[REMOTE_SENSORS_COUNT];
-
-static TimingState pollTiming = TimingState(5000L);
-static TimingState hold_on[3] = {INST_DELAY, INST_DELAY, INST_DELAY};
 
 static const uint8_t  SENS_COUNT = ARRAY_SIZE(IN_PINS);
 static bool installed[SENS_COUNT];
 
+static TimingState hold_on(INST_DELAY);
+
 static bool dht_installed;
-static bool propagate = false;
 static bool dht_set = false;
 static DHT dht(DHT_PIN, DHTTYPE);
 
@@ -51,13 +55,9 @@ void Sensors::searchDHT() {
 }
 
 void Sensors::updateDHT() {
-    if (dht_installed && pollTiming.ping()) {
+    if (dht_installed && test_timer(TIMER_0_25HZ)) {
         temp = dht.readTemperature();
         humid = dht.readHumidity();
-        if (propagate) {
-            sprintf(BUFF, ":%c%c", getInt(temp), getInt(humid));
-            printCmd(cu.cmd_str.CMD_SET_DHT, BUFF);
-        }
     }
 }
 
@@ -73,8 +73,7 @@ bool Sensors::checkInstalled(uint8_t pin, bool inst) {
     return inst || digitalRead(pin) == LOW;
 }
 
-void Sensors::initSensors(bool _propagate) {
-    propagate = _propagate;
+void Sensors::initSensors() {
 #if defined(__AVR_ATmega1284P__)
 #define INTERNAL_REF INTERNAL1V1
 #else
@@ -90,7 +89,6 @@ void Sensors::initSensors(bool _propagate) {
     }
     delay(1000L);
     searchDHT();
-    pollTiming.reset();
 }
 
 void Sensors::process() {
@@ -112,7 +110,7 @@ bool Sensors::isDhtInstalled() {
 }
 
 bool Sensors::isSensorOn(uint8_t index) {
-    return hold_on[index].isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
+    return hold_on.isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
 }
 
 int16_t Sensors::getSensorVal(uint8_t index) {
@@ -132,7 +130,7 @@ uint8_t Sensors::size() {
 
 const char *Sensors::printDht() {
     if (dht_installed || dht_set) {
-        sprintf(BUFF, "%i~C, %i%%", getInt(temp), getInt(humid));
+        sprintf(BUFF, "%i~C %i%%", getInt(temp), getInt(humid));
     } else {
         noInfoToBuff();
     }

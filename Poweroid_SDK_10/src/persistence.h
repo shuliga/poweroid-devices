@@ -3,20 +3,7 @@
 
 #include "properties.h"
 
-#define BASE 0
-
 #define SIGNATURE_SIZE 4
-#define HASH_SIZE sizeof(unsigned long)
-#define FLAGS_SIZE 1
-#define STATES_SIZE 1
-#define TOKEN_SIZE 1
-
-#define HASH_OFFSET (BASE + SIGNATURE_SIZE)
-#define FLAGS_OFFSET (HASH_OFFSET + HASH_SIZE)
-#define TOKEN_OFFSET (FLAGS_OFFSET + FLAGS_SIZE)
-#define STATES_OFFSET (TOKEN_OFFSET + TOKEN_SIZE)
-#define PROPS_OFFSET (STATES_OFFSET + STATES_SIZE)
-#define PROP_ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
 
 struct Persistence {
 

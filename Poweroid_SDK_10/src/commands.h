@@ -10,7 +10,6 @@
 typedef struct CommandsStr {
     const char* CMD_GET_VER;
     const char* CMD_GET_DHT;
-    const char* CMD_SET_DHT;
     const char* CMD_GET_STATE;
     const char* CMD_DISARM_STATE;
 #ifdef ALLOW_TOKEN
