@@ -4,13 +4,6 @@
 #define VERSION "POWEROID SDK 1.0"
 #define FULL_VERSION VERSION "-" BOARD_VERSION
 
-#ifndef DHT_PIN
-    #define DHT_PIN 5
-#endif
-#ifndef ENC_BTN_PIN
-    #define ENC_BTN_PIN 7
-#endif
-
 #include "commons.h"
 #include "context.h"
 #include "properties.h"

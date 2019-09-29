@@ -3,6 +3,20 @@
 #include "commons.h"
 #include "persistence.h"
 
+#define BASE 0
+
+#define HASH_SIZE sizeof(unsigned long)
+#define FLAGS_SIZE 1
+#define STATES_SIZE 1
+#define TOKEN_SIZE 1
+
+#define HASH_OFFSET (BASE + SIGNATURE_SIZE)
+#define FLAGS_OFFSET (HASH_OFFSET + HASH_SIZE)
+#define TOKEN_OFFSET (FLAGS_OFFSET + FLAGS_SIZE)
+#define STATES_OFFSET (TOKEN_OFFSET + TOKEN_SIZE)
+#define PROPS_OFFSET (STATES_OFFSET + STATES_SIZE)
+#define PROP_ADDR(x) PROPS_OFFSET + sizeof(long)*(x)
+
 // Console output codes
 // 100 - Signature
 // 101 - Hash
@@ -58,6 +72,9 @@ void Persistence::begin() {
     if (COM_TOKEN > TOKEN_MAX) {
         COM_TOKEN = 0;
     }
+#ifdef ARMED
+    EEPROM.write(STATES_OFFSET, 0);
+#endif
 }
 
 void Persistence::storeProperties(Property *props) {

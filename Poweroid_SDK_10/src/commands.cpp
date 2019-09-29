@@ -10,7 +10,6 @@ static const char *ORIGIN = "CMD";
 Cu cu{
     cu.cmd_str = {"get_ver",
                   "get_dht",
-                  "set_dht",
                   "get_state_",
                   "disarm_state_",
 #ifdef ALLOW_TOKEN

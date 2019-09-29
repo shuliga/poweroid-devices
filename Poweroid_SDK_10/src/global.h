@@ -19,6 +19,10 @@
 #define FLAGS_DEFAULT 2
 #endif
 
+#ifdef NO_CONTROLLER
+#define FLAGS_DEFAULT 6
+#endif
+
 #ifndef FLAGS_DEFAULT
 #define FLAGS_DEFAULT 0
 #endif

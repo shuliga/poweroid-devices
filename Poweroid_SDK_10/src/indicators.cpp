@@ -6,7 +6,11 @@
 
 Indicators INDICATORS;
 
+#ifndef MINI
 const uint8_t Indicators::INDICATOR_PINS[] = {IND1_PIN, IND2_PIN, IND3_PIN};
+#else
+const uint8_t Indicators::INDICATOR_PINS[] = {IND1_PIN, IND2_PIN};
+#endif
 
 void Indicators::init() {
     for(uint8_t i = 0; i < ARRAY_SIZE(INDICATOR_PINS); ++i) {

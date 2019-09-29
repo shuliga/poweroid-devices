@@ -9,7 +9,10 @@
 #include "timings.h"
 
 #define DHTTYPE DHT22
+
+#ifndef DHT_PIN
 #define DHT_PIN IN1_PIN
+#endif
 
 #define REMOTE_SENSORS_COUNT 3
 
@@ -39,7 +42,7 @@ public:
 
     bool checkInstalled(uint8_t pin, bool inst);
 
-    void initSensors(bool _propagate);
+    void initSensors();
 
     void checkInstalled();
 

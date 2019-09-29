@@ -9,7 +9,6 @@
 #include "poweroid_fan_3x1_dht_prop.h"
 
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
-TimingState FLASH(500L);
 
 Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
                   FAN_PROPS.DEFAULT_PROPERTY);
@@ -17,7 +16,7 @@ Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.prop
 Commander CMD(CTX);
 Bt BT(CTX.id);
 
-#if !defined(NO_CONTROLLER)
+#ifndef NO_CONTROLLER
 Controller CTRL(CTX, CMD);
 Pwr PWR(CTX, &CMD, &CTRL, &BT);
 #else
@@ -151,8 +150,7 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR.power(0, fan_power);
-    PWR.power(1, floor_power);
+    PWR.power(0, floor_power);
+    PWR.power(1, fan_power);
 
-    INDICATORS.flash(0, &FLASH, PWR.REL->isPowered(1));
 }

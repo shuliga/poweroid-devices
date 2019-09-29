@@ -11,18 +11,26 @@
 #define RELAY_ON_LOW false
 #endif
 
-#define VIRTUAL_RELAYS 2
+#ifndef MINI
+#define REL_COUNT 2
+const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
+#else
+#define REL_COUNT 1
+const uint8_t OUT_PINS[] = {PWR1_PIN};
+#endif
+
+#define VIRTUAL_RELAYS REL_COUNT
+
 #define REL_A 0
 #define REL_B 1
 
-const uint8_t OUT_PINS[] = {PWR1_PIN, PWR2_PIN};
 const uint8_t RELAYS = ARRAY_SIZE(OUT_PINS) + VIRTUAL_RELAYS;
 
 class Relays {
 
 private:
 
-    static bool powered[4];
+    static bool powered[RELAYS];
 
     static int8_t mappings[VIRTUAL_RELAYS];
 
