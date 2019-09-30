@@ -154,7 +154,7 @@ void Pwr::run() {
     }
 #endif
 
-    if (updateConnected && newConnected && CTX->canInteract()) {
+    if (updateConnected && newConnected && CTX->canRespond()) {
         REL->castMappedRelays();
     }
     if (firstRun) {
@@ -168,13 +168,17 @@ void Pwr::run() {
     runPowerStates();
 #endif
 
+    if(CTX->passive && !CTX->connected){
+        REL->shutDown();
+    }
+
     printChangedStates();
 
     timerFlags = 0;
 }
 
 void Pwr::printVersion() {
-    if (CTX->canInteract()){
+    if (CTX->canRespond()){
         Serial.println(CTX->version);
     }
 }
@@ -188,7 +192,7 @@ void Pwr::initPins() {
     for (uint8_t i = 0; i < REL->size(); i++) {
         pinMode(OUT_PINS[i], OUTPUT);
     }
-    REL->reset();
+    REL->shutDown();
 
     for (uint8_t i = 0; i < SENS->size(); i++) {
         pinMode(IN_PINS[i], INPUT_PULLUP);

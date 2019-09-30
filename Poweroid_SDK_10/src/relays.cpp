@@ -56,7 +56,7 @@ unsigned char * Relays::relStatus()
     return status;
 }
 
-void Relays::reset()
+void Relays::shutDown()
 {
     relay_on_low = RELAY_ON_LOW;
 

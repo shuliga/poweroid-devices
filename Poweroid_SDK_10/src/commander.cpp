@@ -52,7 +52,7 @@ void Commander::listen() {
 
             }
 #endif
-            if (ctx->canInteract()) {
+            if (ctx->canRespond()) {
 
                 castCommand(cu.cmd_str.CMD_GET_VER, ctx->version);
 
@@ -204,7 +204,7 @@ void Commander::storeProps() {
 }
 
 bool Commander::isConnected() {
-    if (ctx->canInteract()){
+    if (ctx->canRespond()){
         if (test_timer(TIMER_0_25HZ)) {
             sprintf(BUFF, "%s,%i,%i,%i,%s", REMOTE_HOST, ctx->props_size, ctx->props_default_idx, BANNER.mode,
                     BANNER.data.text);
@@ -229,7 +229,7 @@ const char *Commander::fillStateBuff(uint8_t i) {
 }
 
 const char *Commander::printState(uint8_t i) {
-    if (ctx->canInteract()){
+    if (ctx->canRespond()){
         Serial.println(fillStateBuff(i));
     }
 }

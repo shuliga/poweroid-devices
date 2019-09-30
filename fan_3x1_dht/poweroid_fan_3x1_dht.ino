@@ -125,8 +125,8 @@ void run_state_temp(bool temperature) {
 }
 
 void processSensors() {
-    light1 = PWR.SENS->isSensorOn(1);
-    light2 = PWR.SENS->isSensorOn(2);
+    light1 = PWR.SENS->isSensorOn(SEN_2);
+    light2 = PWR.SENS->isSensorOn(SEN_3);
     humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
     temperature = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
 }

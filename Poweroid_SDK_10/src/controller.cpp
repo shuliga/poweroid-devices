@@ -45,6 +45,7 @@ static volatile long prop_min;
 static volatile long prop_max;
 static volatile uint8_t prop_measure;
 static volatile bool requestForRefresh = false;
+static volatile bool enablePropControl = false;
 
 
 #if defined(ENC1_PIN) && defined(ENC2_PIN)
@@ -99,6 +100,8 @@ void Controller::outputState(bool relays) const {
 }
 
 void Controller::process() {
+
+    enablePropControl = ctx->canAccessLocally() || ctx->canCommunicate();
 
     oled.checkConnected();
 
@@ -545,7 +548,9 @@ ISR(PCVECT) {
                 }
 
                 case BROWSE: {
-                    input == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
+                    if(enablePropControl) {
+                        input == DIR_CW ? DECR(prop_idx, 0) : INCR(prop_idx, props_idx_max);
+                    }
                     break;
                 }
 

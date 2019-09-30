@@ -7,9 +7,6 @@
 #include <SoftwareSerial.h>
 #endif
 
-#define STRINGIZE_NX(A) #A
-#define STRINGIZE(A) STRINGIZE_NX(A)
-
 #define HC_05_AT_BAUD 38400
 #define HC_05_AT_BAUD_FAST 57600
 #define HC_05_AT_UART "AT+UART="
