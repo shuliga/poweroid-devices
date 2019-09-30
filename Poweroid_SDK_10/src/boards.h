@@ -5,12 +5,20 @@
 #ifndef BOARDS_H
 #define BOARDS_H
 
-#define PWR23
+#define STRINGIZE_NX(A) #A
+#define STRINGIZE(A) STRINGIZE_NX(A)
+
+#define PWR23 23
+#define PWR20 20
+
+#ifndef PWR_BOARD_VERSION
+#define PWR_BOARD_VERSION PWR23
+#endif
+
 //#define SPI
 
-#ifdef PWR23
+#if PWR_BOARD_VERSION == PWR23
 
-#define BOARD_VERSION "PWR23"
 
 //Encoder pins
 #define ENC2_PIN 2
@@ -56,16 +64,12 @@
 
 #endif // PWR23
 
-#ifdef PWR20
-
-#define BOARD_VERSION "PWR20"
+#if PWR_BOARD_VERSION == PWR20
 
 //Discrete signal IN pins
 #define IN1_PIN 2
 #define IN2_PIN 4
 #define IN3_PIN 6
-
-#define ENC_BTN_PIN 7
 
 //Relay pins
 #define PWR1_PIN 10

@@ -1,9 +1,6 @@
 #ifndef POWEROID_SDK_10_H
 #define POWEROID_SDK_10_H
 
-#define VERSION "POWEROID SDK 1.0"
-#define FULL_VERSION VERSION "-" BOARD_VERSION
-
 #include "commons.h"
 #include "context.h"
 #include "properties.h"
@@ -15,6 +12,9 @@
 #include "controller.h"
 #include "indicators.h"
 #include "datetime.h"
+
+#define VERSION "POWEROID SDK 1.0"
+#define FULL_VERSION VERSION " " STRINGIZE(PWR_BOARD_VERSION)
 
 const char SIGNATURE[] = "PWR";
 

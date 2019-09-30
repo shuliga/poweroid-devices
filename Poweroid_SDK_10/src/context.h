@@ -58,7 +58,11 @@ typedef struct Context {
         return !remoteMode || !passive;
     }
 
-    boolean canInteract(){
+    boolean canCommunicate(){
+        return connected || peerFound;
+    }
+
+    boolean canRespond(){
         return !TOKEN_ENABLE || hasToken;
     }
 };

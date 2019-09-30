@@ -44,7 +44,7 @@ public:
 
     uint8_t size();
 
-    void reset();
+    void shutDown();
 
     char * printRelay(uint8_t idx);
 

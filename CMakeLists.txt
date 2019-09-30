@@ -10,22 +10,30 @@ set(DEVICE_NAME fan_3x1_dht)
 #set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME pump_station_3x2)
 
+
+#########
+# Controler boards section
+#
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
 set(BOARD uno_pro)
-
+#
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
 #set(BOARD pro)
+#
+#########
+
 
 #set(CD_CTRL CONTROLLER_ONLY)
-set(CD_CTRL NO_CONTROLLER)
+#set(CD_CTRL NO_CONTROLLER)
 
-#set(BRD MINI)
-set(RAM SAVE_RAM)
+#set(PWR_BOARD_SIZE MINI)
+#set(PWR_BOARD_VERSIONS PWR_BOARD_VERSION=PWR20)
+#set(RAM SAVE_RAM)
 set(STATES ARMED)
 
-add_compile_definitions(${CD_CTRL} ${BRD} ${RAM} ${STATES})
+add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES})
 
 if(CD_CTRL)
     if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")
@@ -33,8 +41,8 @@ if(CD_CTRL)
     elseif(${CD_CTRL} STREQUAL "NO_CONTROLLER")
         set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_NC")
     endif()
-    if(BRD)
-        set(PRJ_NAME "${PRJ_NAME}_${BRD}")
+    if(PWR_BOARD_SIZE)
+        set(PRJ_NAME "${PRJ_NAME}_${PWR_BOARD_SIZE}")
     endif()
     project(${PRJ_NAME})
 else()
