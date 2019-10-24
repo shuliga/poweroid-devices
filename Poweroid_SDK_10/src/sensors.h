@@ -44,7 +44,7 @@ public:
 
     void initSensors();
 
-    void checkInstalled();
+    void setInstalled();
 
     bool isDhtInstalled();
 

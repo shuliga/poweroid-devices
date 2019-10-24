@@ -2,11 +2,14 @@
 // Created by SHL on 09.09.2018.
 //
 
+#include "global.h"
+#include "commons.h"
+
+#if PWR_BOARD_VERSION != PWR20
+
 #ifndef INDICATORS_H
 #define INDICATORS_H
 
-#include "global.h"
-#include "commons.h"
 #include "timings.h"
 
 #define IND_1 0
@@ -26,3 +29,5 @@ public:
 extern Indicators INDICATORS;
 
 #endif //INDICATORS_H
+
+#endif

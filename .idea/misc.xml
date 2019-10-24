@@ -4,12 +4,12 @@
   <component name="CidrRootsConfiguration">
     <sourceRoots>
       <file path="$PROJECT_DIR$/Poweroid_SDK_10/src" />
-      <file path="$PROJECT_DIR$/fan_3x1_dht" />
-      <file path="$PROJECT_DIR$/pump_station_3x2" />
+      <file path="$PROJECT_DIR$/projects/fan_3x1_dht" />
+      <file path="$PROJECT_DIR$/projects/pump_station_3x2" />
+      <file path="$PROJECT_DIR$/projects/tensiometer_1x1" />
+      <file path="$PROJECT_DIR$/projects/test_bt" />
+      <file path="$PROJECT_DIR$/projects/timer_button_1x1" />
       <file path="$PROJECT_DIR$/src" />
-      <file path="$PROJECT_DIR$/tensiometer_1x1" />
-      <file path="$PROJECT_DIR$/test_bt" />
-      <file path="$PROJECT_DIR$/timer_button_1x1" />
     </sourceRoots>
     <libraryRoots>
       <file path="$PROJECT_DIR$/Poweroid_SDK_10/lib" />

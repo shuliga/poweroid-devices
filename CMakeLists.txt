@@ -16,21 +16,21 @@ set(DEVICE_NAME fan_3x1_dht)
 #
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-set(BOARD uno_pro)
+#set(BOARD uno_pro)
 #
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-#set(BOARD pro)
+set(BOARD pro)
 #
 #########
 
 
-#set(CD_CTRL CONTROLLER_ONLY)
+set(CD_CTRL CONTROLLER_ONLY)
 #set(CD_CTRL NO_CONTROLLER)
 
-#set(PWR_BOARD_SIZE MINI)
-#set(PWR_BOARD_VERSIONS PWR_BOARD_VERSION=PWR20)
-#set(RAM SAVE_RAM)
+set(PWR_BOARD_SIZE MINI)
+set(PWR_BOARD_VERSIONS PWR_BOARD_VERSION=PWR23)
+set(RAM SAVE_RAM)
 set(STATES ARMED)
 
 add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES})
@@ -50,7 +50,7 @@ else()
 endif()
 
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
-set(${CMAKE_PROJECT_NAME}_SKETCH ${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
+set(${CMAKE_PROJECT_NAME}_SKETCH projects/${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
 
 set(SDK_NAME Poweroid_SDK_10)
 set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
@@ -61,6 +61,8 @@ add_subdirectory(${SDK_NAME})
 set(${CMAKE_PROJECT_NAME}_PORT COM3)
 set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
 file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
+file(GLOB_RECURSE LIB_SKETCH projects/${DEVICE_NAME}/*.h)
+list(APPEND LIB_HDRS ${LIB_SKETCH})
 file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
 
 message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")

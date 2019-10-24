@@ -1,8 +1,9 @@
 //
 // Created by SHL on 09.09.2018.
 //
-
 #include "indicators.h"
+
+#ifdef INDICATORS_H
 
 Indicators INDICATORS;
 
@@ -26,3 +27,5 @@ void Indicators::set(uint8_t i, bool on) {
 void Indicators::flash(uint8_t i, bool flash, bool trigger) {
     digitalWrite(INDICATOR_PINS[i], trigger ? (flash ? HIGH : LOW) : LOW);
 }
+
+#endif
