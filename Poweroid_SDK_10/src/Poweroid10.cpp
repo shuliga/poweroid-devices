@@ -198,7 +198,9 @@ void Pwr::initPins() {
         pinMode(IN_PINS[i], INPUT_PULLUP);
     }
 
+#ifdef INDICATORS_H
     INDICATORS.init();
+#endif
 }
 
 void Pwr::loadDisarmedStates() {

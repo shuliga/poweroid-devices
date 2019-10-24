@@ -40,6 +40,7 @@
 
 #undef FACTORY_RESET_PIN
 
+//Indicator pins
 #ifndef SPI
 #define IND1_PIN 10
 #define IND2_PIN 11
@@ -74,6 +75,8 @@
 //Relay pins
 #define PWR1_PIN 10
 #define PWR2_PIN 11
+
+#define LED_PIN 13
 
 //Analogue signal IN pins
 #define INA1_PIN 14

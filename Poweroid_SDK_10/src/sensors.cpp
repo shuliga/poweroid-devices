@@ -31,10 +31,7 @@ uint16_t REMOTE_SENSORS[REMOTE_SENSORS_COUNT];
 static const uint8_t  SENS_COUNT = ARRAY_SIZE(IN_PINS);
 static bool installed[SENS_COUNT];
 
-static TimingState hold_on(INST_DELAY);
-
 static bool dht_installed;
-static bool dht_set = false;
 static DHT dht(DHT_PIN, DHTTYPE);
 
 
@@ -92,11 +89,11 @@ void Sensors::initSensors() {
 }
 
 void Sensors::process() {
-    checkInstalled();
+    setInstalled();
     updateDHT();
 }
 
-void Sensors::checkInstalled() {
+void Sensors::setInstalled() {
     for (uint8_t i = 0; i < SENS_COUNT; i++) {
         installed[i] = checkInstalled(IN_PINS[i], installed[i]);
 #ifdef DEBUG
@@ -110,7 +107,7 @@ bool Sensors::isDhtInstalled() {
 }
 
 bool Sensors::isSensorOn(uint8_t index) {
-    return hold_on.isTimeAfter(digitalRead(IN_PINS[index]) == LOW && installed[index]);
+    return digitalRead(IN_PINS[index]) == LOW && installed[index];
 }
 
 int16_t Sensors::getSensorVal(uint8_t index) {
@@ -129,7 +126,7 @@ uint8_t Sensors::size() {
 }
 
 const char *Sensors::printDht() {
-    if (dht_installed || dht_set) {
+    if (dht_installed ) {
         sprintf(BUFF, "%i~C %i%%", getInt(temp), getInt(humid));
     } else {
         noInfoToBuff();
@@ -138,14 +135,6 @@ const char *Sensors::printDht() {
 }
 
 int8_t Sensors::getInt(float f) const { return (int8_t) floor(f + 0.5); }
-
-void Sensors::setDHT(int8_t _temp, uint8_t _humid) {
-    if (!dht_installed) {
-        temp = _temp;
-        humid = _humid;
-        dht_set = true;
-    }
-}
 
 const char *Sensors::printSensor(uint8_t i) {
     sprintf(BUFF, "Sens:%i %s", i, installed[i] ? "inst" : "n/a");

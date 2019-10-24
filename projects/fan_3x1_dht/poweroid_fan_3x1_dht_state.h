@@ -14,7 +14,7 @@ enum StateLight {
 } state_light = SL_OFF, prev_state_light = SL_DISARM;
 
 enum StateHumid {
-    SH_DISARM = 0, SH_OFF = 7, AH = 14, SH_POWER = 17, SH_POWER_SBY = 23
+    SH_DISARM = 0, SH_OFF = 7, AH = 14, SH_POWER = 17
 } state_humid = SH_OFF, prev_state_humid = SH_DISARM;
 
 enum StateTemp {
@@ -25,7 +25,7 @@ uint8_t state_count = 3;
 bool changedState[3] = {false, false, false};
 
 const char *STATE_NAME_BUFF[] = {"Lightning", "Humidity", "Temperature"};
-const char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0POWER-SBY\0"}; // OFFSETS:0,7,11,14,17,23
+const char *STATE_BUFF = {"DISARM\0OFF\0AL\0AH\0POWER\0PWR-SBY\0"}; // OFFSETS:0,7,11,14,17,23
 
 RunState run_state;
 

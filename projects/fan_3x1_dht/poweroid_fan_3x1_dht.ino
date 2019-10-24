@@ -28,7 +28,6 @@ bool light2;
 bool humidity;
 bool temperature;
 
-
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
     timings.delay_power.interval = (unsigned long) FAN_PROPS.FACTORY[1].runtime;
@@ -150,7 +149,7 @@ void loop() {
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
-    PWR.power(0, floor_power);
-    PWR.power(1, fan_power);
+    PWR.power(REL_A, floor_power);
+    PWR.power(REL_B, fan_power);
 
 }
