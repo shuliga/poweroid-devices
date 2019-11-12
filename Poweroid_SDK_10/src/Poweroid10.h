@@ -51,7 +51,7 @@ private:
 
     void initPins();
 
-    void printChangedStates();
+    void processChangedStates();
 
     void loadDisarmedStates();
 

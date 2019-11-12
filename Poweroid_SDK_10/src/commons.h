@@ -12,7 +12,7 @@
 
 //#define SAVE_RAM
 //#define DEBUG
-//#define WATCH_DOG
+#define WATCH_DOG
 
 #define FLAG_RELAY_ON_LOW       1
 #define FLAG_REMOTE_ENABLE      2

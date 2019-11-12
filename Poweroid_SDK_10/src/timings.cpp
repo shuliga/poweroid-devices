@@ -53,6 +53,13 @@ bool TimingState::countdown(bool on, bool suspend, bool cancel) {
     return state;
 }
 
+/**
+ *
+ * Defines if time has passed since trigger was set to true
+ *
+ * @param trigger
+ * @return true if time has passed
+ */
 bool TimingState::isTimeAfter(bool trigger) {
     unsigned long current = getCurrent();
     if (trigger) {

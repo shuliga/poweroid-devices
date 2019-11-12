@@ -6,7 +6,8 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 
 #set(DEVICE_NAME test_bt)
 #set(DEVICE_NAME timer_button_1x1)
-set(DEVICE_NAME fan_3x1_dht)
+#set(DEVICE_NAME fan_3x1_dht)
+set(DEVICE_NAME thermo_1-2x2_dht)
 #set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME pump_station_3x2)
 
@@ -25,10 +26,12 @@ set(BOARD pro)
 #########
 
 
-set(CD_CTRL CONTROLLER_ONLY)
+#### Uncomment below additional settings as needed.
+
+#set(CD_CTRL CONTROLLER_ONLY)
 #set(CD_CTRL NO_CONTROLLER)
 
-set(PWR_BOARD_SIZE MINI)
+#set(PWR_BOARD_SIZE MINI)
 set(PWR_BOARD_VERSIONS PWR_BOARD_VERSION=PWR23)
 set(RAM SAVE_RAM)
 set(STATES ARMED)
@@ -57,20 +60,16 @@ set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
 
 add_subdirectory(${SDK_NAME})
 
-#### Uncomment below additional settings as needed.
 set(${CMAKE_PROJECT_NAME}_PORT COM3)
 set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
+
 file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
-file(GLOB_RECURSE LIB_SKETCH projects/${DEVICE_NAME}/*.h)
-list(APPEND LIB_HDRS ${LIB_SKETCH})
 file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
+file(GLOB_RECURSE SKETCH_HDRS projects/${DEVICE_NAME}/*.h)
 
 message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
 
 message(STATUS "Board settings")
 print_board_settings(${BOARD})
 
-#set(LIB_HRDS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib)
-#set(SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src)
-
-generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${LIB_HDRS} ${SRC_HDRS})
+generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${LIB_HDRS} ${SRC_HDRS} ${SKETCH_HDRS})
