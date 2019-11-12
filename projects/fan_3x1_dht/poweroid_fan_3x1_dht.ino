@@ -3,8 +3,8 @@
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
-#include <../Poweroid_SDK_10/src/global.h>
-#include <../Poweroid_SDK_10/src/Poweroid10.h>
+#include <../../Poweroid_SDK_10/src/global.h>
+#include <../../Poweroid_SDK_10/src/Poweroid10.h>
 #include "poweroid_fan_3x1_dht_state.h"
 #include "poweroid_fan_3x1_dht_prop.h"
 
@@ -26,7 +26,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 bool light1;
 bool light2;
 bool humidity;
-bool temperature;
+bool curent_temp;
 
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
@@ -127,13 +127,13 @@ void processSensors() {
     light1 = PWR.SENS->isSensorOn(SEN_2);
     light2 = PWR.SENS->isSensorOn(SEN_3);
     humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
-    temperature = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
+    curent_temp = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
 }
 
 void runPowerStates(){
     run_state_light(light1 || light2);
     run_state_humid(humidity);
-    run_state_temp(temperature);
+    run_state_temp(curent_temp);
 
 }
 

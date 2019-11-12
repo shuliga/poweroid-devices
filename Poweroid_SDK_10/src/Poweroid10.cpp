@@ -61,6 +61,7 @@ Pwr::Pwr(Context &ctx, Commander *_cmd, Controller *_ctrl, Bt *_bt) : CTX(&ctx),
 }
 
 void Pwr::begin() {
+
 #ifdef WATCH_DOG
     wdt_disable();
 #endif
@@ -101,7 +102,7 @@ void Pwr::begin() {
     writeLog('I', "PWR", 200 + CTX->passive, (unsigned long)0);
 #endif
 
-    #ifdef WATCH_DOG
+#ifdef WATCH_DOG
     wdt_enable(WDTO_2S);
 #endif
 
@@ -172,7 +173,7 @@ void Pwr::run() {
         REL->shutDown();
     }
 
-    printChangedStates();
+    processChangedStates();
 
     timerFlags = 0;
 }
@@ -217,12 +218,12 @@ void Pwr::loadDisarmedStates() {
 
 void Pwr::power(uint8_t i, bool power) {
     if (CTX->canAccessLocally()) {
-        CTX->refreshState = power != REL->isPowered(i);
+        CTX->refreshState = REL->isPowered(i) != power;
         REL->power(i, power);
     }
 }
 
-void Pwr::printChangedStates() {
+void Pwr::processChangedStates() {
     for(uint8_t i = 0; i < state_count; i++){
         if (changedState[i]) {
             CMD->printState(i);

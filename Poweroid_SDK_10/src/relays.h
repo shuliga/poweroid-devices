@@ -34,8 +34,6 @@ private:
 
     static int8_t mappings[VIRTUAL_RELAYS];
 
-    static bool relay_on_low;
-
 public:
 
     bool mapped = true;

@@ -3,12 +3,12 @@
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
-#include <../Poweroid_SDK_10/src/global.h>
-#include <../Poweroid_SDK_10/src/Poweroid10.h>
-#include <poweroid_timer_button_1x1_state.h>
-#include <poweroid_timer_button_1x1_prop.h>
-#include <../Poweroid_SDK_10/src/ultrasonic.h>
-#include <../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
+#include <../../Poweroid_SDK_10/src/global.h>
+#include <../../Poweroid_SDK_10/src/Poweroid10.h>
+#include "poweroid_timer_button_1x1_state.h"
+#include "poweroid_timer_button_1x1_prop.h"
+#include <../../Poweroid_SDK_10/src/ultrasonic.h>
+#include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
 #define IND IND_1
 

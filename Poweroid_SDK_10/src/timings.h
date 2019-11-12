@@ -14,6 +14,7 @@
 #define TIMER_COUNTER_MAX   15
 
 #define test_timer(timer) (timerFlags >> timer) & 1U
+
 #define flash_symm(counter) counter < 2
 #define flash_accent(counter) counter == 0
 #define flash_(counter) counter % 2 == 0

@@ -1,3 +1,4 @@
+#include <avr/wdt.h>
 #include "bluetooth.h"
 #include "commons.h"
 
