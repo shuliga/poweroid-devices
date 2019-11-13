@@ -14,13 +14,13 @@ static struct Properties {
     Property FACTORY[7] = {
 
             //val      minV      maxV      scale
-            {25L,      6L,       35L,      1L},
-            {20L,      6L,       35L,      1L},
-            {22L,      6L,       35L,      1L},
+            {24L,      6L,       35L,      1L},
+            {21L,      6L,       35L,      1L},
             {18L,      6L,       35L,      1L},
+            {15L,      6L,       35L,      1L},
             {8L,       6L,       18L,      1L},
-            {21600000L,3600000L, 43200000L,3600000L},
-            {3600000L, 300000L,  7200000L, 60000L}
+            {10800000L,3600000L, 43200000L,3600000L},
+            {900000L, 300000L,  7200000L, 60000L}
 
     };
 
@@ -36,10 +36,10 @@ static struct Properties {
         FACTORY[0].desc = F("Floor t.");
         FACTORY[0].measure = DEG_C;
 
-        FACTORY[1].desc = F("Floor t. ECO");
+        FACTORY[1].desc = F("Heater t.");
         FACTORY[1].measure = DEG_C;
 
-        FACTORY[2].desc = F("Heater t.");
+        FACTORY[2].desc = F("Floor t. ECO");
         FACTORY[2].measure = DEG_C;
 
         FACTORY[3].desc = F("Heater t. ECO");

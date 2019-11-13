@@ -48,6 +48,7 @@ typedef struct Context {
     int8_t props_default_idx;
     bool hasToken;
     bool refreshProps;
+    bool propsUpdated;
     bool refreshState;
     bool passive;
     bool connected = false;
