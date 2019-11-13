@@ -1,9 +1,9 @@
 #ifndef TENS_STATE_H
 #define TENS_STATE_H
 
-#include <../Poweroid_SDK_10/src/commons.h>
-#include <../Poweroid_SDK_10/src/context.h>
-#include <../Poweroid_SDK_10/src/timings.h>
+#include <../../Poweroid_SDK_10/src/commons.h>
+#include <../../Poweroid_SDK_10/src/context.h>
+#include <../../Poweroid_SDK_10/src/timings.h>
 
 typedef struct Timings {
     TimingState fill_time;
@@ -14,7 +14,7 @@ enum StatePower {
     SV_DISARM = 0, SV_READY = 7, SV_OPEN = 13, SP_OPEN_ALARM = 18, SP_ALARM_SHUT = 29
 } state_power = SV_READY, prev_state_power = SV_DISARM;
 
-uint8_t state_count = 1;
+uint8_t const state_count = 1;
 
 bool changedState[1] = {false};
 

@@ -53,7 +53,6 @@ Rotary encoder = Rotary(ENC1_PIN, ENC2_PIN);
 #endif
 
 MultiClick encoderClick = MultiClick(ENC_BTN_PIN);
-TimingState displayTiming = TimingState(333L);
 
 
 Controller::Controller(Context &_ctx, Commander &_cmd) : cmd(&_cmd), ctx(&_ctx) {}
@@ -124,6 +123,7 @@ void Controller::process() {
             }
 
             if (event == CLICK || autoComplete_timer.isTimeAfter(true)) {
+                ctx->propsUpdated = true;
                 goToBrowse();
             }
 
@@ -294,7 +294,7 @@ void Controller::process() {
             }
 
             // Output Sleep Screen
-            if (displayTiming.ping() && oled.getConnected()) {
+            if (test_timer(TIMER_2HZ) && oled.getConnected()) {
                 if (BANNER.mode == 0) {
                     padLineCenteredInBuff(BANNER.data.text);
                     oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, dither);

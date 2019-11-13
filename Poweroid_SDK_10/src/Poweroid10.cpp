@@ -73,11 +73,9 @@ void Pwr::begin() {
 
     CTX->PERS.begin();
 
-    if (BT) {
-        BT->begin();
-        CTX->passive = !BT->host;
-        CTX->remoteMode = BT->remote_on;
-    }
+    BT->begin();
+    CTX->passive = !BT->host;
+    CTX->remoteMode = BT->remote_on;
 
     initPins();
 
@@ -107,9 +105,7 @@ void Pwr::begin() {
 #endif
 
 #ifndef NO_CONTROLLER
-    if (CTRL) {
-        CTRL->begin();
-    }
+    CTRL->begin();
 #endif
 
     Serial.setTimeout(SERIAL_READ_TIMEOUT);
@@ -134,9 +130,7 @@ void Pwr::run() {
 
     processSensors();
 
-    if (CMD) {
-        CMD->listen();
-    }
+    CMD->listen();
 
     if (BT && CTX->remoteMode) {
         newConnected = CMD->isConnected();
@@ -150,9 +144,7 @@ void Pwr::run() {
     }
 
 #ifndef NO_CONTROLLER
-    if (CTRL) {
-        CTRL->process();
-    }
+    CTRL->process();
 #endif
 
     if (updateConnected && newConnected && CTX->canRespond()) {
@@ -169,13 +161,14 @@ void Pwr::run() {
     runPowerStates();
 #endif
 
-    if(CTX->passive && !CTX->connected){
+    if(CTX->remoteMode && CTX->passive && !CTX->connected){
         REL->shutDown();
     }
 
     processChangedStates();
 
     timerFlags = 0;
+    CTX->propsUpdated = false;
 }
 
 void Pwr::printVersion() {
@@ -214,6 +207,7 @@ void Pwr::loadDisarmedStates() {
         }
 #endif
     }
+    CTX->refreshState = true;
 }
 
 void Pwr::power(uint8_t i, bool power) {
