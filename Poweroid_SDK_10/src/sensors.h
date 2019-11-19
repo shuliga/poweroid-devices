@@ -65,13 +65,15 @@ public:
     const int16_t getNormalizedSensor(uint8_t i, int16_t min, int16_t max, uint16_t raw_min, uint16_t  raw_max);
 private:
 
-    float temp = 30;
+    float temp;
 
     float humid;
 
     void searchDHT();
 
     int8_t getInt(float f) const;
+
+    void updateDhtDirect();
 };
 
 

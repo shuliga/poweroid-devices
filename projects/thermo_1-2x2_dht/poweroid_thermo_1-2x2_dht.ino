@@ -1,5 +1,5 @@
 
-#define ID "PWR-TERMO-3x2-DHT"
+#define ID "THERMO-3x2-DHT"
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -10,7 +10,6 @@
 #include "../../Poweroid_SDK_10/src/boards.h"
 #include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
-MultiClick btn_eco(IN2_PIN);
 MultiClick btn_override(IN3_PIN);
 
 Timings timings = {0, 0};
@@ -29,13 +28,32 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 
 McEvent event[2];
 
-int8_t curent_temp;
+int8_t current_temp;
 int8_t floor_temp;
 int8_t heater_temp;
+bool inverse;
 
 void applyTimings() {
     timings.heater_switch_delay.interval = (unsigned long) PROPS.FACTORY[5].runtime;
     timings.floor_switch_delay.interval = (unsigned long) PROPS.FACTORY[6].runtime;
+}
+
+void processSensors() {
+
+    if (PWR.SENS->isDhtInstalled()) {
+        current_temp = round(PWR.SENS->getTemperature());
+    }
+
+    McEvent currEvent = CTX.SENS.isSensorOn(SEN_2) ? PRESSED : RELEASED;
+    inverse = event[0] != currEvent ? false : inverse;
+    event[0] = currEvent;
+
+    event[1] = btn_override.checkButton();
+    inverse = event[1] == CLICK == !inverse;
+}
+
+bool update(){
+    return CTX.propsUpdated || changedState[0];
 }
 
 void fillOutput() {
@@ -48,6 +66,7 @@ void run_state_mode(McEvent _event[]) {
         case SM_AWAY: {
             if (prev_state_mode != SM_AWAY) {
                 prev_state_mode = SM_AWAY;
+                CTX.PERS.storeState(0, true);
                 changedState[0] = true;
             }
 
@@ -55,6 +74,7 @@ void run_state_mode(McEvent _event[]) {
             heater_temp = PROPS.FACTORY[4].runtime;
 
             if (_event[1] == HOLD) {
+                CTX.PERS.storeState(0, false);
                 gotoStateMode(SM_ECO);
             }
             break;
@@ -68,7 +88,7 @@ void run_state_mode(McEvent _event[]) {
             floor_temp = PROPS.FACTORY[2].runtime;
             heater_temp = PROPS.FACTORY[3].runtime;
 
-            if (_event[1] == CLICK || _event[0] == RELEASED || _event[0] == DOUBLE_CLICK) {
+            if (inverse ? _event[0] == PRESSED : _event[0] == RELEASED) {
                 gotoStateMode(SM_NORMAL);
             }
             if (_event[1] == HOLD) {
@@ -85,7 +105,7 @@ void run_state_mode(McEvent _event[]) {
             floor_temp = PROPS.FACTORY[0].runtime;
             heater_temp = PROPS.FACTORY[1].runtime;
 
-            if (_event[1] == CLICK || _event[0] == PRESSED) {
+            if (inverse ? _event[0] == RELEASED : _event[0] == PRESSED) {
                 gotoStateMode(SM_ECO);
             }
             if (_event[1] == HOLD) {
@@ -96,12 +116,8 @@ void run_state_mode(McEvent _event[]) {
     }
 }
 
-bool update(){
-    return CTX.propsUpdated || changedState[0];
-}
-
 void run_state_temp_floor() {
-    bool doHeat = curent_temp < floor_temp;
+    bool doHeat = current_temp < floor_temp;
     switch (state_temp_floor) {
         case SF_OFF: {
             if (timings.floor_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
@@ -119,7 +135,7 @@ void run_state_temp_floor() {
 }
 
 void run_state_temp_heater() {
-    bool doHeat = curent_temp < heater_temp;
+    bool doHeat = current_temp < heater_temp && current_temp;
     switch (state_temp_heater) {
         case SH_OFF: {
             if (timings.heater_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
@@ -134,17 +150,6 @@ void run_state_temp_heater() {
             break;
         }
     }
-}
-
-void processSensors() {
-
-    if (PWR.SENS->isDhtInstalled()) {
-        curent_temp = round(PWR.SENS->getTemperature());
-    }
-
-    event[0] = btn_eco.checkButton();
-    event[1] = btn_override.checkButton();
-
 }
 
 void runPowerStates() {
