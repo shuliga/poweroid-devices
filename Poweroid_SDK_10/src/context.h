@@ -66,6 +66,7 @@ typedef struct Context {
     boolean canRespond(){
         return !TOKEN_ENABLE || hasToken;
     }
+
 };
 
 #endif //POWEROID_10_CONTEXT_H

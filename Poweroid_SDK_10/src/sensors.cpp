@@ -45,6 +45,7 @@ void Sensors::searchDHT() {
         for(int i = 0; i < SENS_COUNT; i++){
             if (IN_PINS[i] == DHT_PIN){
                 installed[i] = true;
+                updateDhtDirect();
             }
         }
         dht_installed = true;
@@ -53,9 +54,13 @@ void Sensors::searchDHT() {
 
 void Sensors::updateDHT() {
     if (dht_installed && test_timer(TIMER_0_25HZ)) {
-        temp = dht.readTemperature();
-        humid = dht.readHumidity();
+        updateDhtDirect();
     }
+}
+
+void Sensors::updateDhtDirect(){
+    temp = dht.readTemperature();
+    humid = dht.readHumidity();
 }
 
 float Sensors::getTemperature() const {

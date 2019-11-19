@@ -92,8 +92,10 @@ void Controller::initDisplay() {
 void Controller::outputState(bool relays) const {
     strcpy(BUFF, relays ? (const char *) ctx->RELAYS.relStatus() : ctx->id);
     padLineInBuff(BUFF, 1, 0);
-    BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remoteMode ? ((
-            (ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
+    if (TOKEN_ENABLE || ctx->remoteMode){
+        BUFF[15] = (unsigned char) (TOKEN_ENABLE ? COM_TOKEN + 48 : (ctx->remoteMode ? ((
+                (ctx->connected ? CHAR_CONNECTED : CHAR_DISCONNECTED) + (ctx->passive ? 0 : 2))) : '\0'));
+    }
     oled.setTextXY(0, 0);
     oled.putString(BUFF);
 }

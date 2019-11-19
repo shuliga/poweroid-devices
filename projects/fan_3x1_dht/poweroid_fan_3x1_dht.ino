@@ -26,7 +26,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 bool light1;
 bool light2;
 bool humidity;
-bool curent_temp;
+bool current_temp;
 
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) FAN_PROPS.FACTORY[0].runtime;
@@ -127,13 +127,13 @@ void processSensors() {
     light1 = PWR.SENS->isSensorOn(SEN_2);
     light2 = PWR.SENS->isSensorOn(SEN_3);
     humidity = PWR.SENS->isDhtInstalled() && PWR.SENS->getHumidity() > GET_PROP_NORM(3);
-    curent_temp = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
+    current_temp = PWR.SENS->isDhtInstalled() && PWR.SENS->getTemperature() < GET_PROP_NORM(6);
 }
 
 void runPowerStates(){
     run_state_light(light1 || light2);
     run_state_humid(humidity);
-    run_state_temp(curent_temp);
+    run_state_temp(current_temp);
 
 }
 

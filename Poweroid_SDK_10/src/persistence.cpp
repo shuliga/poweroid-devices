@@ -72,9 +72,6 @@ void Persistence::begin() {
     if (COM_TOKEN > TOKEN_MAX) {
         COM_TOKEN = 0;
     }
-#ifdef ARMED
-    EEPROM.write(STATES_OFFSET, 0);
-#endif
 }
 
 void Persistence::storeProperties(Property *props) {

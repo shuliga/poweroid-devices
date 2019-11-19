@@ -17,7 +17,7 @@ uint8_t timerFlags;
 uint8_t timerCounter_1Hz;
 uint8_t timerCounter_4Hz;
 
-void initTimer1() {
+void initTimer_1() {
     cli();
 
     TCCR1A = 0;
@@ -110,7 +110,7 @@ void Pwr::begin() {
 
     Serial.setTimeout(SERIAL_READ_TIMEOUT);
 
-    initTimer1();
+    initTimer_1();
 }
 
 void Pwr::run() {
@@ -212,7 +212,7 @@ void Pwr::loadDisarmedStates() {
 
 void Pwr::power(uint8_t i, bool power) {
     if (CTX->canAccessLocally()) {
-        CTX->refreshState = REL->isPowered(i) != power;
+        CTX->refreshState = CTX->refreshState || (REL->isPowered(i) != power);
         REL->power(i, power);
     }
 }

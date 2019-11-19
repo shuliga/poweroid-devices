@@ -28,7 +28,7 @@ void Bt::begin() {
 
             if(!TOKEN_ENABLE){
                 String ver = execCommand(F("AT+VERSION"), 0, false);
-                if (ver.startsWith(BT_VER_06)) {
+                if (!ver.startsWith(BT_VER_05)) {
                     execCommand(F("AT+NAME"), name, false);
                 }
             }
