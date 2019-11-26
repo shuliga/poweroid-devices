@@ -26,8 +26,6 @@ const uint8_t IN_PINS[] = {IN1_PIN, IN2_PIN};
 const uint8_t INA_PINS[] = {INA1_PIN, INA2_PIN};
 #endif
 
-uint16_t REMOTE_SENSORS[REMOTE_SENSORS_COUNT];
-
 static const uint8_t  SENS_COUNT = ARRAY_SIZE(IN_PINS);
 static bool installed[SENS_COUNT];
 
@@ -116,9 +114,6 @@ bool Sensors::isSensorOn(uint8_t index) {
 }
 
 int16_t Sensors::getSensorVal(uint8_t index) {
-    if(index > SENS_COUNT){
-        return REMOTE_SENSORS[index - SENS_COUNT];
-    }
     return analogRead(INA_PINS[index]);
 }
 

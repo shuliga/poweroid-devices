@@ -82,6 +82,7 @@ void Commander::listen() {
                         ctx->PROPERTIES[i].runtime = ctx->PROPERTIES[i].val;
                     }
                     ctx->refreshProps = true;
+                    ctx->propsUpdated = true;
                 }
 
                 if (cmd.startsWith(cu.cmd_str.CMD_SET_RELAY)) {
@@ -95,10 +96,6 @@ void Commander::listen() {
                     }
                 }
 
-                if (cmd.startsWith(cu.cmd_str.CMD_SET_SENSOR)) {
-                    cmd.getBytes(reinterpret_cast<unsigned char *>(REMOTE_SENSORS + getIndex()), 2, getValIndex());
-                }
-
                 if (cmd.startsWith(cu.cmd_str.CMD_GET_ALL_PROP)) {
                     for (uint8_t i = 0; i < ctx->props_size; i++) {
                         printCmdResponse(cmd, printProperty(i));
@@ -108,6 +105,7 @@ void Commander::listen() {
                 if (castCommand(cu.cmd_str.CMD_LOAD_PROPS, NULL)) {
                     ctx->PERS.loadProperties(ctx->PROPERTIES);
                     ctx->refreshProps = true;
+                    ctx->propsUpdated = true;
                 }
 
                 if (castCommand(cu.cmd_str.CMD_STORE_PROPS, NULL)) {
@@ -145,6 +143,7 @@ void Commander::listen() {
                             long v = cmd.substring((unsigned int) idx).toInt();
                             ctx->PROPERTIES[i].runtime = v * ctx->PROPERTIES[i].scale;
                             ctx->refreshProps = true;
+                            ctx->propsUpdated = true;
                             printCmdResponse(cmd, printProperty(i));
                         }
                     }

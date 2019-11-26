@@ -24,7 +24,6 @@ Cu cu{
                   "store_props",
                   "reset_props",
                   "set_relay_",
-                  "set_bin_sensor_",
                   "remote_state ",
                   "get_all_prop",
 #ifndef SAVE_RAM

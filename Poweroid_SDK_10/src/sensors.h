@@ -14,8 +14,6 @@
 #define DHT_PIN IN1_PIN
 #endif
 
-#define REMOTE_SENSORS_COUNT 3
-
 #define SEN_1 0
 #define SEN_2 1
 #define SEN_3 2
@@ -23,9 +21,6 @@
 
 extern const uint8_t IN_PINS[];
 extern const uint8_t INA_PINS[];
-extern uint16_t REMOTE_SENSORS[];
-
-
 
 class Sensors {
 public:
@@ -63,6 +58,9 @@ public:
     const char *printSensor(uint8_t i);
 
     const int16_t getNormalizedSensor(uint8_t i, int16_t min, int16_t max, uint16_t raw_min, uint16_t  raw_max);
+
+    int8_t getInt(float f) const;
+
 private:
 
     float temp;
@@ -71,7 +69,6 @@ private:
 
     void searchDHT();
 
-    int8_t getInt(float f) const;
 
     void updateDhtDirect();
 };

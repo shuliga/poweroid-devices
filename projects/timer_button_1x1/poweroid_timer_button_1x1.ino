@@ -17,10 +17,6 @@ MultiClick btn(IN1_PIN);
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
 
-#ifndef CONTROLLER_ONLY
-DateTime DT;
-#endif
-
 Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
@@ -63,7 +59,7 @@ void fillOutput() {
 #ifdef CONTROLLER_ONLY
         strcpy(BANNER.data.text, NO_INFO_STR);
 #else
-        DT.getTimeString(BANNER.data.text);
+        DATETIME.getTimeString(BANNER.data.text);
 #endif
     };
 }

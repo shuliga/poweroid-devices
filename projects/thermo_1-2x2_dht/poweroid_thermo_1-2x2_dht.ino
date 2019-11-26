@@ -10,6 +10,8 @@
 #include "../../Poweroid_SDK_10/src/boards.h"
 #include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
+#define TEMP_FAIL -128
+
 MultiClick btn_override(IN3_PIN);
 
 Timings timings = {0, 0};
@@ -41,7 +43,8 @@ void applyTimings() {
 void processSensors() {
 
     if (PWR.SENS->isDhtInstalled()) {
-        current_temp = round(PWR.SENS->getTemperature());
+        float temp = PWR.SENS->getTemperature();
+        current_temp = (!isnan(temp) && temp > -20 && temp < 40) ? PWR.SENS->getInt(temp) : TEMP_FAIL;
     }
 
     McEvent currEvent = CTX.SENS.isSensorOn(SEN_2) ? PRESSED : RELEASED;
@@ -52,8 +55,8 @@ void processSensors() {
     inverse = event[1] == CLICK == !inverse;
 }
 
-bool update(){
-    return CTX.propsUpdated || changedState[0];
+bool update() {
+    return CTX.propsUpdated || changedState[0] || current_temp == TEMP_FAIL;
 }
 
 void fillOutput() {
@@ -117,7 +120,7 @@ void run_state_mode(McEvent _event[]) {
 }
 
 void run_state_temp_floor() {
-    bool doHeat = current_temp < floor_temp;
+    bool doHeat = current_temp != TEMP_FAIL && current_temp < floor_temp;
     switch (state_temp_floor) {
         case SF_OFF: {
             if (timings.floor_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
@@ -135,7 +138,7 @@ void run_state_temp_floor() {
 }
 
 void run_state_temp_heater() {
-    bool doHeat = current_temp < heater_temp && current_temp;
+    bool doHeat = current_temp != TEMP_FAIL && current_temp < heater_temp;
     switch (state_temp_heater) {
         case SH_OFF: {
             if (timings.heater_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
@@ -156,7 +159,6 @@ void runPowerStates() {
     run_state_mode(event);
     run_state_temp_floor();
     run_state_temp_heater();
-
 }
 
 void setup() {
@@ -170,9 +172,11 @@ void loop() {
     PWR.power(REL_A, state_temp_floor == SF_HEAT);
     PWR.power(REL_B, state_temp_heater == SH_HEAT);
 
-    if (state_mode == SM_ECO || state_mode == SM_NORMAL) {
+    if (current_temp == TEMP_FAIL) {
+        INDICATORS.flash(IND_1, flash_(timerCounter_4Hz), true);
+    } else if (state_mode == SM_ECO || state_mode == SM_NORMAL) {
         INDICATORS.set(IND_1, state_mode == SM_ECO);
     } else {
-        INDICATORS.flash(IND_1, flash_symm(timerCounter_4Hz), state_mode == SM_AWAY);
+        INDICATORS.flash(IND_1, !flash_accent(timerCounter_1Hz), state_mode == SM_AWAY);
     }
 }
