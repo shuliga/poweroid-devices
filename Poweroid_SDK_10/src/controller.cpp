@@ -12,6 +12,8 @@
 #include <ACROBOTIC_SSD1306/ACROBOTIC_SSD1306.h>
 #include "controller.h"
 #include "commands.h"
+#include "datetime.h"
+
 
 #ifndef NO_CONTROLLER
 
@@ -19,7 +21,7 @@
 #define DISPLAY_BOTTOM 7
 
 static enum State {
-    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND, FLAG, TOKEN
+    EDIT_PROP, BROWSE, STORE, SLEEP, STATES, SUSPEND, FLAG, TOKEN, DATE_TIME
 } oldState = STORE, state = BROWSE;
 
 static TimingState sleep_timer = TimingState(100000L);
@@ -40,6 +42,9 @@ static uint8_t c_byte_value = 255;
 static long c_prop_value = -1;
 static long old_prop_value;
 static bool dither = false;
+
+static uint8_t timeDateBlock = 0;
+static uint8_t dateTimePartIdx = 0;
 
 static volatile long prop_min;
 static volatile long prop_max;
@@ -216,21 +221,94 @@ void Controller::process() {
 
             if (event == HOLD) {
                 ctx->PERS.storeFlags();
-                if (TOKEN_ENABLE) {
-                    state = TOKEN;
-                } else {
-                    goToBrowse();
-                }
+                goToBrowse();
             }
 
             if (event == CLICK || sleep_timer.isTimeAfter(true)) {
                 goToBrowse();
             }
 
-            if (TOKEN_ENABLE && event == DOUBLE_CLICK) {
-                state = TOKEN;
+            if (event == DOUBLE_CLICK) {
+                state = DATE_TIME;
             }
 
+            break;
+        }
+
+        case DATE_TIME: {
+#ifndef DATETIME_H
+            if (TOKEN_ENABLE)
+                    state = TOKEN;
+                else
+                    goToBrowse();
+#else
+            bool isTime = timeDateBlock == 1;
+
+            if (testControl(sleep_timer)) {
+                outputState(false);
+                timeDateBlock = 0;
+                dateTimePartIdx = 0;
+                prop_max = 1;
+                prop_value = 0;
+                prop_min = -1;
+                DATETIME.getDateString(dateString);
+                DATETIME.getTimeString(timeString);
+                outputStatus(F("     "), 0);
+            }
+
+            if (prop_value != 0 ) {
+                DATETIME.dialDateTimeString( isTime ? timeString : dateString, dateTimePartIdx, isTime, prop_value < 0, false);
+                prop_value = 0;
+            }
+
+            if (test_timer(TIMER_2HZ)){
+                outputDescr(isTime ? time : date, 1);
+                if (isTime)
+                    strcpy(BUFF, timeString);
+                else
+                    strcpy(BUFF, dateString);
+
+                if (flash_symm(timerCounter_4Hz)){
+                    DATETIME.screenDateTimePart(BUFF, dateTimePartIdx);
+                }
+
+                padLineCenteredInBuff(BUFF);
+                oled.outputTextXY(DISPLAY_BASE + 2, 64, BUFF, true, false);
+            }
+
+            if (event == HOLD) {
+                DATETIME.setTimeFromString(timeString);
+                DATETIME.setDateFromString(dateString);
+                goToBrowse();
+            }
+
+            if (event == CLICK) {
+                dateTimePartIdx++;
+                if (dateTimePartIdx == 3){
+                    dateTimePartIdx = 0;
+                    timeDateBlock++;
+                    if (timeDateBlock == 2){
+                        timeDateBlock = 0;
+                    }
+                }
+            }
+
+
+            if (sleep_timer.isTimeAfter(true)) {
+                timeDateBlock++;
+                sleep_timer.reset();
+                if (timeDateBlock = 2){
+                    goToBrowse();
+                }
+            }
+
+            if (event == DOUBLE_CLICK) {
+                if (TOKEN_ENABLE)
+                    state = TOKEN;
+                else
+                    goToBrowse();
+            }
+#endif
             break;
         }
 
@@ -470,15 +548,16 @@ void Controller::switchDisplay(boolean inverse) const {
     oled.displayOn();
 }
 
-void Controller::outputPropDescr(char *_buff) {
+void Controller::outputPropDescr(const char *_buff) {
     if (canGoToEdit()) {
         outputDescr(_buff, 2);
     }
 }
 
-void Controller::outputDescr(char *_buff, uint8_t lines) const {
+void Controller::outputDescr(const char *_buff, uint8_t lines) const {
     oled.setTextXY(DISPLAY_BASE, 0);
-    padLineInBuff(_buff, lines, 0);
+    strcpy(BUFF, _buff);
+    padLineInBuff(BUFF, lines, 0);
     oled.putString(BUFF);
 }
 
@@ -544,6 +623,7 @@ ISR(PCVECT) {
 
                 case FLAG:
                 case TOKEN:
+                case DATE_TIME:
                 case EDIT_PROP: {
                     input == DIR_CW ? DECR(prop_value, prop_min) : INCR(prop_value, prop_max);
                     break;

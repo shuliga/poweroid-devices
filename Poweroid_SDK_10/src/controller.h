@@ -30,9 +30,9 @@ private:
 
     void initDisplay();
 
-    void outputPropDescr(char * _buff);
+    void outputPropDescr(const char * _buff);
 
-    void outputDescr(char *_buff, uint8_t lines) const;
+    void outputDescr(const char *_buff, uint8_t lines) const;
 
     void outputStatus(const __FlashStringHelper *txt, const long val);
 

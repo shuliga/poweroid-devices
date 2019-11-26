@@ -35,7 +35,6 @@
 
 #define DEBOUNCE_DELAY 500L
 #define SERIAL_READ_TIMEOUT 150
-#define CONNECTION_CHECK 5000L
 
 #define RX_SS 8
 #define TX_SS 9

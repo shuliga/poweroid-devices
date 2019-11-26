@@ -1,9 +1,9 @@
 #ifndef PROPS_H
 #define PROPS_H
 
-#include <../Poweroid_SDK_10/src/properties.h>
-#include <../Poweroid_SDK_10/src/commons.h>
-#include <../Poweroid_SDK_10/src/timings.h>
+#include <../../Poweroid_SDK_10/src/properties.h>
+#include <../../Poweroid_SDK_10/src/commons.h>
+#include <../../Poweroid_SDK_10/src/timings.h>
 
 #define GET_PROP_NORM(i) PROPS.FACTORY[(i)].runtime / PROPS.FACTORY[(i)].scale
 
