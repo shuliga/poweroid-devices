@@ -10,9 +10,9 @@
 #include <../../Poweroid_SDK_10/src/ultrasonic.h>
 #include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
-#define IND IND_1
+#define IND IND_3
 
-MultiClick btn(IN1_PIN);
+MultiClick btn(IN3_PIN);
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
