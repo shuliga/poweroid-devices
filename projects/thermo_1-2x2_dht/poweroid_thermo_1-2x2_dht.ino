@@ -36,8 +36,8 @@ int8_t heater_temp;
 bool inverse;
 
 void applyTimings() {
-    timings.heater_switch_delay.interval = (unsigned long) PROPS.FACTORY[5].runtime;
-    timings.floor_switch_delay.interval = (unsigned long) PROPS.FACTORY[6].runtime;
+    timings.floor_switch_delay.interval = (unsigned long) PROPS.FACTORY[5].runtime;
+    timings.heater_switch_delay.interval = (unsigned long) PROPS.FACTORY[6].runtime;
 }
 
 void processSensors() {
