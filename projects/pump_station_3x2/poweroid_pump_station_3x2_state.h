@@ -1,9 +1,9 @@
 #ifndef FAN_STATE_H
 #define FAN_STATE_H
 
-#include <../Poweroid_SDK_10/src/commons.h>
-#include <../Poweroid_SDK_10/src/context.h>
-#include <../Poweroid_SDK_10/src/timings.h>
+#include <../../Poweroid_SDK_10/src/commons.h>
+#include <../../Poweroid_SDK_10/src/context.h>
+#include <../../Poweroid_SDK_10/src/timings.h>
 
 typedef struct Timings {
     TimingState countdown_pump;
@@ -24,7 +24,7 @@ enum StateInfo {
     SI_DISARM = 0, SI_ALARM = 111
 } state_info = SI_DISARM, prev_state_info = SI_ALARM;
 
-uint8_t state_count = 2;
+uint8_t const state_count = 2;
 bool changedState[3] = {false, false, false};
 
 const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Info"};

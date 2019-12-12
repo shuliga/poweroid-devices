@@ -5,8 +5,8 @@
 #include "ultrasonic.h"
 
 void Ultrasonic::begin(uint8_t n){
-    trigger_pin = INA_PINS[n-1];
-    echo_pin = IN_PINS[n-1];
+    trigger_pin = INA_PINS[n];
+    echo_pin = IN_PINS[n];
     pinMode(trigger_pin, OUTPUT);
     pinMode(echo_pin, INPUT);
 

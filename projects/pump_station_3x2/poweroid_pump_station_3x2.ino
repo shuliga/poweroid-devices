@@ -216,7 +216,7 @@ void runPowerStates() {
 
 void setup() {
     PWR.begin();
-    ULTRASONIC.begin(1);
+    ULTRASONIC.begin(SEN_1);
 }
 
 void loop() {
