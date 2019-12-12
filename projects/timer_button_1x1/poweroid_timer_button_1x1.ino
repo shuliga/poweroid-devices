@@ -7,12 +7,11 @@
 #include <../../Poweroid_SDK_10/src/Poweroid10.h>
 #include "poweroid_timer_button_1x1_state.h"
 #include "poweroid_timer_button_1x1_prop.h"
-#include <../../Poweroid_SDK_10/src/ultrasonic.h>
 #include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
 #define IND IND_3
 
-MultiClick btn(IN3_PIN);
+MultiClick btn(IN2_PIN);
 
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
@@ -34,6 +33,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 #endif
 
 McEvent event;
+const char * TIME_FMT = "%02d:%02d:%02d";
 
 void applyTimings() {
     timings.countdown_power.interval = (unsigned long) PROPS.FACTORY[0].runtime * 3600000L +
@@ -58,8 +58,10 @@ void fillOutput() {
     } else {
 #ifdef CONTROLLER_ONLY
         strcpy(BANNER.data.text, NO_INFO_STR);
-#else
+#elif defined DATETIME_H
         DATETIME.getTimeString(BANNER.data.text);
+#else
+        strcpy(BANNER.data.text, NO_INFO_STR);
 #endif
     };
 }
