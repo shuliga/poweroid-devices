@@ -1,9 +1,9 @@
 #ifndef TENS_STATE_H
 #define TENS_STATE_H
 
-#include <../../Poweroid_SDK_10/src/commons.h>
-#include <../../Poweroid_SDK_10/src/context.h>
-#include <../../Poweroid_SDK_10/src/timings.h>
+#include <commons.h>
+#include <context.h>
+#include <timings.h>
 
 typedef struct Timings {
     TimingState fill_time;

@@ -1,9 +1,9 @@
 #ifndef FAN_PROPS_H
 #define FAN_PROPS_H
 
-#include <../../Poweroid_SDK_10/src/properties.h>
-#include <../../Poweroid_SDK_10/src/commons.h>
-#include <../../Poweroid_SDK_10/src/timings.h>
+#include <properties.h>
+#include <commons.h>
+#include <timings.h>
 
 #define GET_PROP_NORM(i) FAN_PROPS.FACTORY[(i)].runtime / FAN_PROPS.FACTORY[(i)].scale
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14.3)
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_RULE_MESSAGES OFF)
@@ -7,9 +7,9 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 #set(DEVICE_NAME test_bt)
 #set(DEVICE_NAME timer_button_1x1)
 #set(DEVICE_NAME fan_3x1_dht)
-#set(DEVICE_NAME thermo_1-2x2_dht)
+set(DEVICE_NAME thermo_1-2x2_dht)
 #set(DEVICE_NAME tensiometer_1x1)
-set(DEVICE_NAME pump_station_3x2)
+#set(DEVICE_NAME pump_station_3x2)
 
 #########
 # Controler boards section
@@ -56,16 +56,17 @@ endif()
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
 set(${CMAKE_PROJECT_NAME}_SKETCH ${PROJECT_FOLDER}/poweroid_${DEVICE_NAME}.ino)
 
-set(SDK_NAME Poweroid_SDK_10)
-set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
+set(SDK_NAME poweroid-sdk-1.0)
 
-add_subdirectory(${SDK_NAME})
+include_directories(SYSTEM ${SDK_NAME}/lib)
+include_directories(SYSTEM ${SDK_NAME}/src)
+#add_subdirectory(${SDK_NAME})
 
 set(${CMAKE_PROJECT_NAME}_PORT COM3)
 set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
 
-file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
-file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
+file(GLOB_RECURSE LIB_HDRS ${SDK_NAME}/lib/*.h)
+file(GLOB_RECURSE SRC_HDRS ${SDK_NAME}/src/*.h)
 file(GLOB_RECURSE SKETCH_HDRS ${PROJECT_FOLDER}/*.h)
 
 message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
@@ -73,4 +74,5 @@ message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
 message(STATUS "Board settings")
 print_board_settings(${BOARD})
 
-generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${LIB_HDRS} ${SRC_HDRS} ${SKETCH_HDRS})
+#generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${SKETCH_HDRS})
+generate_arduino_firmware(${CMAKE_PROJECT_NAME} HDRS ${SKETCH_HDRS})

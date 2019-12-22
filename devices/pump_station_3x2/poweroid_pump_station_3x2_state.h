@@ -1,9 +1,9 @@
 #ifndef FAN_STATE_H
 #define FAN_STATE_H
 
-#include <../../Poweroid_SDK_10/src/commons.h>
-#include <../../Poweroid_SDK_10/src/context.h>
-#include <../../Poweroid_SDK_10/src/timings.h>
+#include <commons.h>
+#include <context.h>
+#include <timings.h>
 
 typedef struct Timings {
     TimingState countdown_pump;

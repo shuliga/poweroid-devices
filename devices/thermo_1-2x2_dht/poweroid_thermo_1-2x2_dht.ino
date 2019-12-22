@@ -1,14 +1,10 @@
 
 #define ID "THERMO-3x2-DHT"
 
-#include <SoftwareSerial.h>
-#include <Wire.h>
-#include <../../Poweroid_SDK_10/src/global.h>
-#include <../../Poweroid_SDK_10/src/Poweroid10.h>
+#include <Poweroid10.h>
+#include <MultiClick/MultiClick.h>
 #include "poweroid_thermo_1-2x2_dht_state.h"
 #include "poweroid_thermo_1-2x2_dht_prop.h"
-#include "../../Poweroid_SDK_10/src/boards.h"
-#include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
 
 #define TEMP_FAIL -128
 

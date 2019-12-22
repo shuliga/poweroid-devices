@@ -1,13 +1,11 @@
 
 #define ID "PWR-TMB-11"
 
-#include <SoftwareSerial.h>
-#include <Wire.h>
-#include <../../Poweroid_SDK_10/src/global.h>
-#include <../../Poweroid_SDK_10/src/Poweroid10.h>
+#include <global.h>
+#include <Poweroid10.h>
 #include "poweroid_timer_button_1x1_state.h"
 #include "poweroid_timer_button_1x1_prop.h"
-#include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
+#include <MultiClick/MultiClick.h>
 
 #define IND IND_3
 

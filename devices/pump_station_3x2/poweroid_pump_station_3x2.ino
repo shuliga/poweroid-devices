@@ -1,14 +1,10 @@
 #define ID "PWR-PMS-32"
 
-#include <SoftwareSerial.h>
-#include <Wire.h>
-#include <../../Poweroid_SDK_10/src/global.h>
-#include <../../Poweroid_SDK_10/src/Poweroid10.h>
+#include <Poweroid10.h>
+#include <ultrasonic.h>
+#include <MultiClick/MultiClick.h>
 #include "poweroid_pump_station_3x2_state.h"
 #include "poweroid_pump_station_3x2_prop.h"
-#include <../../Poweroid_SDK_10/src//ultrasonic.h>
-#include <../../Poweroid_SDK_10/lib/MultiClick/MultiClick.h>
-#include <../../Poweroid_SDK_10/lib/DS1307/DS1307.h>
 
 
 Timings timings = {0, 0, 0, 0};
