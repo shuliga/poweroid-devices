@@ -11,7 +11,6 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 #set(DEVICE_NAME tensiometer_1x1)
 set(DEVICE_NAME pump_station_3x2)
 
-
 #########
 # Controler boards section
 #
@@ -38,6 +37,8 @@ set(RAM SAVE_RAM)
 
 add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES})
 
+set(PROJECT_FOLDER "projects/${DEVICE_NAME}")
+
 if(CD_CTRL)
     if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")
         set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_CO")
@@ -53,7 +54,7 @@ else()
 endif()
 
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
-set(${CMAKE_PROJECT_NAME}_SKETCH projects/${DEVICE_NAME}/poweroid_${DEVICE_NAME}.ino)
+set(${CMAKE_PROJECT_NAME}_SKETCH ${PROJECT_FOLDER}/poweroid_${DEVICE_NAME}.ino)
 
 set(SDK_NAME Poweroid_SDK_10)
 set(SDK_BUILD_PATH "${SDK_NAME}/cmake-build-release")
@@ -65,7 +66,7 @@ set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
 
 file(GLOB_RECURSE LIB_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/lib/*.h)
 file(GLOB_RECURSE SRC_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/${SDK_NAME}/src/*.h)
-file(GLOB_RECURSE SKETCH_HDRS projects/${DEVICE_NAME}/*.h)
+file(GLOB_RECURSE SKETCH_HDRS ${PROJECT_FOLDER}/*.h)
 
 message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
 
