@@ -37,7 +37,7 @@ set(RAM SAVE_RAM)
 
 add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES})
 
-set(PROJECT_FOLDER "projects/${DEVICE_NAME}")
+set(PROJECT_FOLDER "devices/${DEVICE_NAME}")
 
 if(CD_CTRL)
     if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")

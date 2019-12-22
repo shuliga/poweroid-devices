@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Poweroid.iml" filepath="$PROJECT_DIR$/.idea/Poweroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/poweroid-devices.iml" filepath="$PROJECT_DIR$/.idea/poweroid-devices.iml" />
     </modules>
   </component>
 </project>
