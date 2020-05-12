@@ -11,8 +11,8 @@ typedef struct Timings {
 };
 
 enum StatePower {
-    SV_DISARM = 0, SV_READY = 7, SV_OPEN = 13, SP_OPEN_ALARM = 18, SP_ALARM_SHUT = 29
-} state_power = SV_READY, prev_state_power = SV_DISARM;
+    SP_DISARM = 0, SP_READY = 7, SP_OPEN = 13, SP_OPEN_ALARM = 18, SP_ALARM_SHUT = 29
+} state_power = SP_READY, prev_state_power = SP_DISARM;
 
 uint8_t const state_count = 1;
 
@@ -43,7 +43,7 @@ void gotoStatePower(StatePower newState) {
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
         case 0: {
-            state_power = _disarm ? SV_DISARM : SV_READY;
+            state_power = _disarm ? SP_DISARM : SP_READY;
             prev_state_power = state_power;
             break;
         }

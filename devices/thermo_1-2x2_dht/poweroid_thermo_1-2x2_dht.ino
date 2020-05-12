@@ -1,5 +1,5 @@
 
-#define ID "THERMO-3x2-DHT"
+#define ID "THERMO_1-2x2-DHT"
 
 #include <Poweroid10.h>
 #include <MultiClick/MultiClick.h>
@@ -8,11 +8,11 @@
 
 #define TEMP_FAIL -128
 
-MultiClick btn_override(IN3_PIN);
+MultiClick btn_override(IN2_PIN);
 
 Timings timings = {0, 0};
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID, PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);
@@ -43,15 +43,20 @@ void processSensors() {
         current_temp = (!isnan(temp) && temp > -20 && temp < 40) ? PWR.SENS->getInt(temp) : TEMP_FAIL;
     }
 
-    McEvent currEvent = CTX.SENS.isSensorOn(SEN_2) ? PRESSED : RELEASED;
+// On MINI boards (with 2 sensor sockets) ECO/NORMAL switch is not available
+#ifndef MINI
+    McEvent currEvent = CTX.SENS.isSensorOn(SEN_3) ? PRESSED : RELEASED;
     inverse = event[0] != currEvent ? false : inverse;
     event[0] = currEvent;
+#else
+    event[0] = RELEASED;
+#endif
 
     event[1] = btn_override.checkButton();
     inverse = event[1] == CLICK == !inverse;
 }
 
-bool update() {
+bool shouldUpdate() {
     return CTX.propsUpdated || changedState[0] || current_temp == TEMP_FAIL;
 }
 
@@ -115,35 +120,17 @@ void run_state_mode(McEvent _event[]) {
     }
 }
 
-void run_state_temp_floor() {
-    bool doHeat = current_temp != TEMP_FAIL && current_temp < floor_temp;
-    switch (state_temp_floor) {
-        case SF_OFF: {
-            if (timings.floor_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
-                gotoStateTempFloor(SF_HEAT);
-            }
-            break;
-        }
-        case SF_HEAT: {
-            if (timings.floor_switch_delay.isTimeAfter(!doHeat) || (update() && !doHeat)) {
-                gotoStateTempFloor(SF_OFF);
-            }
-            break;
-        }
-    }
-}
-
 void run_state_temp_heater() {
     bool doHeat = current_temp != TEMP_FAIL && current_temp < heater_temp;
     switch (state_temp_heater) {
         case SH_OFF: {
-            if (timings.heater_switch_delay.isTimeAfter(doHeat) || (update() && doHeat)) {
+            if (timings.heater_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_heater == SH_DISARM))) {
                 gotoStateTempHeater(SH_HEAT);
             }
             break;
         }
         case SH_HEAT: {
-            if (timings.heater_switch_delay.isTimeAfter(!doHeat) || (update() && !doHeat)) {
+            if (timings.heater_switch_delay.isTimeAfter(!doHeat) || (shouldUpdate() && !doHeat)) {
                 gotoStateTempHeater(SH_OFF);
             }
             break;
@@ -151,10 +138,32 @@ void run_state_temp_heater() {
     }
 }
 
+#ifndef MINI
+void run_state_temp_floor() {
+    bool doHeat = current_temp != TEMP_FAIL && current_temp < floor_temp;
+    switch (state_temp_floor) {
+        case SF_OFF: {
+            if (timings.floor_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_floor == SF_DISARM))) {
+                gotoStateTempFloor(SF_HEAT);
+            }
+            break;
+        }
+        case SF_HEAT: {
+            if (timings.floor_switch_delay.isTimeAfter(!doHeat) || (shouldUpdate() && !doHeat)) {
+                gotoStateTempFloor(SF_OFF);
+            }
+            break;
+        }
+    }
+}
+#endif
+
 void runPowerStates() {
     run_state_mode(event);
-    run_state_temp_floor();
     run_state_temp_heater();
+#ifndef MINI
+    run_state_temp_floor();
+#endif
 }
 
 void setup() {
@@ -165,8 +174,10 @@ void loop() {
 
     PWR.run();
 
-    PWR.power(REL_A, state_temp_floor == SF_HEAT);
-    PWR.power(REL_B, state_temp_heater == SH_HEAT);
+    PWR.power(REL_A, state_temp_heater == SH_HEAT);
+#ifndef MINI
+    PWR.power(REL_B, state_temp_floor == SF_HEAT);
+#endif
 
     if (current_temp == TEMP_FAIL) {
         INDICATORS.flash(IND_1, flash_(timerCounter_4Hz), true);

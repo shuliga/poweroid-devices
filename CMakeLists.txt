@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_RULE_MESSAGES OFF)
 
-#set(DEVICE_NAME test_bt)
+#set(DEVICE_NAME test)
 #set(DEVICE_NAME timer_button_1x1)
 #set(DEVICE_NAME fan_3x1_dht)
 set(DEVICE_NAME thermo_1-2x2_dht)
@@ -16,54 +16,59 @@ set(DEVICE_NAME thermo_1-2x2_dht)
 #
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-set(BOARD uno_pro)
+#set(BOARD uno_pro)
 #
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-#set(BOARD pro)
+set(BOARD pro)
 #
 #########
 
 
-#### Uncomment below additional settings as needed.
+#### Uncomment below additional settings as needed
 
 #set(CD_CTRL CONTROLLER_ONLY)
 #set(CD_CTRL NO_CONTROLLER)
 
-#set(PWR_BOARD_SIZE MINI)
 set(PWR_BOARD_VERSIONS PWR_BOARD_VERSION=PWR23)
-set(RAM SAVE_RAM)
-#set(STATES ARMED)
 
-add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES})
+set(PWR_BOARD_SIZE MINI)
+set(RAM SAVE_RAM)
+set(REMOTE DO_NOT_PARSE_REMOTE)
+
+#set(RTCM RTCM)
+set(STATES ARMED)
+
+add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${STATES} ${RTCM} ${REMOTE} __STDC_LIMIT_MACROS)
 
 set(PROJECT_FOLDER "devices/${DEVICE_NAME}")
+string(TOUPPER ${BOARD} BOARD_NAME)
+if(PWR_BOARD_SIZE)
+    set(BOARD_NAME "${BOARD_NAME}_${PWR_BOARD_SIZE}")
+endif()
 
 if(CD_CTRL)
     if(${CD_CTRL} STREQUAL "CONTROLLER_ONLY")
-        set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_CO")
+        set(PRJ_NAME "${DEVICE_NAME}_${BOARD_NAME}_CO")
     elseif(${CD_CTRL} STREQUAL "NO_CONTROLLER")
-        set(PRJ_NAME "${DEVICE_NAME}_${BOARD}_NC")
+        set(PRJ_NAME "${DEVICE_NAME}_${BOARD_NAME}_NC")
     endif()
-    if(PWR_BOARD_SIZE)
-        set(PRJ_NAME "${PRJ_NAME}_${PWR_BOARD_SIZE}")
-    endif()
-    project(${PRJ_NAME})
+    project(${PRJ_NAME} LANGUAGES C CXX ASM)
 else()
-    project(${DEVICE_NAME}_${BOARD})
+    project(${DEVICE_NAME}_${BOARD_NAME} LANGUAGES C CXX ASM)
 endif()
+
+set(${CMAKE_PROJECT_NAME}_PORT COM3)
+set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
 
 set(${CMAKE_PROJECT_NAME}_BOARD ${BOARD})
 set(${CMAKE_PROJECT_NAME}_SKETCH ${PROJECT_FOLDER}/poweroid_${DEVICE_NAME}.ino)
 
 set(SDK_NAME poweroid-sdk-1.0)
 
-include_directories(SYSTEM ${SDK_NAME}/lib)
-include_directories(SYSTEM ${SDK_NAME}/src)
-#add_subdirectory(${SDK_NAME})
-
-set(${CMAKE_PROJECT_NAME}_PORT COM3)
-set(${CMAKE_PROJECT_NAME}_PROGRAMMER arduinoisp)
+include_directories(AFTER ${SDK_NAME}/lib)
+include_directories(AFTER ${SDK_NAME}/src)
+add_subdirectory(${SDK_NAME})
 
 file(GLOB_RECURSE LIB_HDRS ${SDK_NAME}/lib/*.h)
 file(GLOB_RECURSE SRC_HDRS ${SDK_NAME}/src/*.h)
@@ -74,5 +79,4 @@ message(STATUS "Compile definitions  ${COMPILE_DEFINITIONS}")
 message(STATUS "Board settings")
 print_board_settings(${BOARD})
 
-#generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${SKETCH_HDRS})
-generate_arduino_firmware(${CMAKE_PROJECT_NAME} HDRS ${SKETCH_HDRS})
+generate_arduino_firmware(${CMAKE_PROJECT_NAME} LIBS "${BOARD}_${SDK_NAME}" HDRS ${SKETCH_HDRS})

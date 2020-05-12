@@ -7,8 +7,7 @@
 
 Timings timings = {DEBOUNCE_DELAY, 0, 0, 0, 0, 0, 0};
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, FAN_PROPS.FACTORY, FAN_PROPS.props_size, ID,
-                  FAN_PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, ID, FAN_PROPS.FACTORY, FAN_PROPS.props_size, FAN_PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);

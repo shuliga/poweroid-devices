@@ -1,9 +1,19 @@
-SET chip=%2
-SET baud=%3
-IF "%2"=="" (
+@SET chip=%2
+@SET baud=%3
+@IF "%1"=="" (
+ @ECHO Target .hex file name missing
+ GOTO :END
+)
+@IF "%2"=="" (
  SET chip="atmega328p"
 )
 IF "%3"=="" (
+ SET port="COM6"
+)
+@IF "%4"=="" (
  SET baud="115200"
 )
-C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\avrdude -CC:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\etc\avrdude.conf -v -p %chip% -cstk500v1 -PCOM3 -b %baud% -Uflash:w:C:\Users\SHL\CLionProjects\Poweroid\cmake-build-release\%1:i
+@SET avr_path=C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino14
+@SET project_path=C:\Users\SHL\CLionProjects\poweroid-devices
+%avr_path%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud% -Uflash:w:%project_path%\cmake-build-release\%1:i
+:END

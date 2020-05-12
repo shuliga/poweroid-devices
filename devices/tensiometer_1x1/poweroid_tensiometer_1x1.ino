@@ -8,8 +8,7 @@
 
 Timings timings = {0, 0};
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
-                      PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);
@@ -54,24 +53,24 @@ void fillOutput() {
 
 void runPowerStates() {
     switch (state_power) {
-        case SV_READY: {
+        case SP_READY: {
             if (pressure < pressure_min) {
-                gotoStatePower(SV_OPEN);
+                gotoStatePower(SP_OPEN);
                 timings.fill_time.reset();
             }
             break;
         }
-        case SV_OPEN: {
+        case SP_OPEN: {
             if (timings.fill_time.isTimeAfter(true)) {
                 if (pressure < pressure_min) {
                     gotoStatePower(SP_OPEN_ALARM);
                     timings.alarm_time.reset();
                 } else {
-                    gotoStatePower(SV_READY);
+                    gotoStatePower(SP_READY);
                 }
             } else {
                 if (pressure > pressure_max) {
-                    gotoStatePower(SV_READY);
+                    gotoStatePower(SP_READY);
                     timings.alarm_time.reset();
                 }
             }
@@ -79,7 +78,7 @@ void runPowerStates() {
         }
         case SP_OPEN_ALARM: {
             if (pressure >= pressure_min) {
-                gotoStatePower(SV_OPEN);
+                gotoStatePower(SP_OPEN);
                 timings.fill_time.reset();
             } else {
                 if (timings.alarm_time.isTimeAfter(true)) {
@@ -90,7 +89,7 @@ void runPowerStates() {
         }
         case SP_ALARM_SHUT: {
             if (pressure >= pressure_min) {
-                gotoStatePower(SV_READY);
+                gotoStatePower(SP_READY);
             }
             break;
         }
@@ -105,7 +104,7 @@ void loop() {
 
     PWR.run();
 
-    bool power = (state_power == SP_OPEN_ALARM || state_power == SV_OPEN);
+    bool power = (state_power == SP_OPEN_ALARM || state_power == SP_OPEN);
 
     PWR.power(REL_A, power);
 

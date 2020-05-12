@@ -1,24 +1,30 @@
 #define ID "PWR-PMS-32"
 
+#ifdef MINI
+#error This device cannot be run on MINI board versions
+#endif
+
 #include <Poweroid10.h>
 #include <ultrasonic.h>
 #include <MultiClick/MultiClick.h>
 #include "poweroid_pump_station_3x2_state.h"
 #include "poweroid_pump_station_3x2_prop.h"
 
+#define IND_A IND_2
+#define IND_B IND_3
+
+#define PRESSURE_RAW_MIN 198
+#define PRESSURE_MIN 0
+#define PRESSURE_MAX 600
 
 Timings timings = {0, 0, 0, 0};
 
 TimingState FLASH(750L);
 TimingState FLASH_ALARM(250L);
 
-#define IND_A IND_2
-#define IND_B IND_3
-
 MultiClick btn = MultiClick(IN3_PIN);
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID,
-                      PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);
@@ -34,8 +40,10 @@ static uint16_t distance;
 static uint16_t pressure;
 
 void processSensors(){
-    distance = ULTRASONIC.getDistance();
-    pressure = PWR.SENS->getNormalizedSensor(SEN_2, -100, 0, 102, 920);
+    if (test_timer(TIMER_2HZ)){
+        distance = ULTRASONIC.getDistance();
+        pressure = PWR.SENS->getNormalizedSensor(SEN_2, PRESSURE_MIN, PRESSURE_MAX, PRESSURE_RAW_MIN);
+    }
 }
 
 void applyTimings() {
@@ -220,7 +228,7 @@ void loop() {
     PWR.run();
 
     bool powerWarning = state_power == SP_PRE_POWER || state_power == SP_LOST_POWER;
-    bool power = state_power || powerWarning;
+    bool power = state_power == SP_POWER || powerWarning;
     bool powerA = power && (state_pump == SPM_PUMP_1 || state_pump == SPM_PUMP_BOTH);
     bool powerB = power && (state_pump == SPM_PUMP_2 || state_pump == SPM_PUMP_BOTH);
 

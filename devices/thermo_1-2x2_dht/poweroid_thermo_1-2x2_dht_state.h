@@ -1,5 +1,5 @@
-#ifndef FAN_STATE_H
-#define FAN_STATE_H
+#ifndef THERMO_1-2x2-DHT_STATE_H
+#define THERMO_1-2x2-DHT_STATE_H
 
 #include <commons.h>
 #include <context.h>
@@ -10,22 +10,22 @@ typedef struct Timings {
 };
 
 enum StateMode {
-    SM_AWAY = 16, SM_ECO = 21, SM_NORMAL = 25
+    SM_AWAY = 3, SM_ECO = 4, SM_NORMAL = 5
 } state_mode = SM_ECO, prev_state_mode = SM_AWAY;
 
 enum StateTempFloor {
-    SF_DISARM = 0, SF_OFF = 7, SF_HEAT = 11
+    SF_DISARM = 0, SF_OFF = 1, SF_HEAT = 2
 } state_temp_floor = SF_OFF, prev_state_temp_floor = SF_DISARM;
 
 enum StateTempHeater {
-    SH_DISARM = 0, SH_OFF = 7, SH_HEAT = 11
+    SH_DISARM = 0, SH_OFF = 1, SH_HEAT = 2
 } state_temp_heater = SH_OFF, prev_state_temp_heater = SH_DISARM;
 
 const uint8_t state_count = 3;
 bool changedState[state_count] = {false, false, false};
 
 const char *STATE_NAME_BUFF[] = {"Mode", "Floor t.", "Heater t."};
-const char *STATE_BUFF = {"DISARM\0OFF\0HEAT\0AWAY\0ECO\0NORM\0"}; // OFFSETS:0,7,11,16,21,25
+const char *STATE_BUFF[] = {"DISARM", "OFF", "HEAT", "AWAY", "ECO", "NORM"};
 
 RunState run_state;
 
@@ -38,7 +38,7 @@ RunState *getState(uint8_t i) {
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
-    run_state.state = (char *) STATE_BUFF + offset;
+    run_state.state = (char *) STATE_BUFF[offset];
     return &run_state;
 }
 
@@ -78,4 +78,4 @@ void disarmState(uint8_t i, bool _disarm) {
         }
     }
 }
-#endif
+#endif //THERMO_1-2x2-DHT_STATE_H

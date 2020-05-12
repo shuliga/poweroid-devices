@@ -14,7 +14,7 @@ MultiClick btn(IN2_PIN);
 Timings timings = {0};
 unsigned long SBY_MILLS = 0L;
 
-Context CTX = Context(SIGNATURE, FULL_VERSION, PROPS.FACTORY, PROPS.props_size, ID, PROPS.DEFAULT_PROPERTY);
+Context CTX = Context(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
 Bt BT(CTX.id);
