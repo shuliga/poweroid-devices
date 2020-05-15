@@ -13,24 +13,27 @@ typedef struct Timings {
 };
 
 enum StatePower {
-    SP_DISARM = 0, SP_OFF = 7, SP_POWER = 11, SP_PRE_POWER = 17, SP_LOST_POWER = 27, SP_LOW_LEVEL = 38
+    SP_DISARM = 0, SP_OFF = 1, SP_PRE_POWER = 2, SP_POWER = 3, SP_DISCHARGE = 4
 } state_power = SP_OFF, prev_state_power = SP_DISARM;
+
+enum StateBasin {
+    SB_DISARM = 0, SB_INTAKE = 7, SB_LOW_WATER = 11, SB_SENSOR_FAILED = 8
+} state_basin = SB_INTAKE, prev_state_basin = SB_DISARM;
 
 enum StatePump {
     SPM_PUMP_1 = 48, SPM_PUMP_2 = 55, SPM_PUMP_1_ONLY = 62, SPM_PUMP_2_ONLY = 74, SPM_PUMP_BOTH = 86, SPM_ALL_FAILED = 96
 } state_pump = SPM_PUMP_1, prev_state_pump = SPM_PUMP_2;
 
 enum StateInfo {
-    SI_DISARM = 0, SI_ALARM = 112
-} state_info = SI_DISARM, prev_state_info = SI_ALARM;
+    SI_DISARM = 0, SI_WARNING = 112, SI_ALARM
+} state_info = SI_DISARM, prev_state_info = SI_WARNING;
 
-uint8_t const state_count = 2;
-bool changedState[3] = {false, false, false};
+uint8_t const state_count = 4;
 
-const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Info"};
-const char *STATE_BUFF = {"DISARM\0OFF\0POWER\0PRE-POWER\0LOST-POWER\0LOW_LEVEL\0PUMP 1\0PUMP 2\0PUMP 1 ONLY\0PUMP 2 ONLY\0PUMP BOTH\0PUMP ALL FAILED\0ALARM\0",};
-//DISARM OFF POWER PRE-POWER LOST-POWER LOW_LEVEL PUMP 1 PUMP 2 PUMP 1 ONLY PUMP 2 ONLY PUMP BOTH PUMP ALL FAILED ALARM
-// OFFSETS:0,7,11,17,27,38,48,55,62,74,86,96,112
+bool changedState[state_count] = {false, false, false, false};
+
+const char *STATE_NAME_BUFF[] = {"Power", "Basing", "Pump", "Info"};
+const char *STATE_BUFF[] = {"DISARM", "OFF", "PRE-POWER", "POWER", "DISCHARGE", "INTAKE", "LOW WATER", "FAIL", "PUMP 1", "PUMP 2", "PUMP 1 ONLY", "PUMP 2 ONLY", "PUMP BOTH", "ALL FAILED", "ALARM"};
 
 RunState run_state;
 
@@ -43,7 +46,7 @@ RunState *getState(uint8_t i) {
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
-    run_state.state = (char *) STATE_BUFF + offset;
+    run_state.state = (char *) STATE_BUFF[offset];
     return &run_state;
 }
 

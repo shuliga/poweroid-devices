@@ -1,6 +1,3 @@
-#ifndef FAN_PROPS_H
-#define FAN_PROPS_H
-
 #include <properties.h>
 #include <commons.h>
 #include <timings.h>
@@ -63,5 +60,3 @@ static struct Properties {
     }
 
 } PROPS;
-
-#endif

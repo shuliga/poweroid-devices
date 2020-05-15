@@ -61,7 +61,21 @@ void gotoStateTemp(StateTemp newState) {
     changedState[2] = true;
 }
 
-
+bool isDisarmedState(uint8_t i){
+    switch (i) {
+        case 0: {
+            return  state_light ==  SL_DISARM;
+        }
+        case 1: {
+            return  state_humid ==  SH_DISARM;
+        }
+        case 2: {
+            return  state_temp ==  ST_DISARM;
+        }
+        default:
+            return false;
+    }
+}
 
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {

@@ -6,7 +6,7 @@
 #include "poweroid_thermo_1-2x2_dht_state.h"
 #include "poweroid_thermo_1-2x2_dht_prop.h"
 
-#define TEMP_FAIL -128
+#define TEMP_FAIL INT8_MIN
 
 MultiClick btn_override(IN2_PIN);
 
@@ -41,6 +41,8 @@ void processSensors() {
     if (PWR.SENS->isDhtInstalled()) {
         float temp = PWR.SENS->getTemperature();
         current_temp = (!isnan(temp) && temp > -20 && temp < 40) ? PWR.SENS->getInt(temp) : TEMP_FAIL;
+    } else {
+        current_temp = TEMP_FAIL;
     }
 
 // On MINI boards (with 2 sensor sockets) ECO/NORMAL switch is not available
@@ -65,7 +67,7 @@ void fillOutput() {
     strcpy(BANNER.data.text, PWR.SENS->printDht());
 }
 
-void run_state_mode(McEvent _event[]) {
+void run_state_mode(const McEvent _event[]) {
     switch (state_mode) {
         case SM_AWAY: {
             if (prev_state_mode != SM_AWAY) {
@@ -186,4 +188,5 @@ void loop() {
     } else {
         INDICATORS.flash(IND_1, !flash_accent(timerCounter_1Hz), state_mode == SM_AWAY);
     }
+
 }
