@@ -55,6 +55,7 @@ void run_state_light(bool light) {
         }
         case SL_POWER: {
             bool firstRun = prev_state_light != SL_POWER;
+            prev_state_light == SL_POWER;
             if (timings.countdown_power.countdown(firstRun, false, false)) {
                 if (timings.debounce_delay.isTimeAfter(light)) {
                     gotoStateLight(SL_POWER_SBY);
@@ -68,7 +69,8 @@ void run_state_light(bool light) {
         }
         case SL_POWER_SBY: {
             bool firstRun = prev_state_light != SL_POWER_SBY;
-            if (timings.countdown_power.countdown(false, true, false)) {
+            prev_state_light == SL_POWER_SBY;
+            if (timings.countdown_power.countdown(firstRun, true, false)) {
                 if (timings.debounce_delay.isTimeAfter(!light)) {
                     gotoStateLight(SL_POWER);
                 }

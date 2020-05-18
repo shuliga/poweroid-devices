@@ -10,14 +10,15 @@
 #include "poweroid_pump_station_3x2_state.h"
 #include "poweroid_pump_station_3x2_prop.h"
 
-#define IND_A IND_2
-#define IND_B IND_3
-
 #define PRESSURE_RAW_MIN 198
 #define PRESSURE_MIN 0
 #define PRESSURE_MAX 600
 
-Timings timings = {0, 0, 0, 0};
+#define IND_BUTTON IND_1
+#define IND_WARN IND_2
+#define IND_ALARM IND_3
+
+Timings timings = {0, 0, 0, 0, 0};
 
 TimingState FLASH(750L);
 TimingState FLASH_ALARM(250L);
@@ -81,32 +82,109 @@ bool testLevel(){
     return distance > PROPS.FACTORY[0].runtime;
 }
 
-bool testPressure(){
-    return pressure < PROPS.FACTORY[0].runtime;
+bool testPressureWorking(){
+    return pressure >= PROPS.FACTORY[1].runtime;
+}
+
+bool testPressureMax(){
+    return pressure >= PROPS.FACTORY[2].runtime;
+}
+
+void run_state_basin() {
+    switch (state_basin) {
+        case SB_INTAKE: {
+            if(!testLevel()){
+                gotoStateBasin(SB_LOW_WATER);
+                break;
+            }
+            if (distance <= 3){
+                gotoStateBasin(SB_SENSOR_FAILED);
+                break;
+            }
+            break;
+        }
+        case SB_LOW_WATER: {
+            if( timings.low_water.isTimeAfter(testLevel())){
+                gotoStateBasin(SB_INTAKE);
+                break;
+            }
+            break;
+        }
+        case SB_SENSOR_FAILED: {
+            if(testLevel()){
+                gotoStateBasin(SB_INTAKE);
+                break;
+            }
+            break;
+        }
+        default:;
+    }
+}
+
+void run_state_info() {
+    switch (state_info) {
+        case SI_ALARM: {
+            if(state_basin != SB_SENSOR_FAILED){
+                gotoStateInfo(SI_WARNING);
+                break;
+            }
+            break;
+        }
+        case SI_WARNING: {
+            if(state_basin == SB_SENSOR_FAILED){
+                gotoStateInfo(SI_ALARM);
+                break;
+            }
+            if (
+                    state_basin != SB_LOW_WATER ||
+                    state_power != SP_FAILED
+            ){
+                gotoStateInfo(SI_DISARM);
+            }
+            break;
+        }
+        case SI_DISARM: {
+            if(
+                    state_basin == SB_SENSOR_FAILED ||
+                    state_basin == SB_LOW_WATER ||
+                    state_power == SP_FAILED
+             ){
+                gotoStateInfo(SI_WARNING);
+                break;
+            }
+            break;
+        }
+        default:;
+    }
 }
 
 void run_state_power(McEvent event) {
     switch (state_power) {
         case SP_OFF: {
-            if (event == HOLD) {
-                state_power = SP_PRE_POWER;
+            if (event == CLICK) {
+                gotoStatePower(SP_PRE_POWER);
+            }
+            break;
+        }
+        case SP_SUSPEND: {
+            if (event == CLICK || state_basin == SB_INTAKE) {
+                gotoStatePower(SP_PRE_POWER);
             }
             break;
         }
         case SP_PRE_POWER: {
+            if (state_basin == SB_LOW_WATER){
+                gotoStatePower(SP_SUSPEND);
+            }
             if (timings.countdown_pre_power.isTimeAfter(true)) {
                 timings.countdown_pre_power.reset();
-                if(!testPressure()){
-                    gotoStateInfo(SI_ALARM);
+                if(!testPressureWorking()){
+                    gotoStatePower(SP_OFF);
                     break;
                 }
                 gotoStatePower(SP_POWER);
             }
-            if(!testLevel()){
-                gotoStatePower(SP_LOW_LEVEL);
-                break;
-            }
-            if (event == HOLD) {
+            if (event == CLICK) {
                 gotoStatePower(SP_OFF);
                 break;
             }
@@ -116,46 +194,27 @@ void run_state_power(McEvent event) {
             if (prev_state_power == SP_OFF) {
                 timings.countdown_pump.reset();
             }
-            if (event == HOLD) {
+            if (event == CLICK) {
                 gotoStatePower(SP_OFF);
                 break;
             }
-            if(!testPressure()){
-                gotoStatePower(SP_LOST_POWER);
+            if(!testPressureWorking()){
+                gotoStatePower(SP_FAILED);
                 break;
             }
-            if(!testLevel()){
-                gotoStatePower(SP_LOW_LEVEL);
+            if(testPressureMax()){
+                gotoStatePower(SP_DISCHARGE);
                 break;
             }
             break;
         }
-        case SP_LOST_POWER: {
-            if (timings.countdown_lost_power.isTimeAfter(true)) {
-                gotoStatePower(SP_OFF);
-                timings.countdown_lost_power.reset();
-            }
-            if(testPressure()){
+        case SP_DISCHARGE: {
+            if (event == CLICK) {
                 gotoStatePower(SP_POWER);
                 break;
             }
-            if(!testLevel()){
-                gotoStatePower(SP_LOW_LEVEL);
-                break;
-            }
-            if (event == HOLD) {
-                gotoStatePower(SP_OFF);
-                break;
-            }
-            break;
-        }
-        case SP_LOW_LEVEL: {
-            if(testLevel()){
-                gotoStatePower(SP_PRE_POWER);
-                break;
-            }
-            if (event == HOLD) {
-                gotoStatePower(SP_OFF);
+            if(!testPressureWorking()){
+                gotoStatePower(SP_POWER);
                 break;
             }
             break;
@@ -168,7 +227,7 @@ void run_state_pump(McEvent event) {
     switch (state_pump) {
         case SPM_PUMP_1: {
             prev_state_pump = SPM_PUMP_BOTH;
-            if (event == CLICK ||  timings.countdown_pump.isTimeAfter(true) || state_info == SI_ALARM) {
+            if (event == HOLD ||  timings.countdown_pump.isTimeAfter(true) || state_info == SI_ALARM) {
                 state_pump = SPM_PUMP_2;
             }
             break;
@@ -214,8 +273,10 @@ void run_state_pump(McEvent event) {
 
 void runPowerStates() {
     McEvent event = btn.checkButton();
-    run_state_power(event);
+    run_state_basin();
+    run_state_info();
     run_state_pump(event);
+    run_state_power(event);
 }
 
 void setup() {
@@ -226,23 +287,24 @@ void setup() {
 void loop() {
 
     PWR.run();
+    bool warning = state_info == SI_WARNING;
+    bool alarm = state_info == SI_ALARM;
 
-    bool powerWarning = state_power == SP_PRE_POWER || state_power == SP_LOST_POWER;
-    bool power = state_power == SP_POWER || powerWarning;
+    bool power = state_power == SP_POWER || SP_PRE_POWER;
     bool powerA = power && (state_pump == SPM_PUMP_1 || state_pump == SPM_PUMP_BOTH);
     bool powerB = power && (state_pump == SPM_PUMP_2 || state_pump == SPM_PUMP_BOTH);
 
     PWR.power(REL_A, powerA);
     PWR.power(REL_B, powerB);
 
-    INDICATORS.set(IND_A, powerA);
-    INDICATORS.set(IND_B, powerB);
+    INDICATORS.set(IND_WARN, warning);
+    INDICATORS.set(IND_ALARM, alarm);
 
-    if (state_info == SI_ALARM) {
-        INDICATORS.flash(IND_1, &FLASH_ALARM, true);
-    } else if (powerWarning){
-        INDICATORS.flash(IND_1, &FLASH, true);
+    if (alarm) {
+        INDICATORS.flash(IND_BUTTON, &FLASH_ALARM, true);
+    } else if (warning){
+        INDICATORS.flash(IND_BUTTON, &FLASH, true);
     } else {
-        INDICATORS.set(IND_1, false);
+        INDICATORS.set(IND_BUTTON, false);
     }
 }

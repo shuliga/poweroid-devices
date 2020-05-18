@@ -49,7 +49,7 @@ static struct Properties {
         FACTORY[5].measure = SEC;
 
         FACTORY[6].desc = F("Pump pre-up");
-        FACTORY[6].measure = MIN;
+        FACTORY[6].measure = SEC;
     }
 
     void factoryReset() {
