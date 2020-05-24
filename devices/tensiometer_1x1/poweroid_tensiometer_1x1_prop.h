@@ -28,16 +28,16 @@ static struct Properties {
     Properties() {
         factoryReset();
         FACTORY[0].desc = F("P-tens min");
-        FACTORY[0].measure = KPA;
+        FACTORY[0].measure = MEASURE_KPA;
 
         FACTORY[1].desc = F("P-tens max");
-        FACTORY[1].measure = KPA;
+        FACTORY[1].measure = MEASURE_KPA;
 
         FACTORY[2].desc = F("Fill time");
-        FACTORY[2].measure = HOUR;
+        FACTORY[2].measure = MEASURE_HOUR;
 
         FACTORY[3].desc = F("Alarm time-out");
-        FACTORY[3].measure = HOUR;
+        FACTORY[3].measure = MEASURE_HOUR;
     }
 
     void factoryReset() {

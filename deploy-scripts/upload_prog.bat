@@ -1,5 +1,6 @@
 @SET chip=%2
-@SET baud=%3
+@SET baud=%4
+@SET port=%3
 @IF "%1"=="" (
  @ECHO Target .hex file name missing
  GOTO :END

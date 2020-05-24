@@ -46,7 +46,7 @@ void fillOutput() {
         BANNER.data.gauges[0].max = pressure_max;
         BANNER.data.gauges[0].g_min = PROPS.FACTORY[0].minv / PROPS.FACTORY[0].scale;
         BANNER.data.gauges[0].g_max = PROPS.FACTORY[1].maxv / PROPS.FACTORY[1].scale;
-        BANNER.data.gauges[0].measure = KPA;
+        BANNER.data.gauges[0].measure = MEASURE_KPA;
 
     };
 }

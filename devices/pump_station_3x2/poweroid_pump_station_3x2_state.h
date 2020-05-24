@@ -3,11 +3,10 @@
 #include <timings.h>
 
 typedef struct Timings {
-    TimingState countdown_pump;
-    TimingState alarm_pump;
-    TimingState low_water;
     TimingState countdown_pre_power;
-    TimingState countdown_lost_power;
+    TimingState countdown_pump_switch;
+    TimingState alarm_pump;
+    TimingState intake_level_delay;
 };
 
 enum StatePower {
@@ -26,12 +25,16 @@ enum StateInfo {
     SI_DISARM = 0, SI_WARNING = 15, SI_ALARM = 16
 } state_info = SI_DISARM, prev_state_info = SI_WARNING;
 
-uint8_t const state_count = 4;
+enum StateTimer {
+    ST_DISARM = 0, ST_STAND_BY = 17, ST_ENGAGE = 18
+} state_timer = ST_DISARM, prev_state_timer = ST_STAND_BY;
 
-bool changedState[state_count] = {false, false, false, false};
+uint8_t const state_count = 5;
 
-const char *STATE_NAME_BUFF[] = {"Power", "Basing", "Pump", "Info"};
-const char *STATE_BUFF[] = {"DISARM", "OFF", "PRE-POWER", "POWER", "DISCHARGE", "SUSPEND", "INTAKE", "LOW WATER", "FAIL", "PUMP 1", "PUMP 2", "PUMP 1 ONLY", "PUMP 2 ONLY", "PUMP BOTH", "ALL FAILED", "WARNING", "ALARM"};
+bool changedState[state_count] = {false, false, false, false, false};
+
+const char *STATE_NAME_BUFF[] = {"Power", "Pump", "Basin", "Info", "Timer"};
+const char *STATE_BUFF[] = {"DISARM", "OFF", "PRE-POWER", "POWER", "DISCHRG.", "SUSPEND", "INTAKE", "LOW WATER", "FAIL", "PUMP 1", "PUMP 2", "P. 1 ONL", "P. 2 ONL", "PUMP BTH", "ALL FAIL", "WARNING", "ALARM", "STAND-BY", "ENGAGE"};
 
 RunState run_state;
 
@@ -42,6 +45,7 @@ RunState *getState(uint8_t i) {
         case 1: {offset = state_pump;break;}
         case 2: {offset = state_basin;break;}
         case 3: {offset = state_info;break;}
+        case 4: {offset = state_timer;break;}
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
@@ -71,6 +75,23 @@ void gotoStateInfo(StateInfo newState) {
     prev_state_info = state_info;
     state_info = newState;
     changedState[3] = true;
+
+}
+
+void gotoStateTimer(StateTimer newState) {
+    prev_state_timer = state_timer;
+    state_timer = newState;
+    changedState[4] = true;
+}
+
+bool  isDisarmedState(uint8_t i) {
+    switch (i) {
+        case 0: return state_power == SP_DISARM;
+        case 2: return state_basin == SB_DISARM;
+        case 3: return state_info == SI_DISARM;
+        case 4: return state_timer == ST_DISARM;
+        default: return false;
+    }
 }
 
 void disarmState(uint8_t i, bool _disarm) {
@@ -81,6 +102,14 @@ void disarmState(uint8_t i, bool _disarm) {
         }
         case 2: {
             state_basin = _disarm ? SB_DISARM : SB_INTAKE;
+            break;
+        }
+        case 3: {
+            state_info = _disarm ? SI_DISARM : SI_WARNING;
+            break;
+        }
+        case 4: {
+            state_timer = _disarm ? ST_DISARM : ST_STAND_BY;
             break;
         }
         default:;

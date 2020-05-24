@@ -31,25 +31,25 @@ static struct Properties {
         factoryReset();
 
         FACTORY[0].desc = F("Floor t.");
-        FACTORY[0].measure = DEG_C;
+        FACTORY[0].measure = MEASURE_DEG_C;
 
         FACTORY[1].desc = F("Heater t.");
-        FACTORY[1].measure = DEG_C;
+        FACTORY[1].measure = MEASURE_DEG_C;
 
         FACTORY[2].desc = F("Floor t. ECO");
-        FACTORY[2].measure = DEG_C;
+        FACTORY[2].measure = MEASURE_DEG_C;
 
         FACTORY[3].desc = F("Heater t. ECO");
-        FACTORY[3].measure = DEG_C;
+        FACTORY[3].measure = MEASURE_DEG_C;
 
         FACTORY[4].desc = F("Away t.");
-        FACTORY[4].measure = DEG_C;
+        FACTORY[4].measure = MEASURE_DEG_C;
 
         FACTORY[5].desc = F("Floor sw delay");
-        FACTORY[5].measure = HOUR;
+        FACTORY[5].measure = MEASURE_HOUR;
 
         FACTORY[6].desc = F("Heater sw delay");
-        FACTORY[6].measure = MIN;
+        FACTORY[6].measure = MEASURE_MIN;
 
     }
 
