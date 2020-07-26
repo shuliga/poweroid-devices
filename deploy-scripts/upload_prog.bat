@@ -1,6 +1,6 @@
 @SET chip=%2
-@SET baud=%4
 @SET port=%3
+@SET baud=%4
 @IF "%1"=="" (
  @ECHO Target .hex file name missing
  GOTO :END
@@ -14,7 +14,9 @@ IF "%3"=="" (
 @IF "%4"=="" (
  SET baud="115200"
 )
-@SET avr_path=C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino14
-@SET project_path="D:\My Docs\Dev\Poweroid\poweroid-devices"
+@IF "%AVR_PATH%"=="" (
+    SET AVR_PATH=C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino14
+)
+@SET project_path=.
 %avr_path%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud% -Uflash:w:%project_path%\cmake-build-release\%1:i
 :END

@@ -11,7 +11,7 @@ typedef struct Timings {
 };
 
 enum StatePower {
-    SP_DISARM = 0, SP_READY = 7, SP_OPEN = 13, SP_OPEN_ALARM = 18, SP_ALARM_SHUT = 29
+    SP_DISARM = 0, SP_READY = 1, SP_OPEN = 2, SP_OPEN_ALARM = 3, SP_ALARM_SHUT = 4
 } state_power = SP_READY, prev_state_power = SP_DISARM;
 
 uint8_t const state_count = 1;
@@ -19,7 +19,7 @@ uint8_t const state_count = 1;
 bool changedState[1] = {false};
 
 const char *STATE_NAME_BUFF[] = {"Valve"};
-const char *STATE_BUFF = {"DISARM\0READY\0OPEN\0OPEN-ALARM\0ALARM-SHUT\0",}; // OFFSETS:0,7,13,18,29
+const char *STATE_BUFF[] = {"DISARM", "READY", "OPEN", "OPEN-ALARM", "ALARM-SHUT"};
 
 RunState run_state;
 
@@ -30,7 +30,7 @@ RunState *getState(uint8_t i) {
     }
     run_state.idx = i;
     run_state.name = (char *) STATE_NAME_BUFF[i];
-    run_state.state = (char *) STATE_BUFF + offset;
+    run_state.state = (char *) STATE_BUFF[offset];
     return &run_state;
 }
 
@@ -38,6 +38,16 @@ void gotoStatePower(StatePower newState) {
     prev_state_power = state_power;
     state_power = newState;
     changedState[0] = true;
+}
+
+bool isDisarmedState(uint8_t i){
+    switch (i) {
+        case 0: {
+            return  state_power ==  SP_DISARM;
+        }
+        default:
+            return false;
+    }
 }
 
 void disarmState(uint8_t i, bool _disarm) {

@@ -85,10 +85,10 @@ void fillOutput() {
         static const char *_fmt = "%s: %s";
 
         RunState *power_state = getState(S_POWER);
-        sprintf(EXTRA_BUFF[0], _fmt, power_state->name, power_state->state);
+        strcpy(EXTRA_BUFF[0], power_state->state);
         if (failedState == NULL){
             RunState *pump_state = getState(S_PUMP);
-            sprintf(EXTRA_BUFF[1], _fmt, pump_state->name, pump_state->state);
+            strcpy(EXTRA_BUFF[1], pump_state->state);
         } else {
             RunState *info_state = getState(S_INFO);
             sprintf(EXTRA_BUFF[1], _fmt, info_state->state, failedState);
@@ -218,6 +218,7 @@ void run_state_info(McEvent event) {
 void run_state_power(McEvent event) {
     switch (state_power) {
         case SP_OFF: {
+
             if (event == CLICK || state_timer == ST_ENGAGE) {
                 gotoStatePower(SP_PRE_POWER);
             }
@@ -299,6 +300,10 @@ void run_state_power(McEvent event) {
                 gotoStatePower(SP_POWER);
                 break;
             }
+            if (event == HOLD) {
+                gotoStatePower(SP_OFF);
+                break;
+            }
             if (!testWorkingPressure()) {
                 gotoStatePower(SP_PRE_POWER);
                 break;
@@ -375,6 +380,7 @@ bool isInTimeSpan(uint8_t hrs_start, uint8_t min_start, uint8_t hrs_stop, uint8_
     return start < stop ? actual >= start && actual < stop : actual >= start || actual < stop;
 }
 
+#ifdef RTCM
 void run_state_timer() {
     switch (state_timer) {
 
@@ -413,12 +419,15 @@ void run_state_timer() {
 
     }
 }
+#endif
 
 void runPowerStates() {
     McEvent event = btn.checkButton();
     run_state_basin(event);
     run_state_info(event);
+#ifdef RTCM
     run_state_timer();
+#endif
     run_state_pump(event);
     run_state_power(event);
 }
@@ -435,8 +444,8 @@ void loop() {
     bool alarm = state_info == SI_ALARM;
 
     bool power = state_power == SP_POWER || state_power == SP_PRE_POWER;
-    bool powerA = power && (state_pump == SPM_PUMP_1 || state_pump == SPM_PUMP_BOTH);
-    bool powerB = power && (state_pump == SPM_PUMP_2 || state_pump == SPM_PUMP_BOTH);
+    bool powerA = power && (state_pump == SPM_PUMP_1 || state_pump == SPM_PUMP_1_ONLY || state_pump == SPM_PUMP_BOTH);
+    bool powerB = power && (state_pump == SPM_PUMP_2 || state_pump == SPM_PUMP_2_ONLY || state_pump == SPM_PUMP_BOTH);
 
     PWR.power(REL_A, powerA);
     PWR.power(REL_B, powerB);

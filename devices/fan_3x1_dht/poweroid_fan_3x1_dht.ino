@@ -143,11 +143,12 @@ void loop() {
 
     PWR.run();
 
+#ifndef CONTROLLER_ONLY
     bool fan_power = (state_light == SL_POWER || state_humid == SH_POWER) &&
                      (state_light != SL_POWER_SBY && state_light != AL);
     bool floor_power = state_temp == ST_POWER;
 
     PWR.power(REL_A, floor_power);
     PWR.power(REL_B, fan_power);
-
+#endif
 }
