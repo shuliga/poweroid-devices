@@ -1,0 +1,13 @@
+
+
+### ATmega1284P
+
+Clock Frequency
+The ATmega1284P has two internal oscillators clocked at 8MHz and at 128kHz that allow it to be operated without any external clock source or crystal.
+By default the fuses are configured to use the internal 8MHz oscillator, but the CKDIV8 fuse is set, so that the clock is divided down to 1MHz.
+By disabling the CKDIV8 fuse the clock will operate at 8MHz. This is highly encouraged, and can be done with:
+
+avrdude -c ardiuino -p m1284p -B 32 -U lfuse:w:0xc2:m
+
+The -B 32 might be needed for some programmers to successfully communicate with ATmegas clocked at less than 2MHz.
+It will no longer be needed after disabling CKDIV8.

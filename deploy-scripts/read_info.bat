@@ -13,4 +13,4 @@
 @IF "%avr_path%"=="" (
  SET avr_path=C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino14
 )
-%avr_path%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud% -U lfuse:w:0xFF:m -U hfuse:w:0xDE:m -U efuse:w:0xFC:m
+%avr_path%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud%

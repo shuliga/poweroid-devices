@@ -61,7 +61,6 @@ void applyTimings() {
 }
 
 void fillOutput() {
-    processSensors();
     if (state_info == SI_ALARM) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
@@ -111,7 +110,7 @@ bool testPressureMax() {
 
 void run_state_basin(McEvent event) {
     switch (state_basin) {
-        case SB_INTAKE: {
+        case SB_FULL: {
             if (!testIntakeLevel()) {
                 gotoStateBasin(SB_LOW_WATER);
                 break;
@@ -129,14 +128,14 @@ void run_state_basin(McEvent event) {
             }
             if (timings.intake_level_delay.isTimeAfter(testIntakeLevel()) ||
                 (testIntakeLevel() && event == DOUBLE_CLICK)) {
-                gotoStateBasin(SB_INTAKE);
+                gotoStateBasin(SB_FULL);
                 break;
             }
             break;
         }
         case SB_SENSOR_FAILED: {
             if (testIntakeLevel()) {
-                gotoStateBasin(SB_INTAKE);
+                gotoStateBasin(SB_FULL);
                 break;
             }
             break;
@@ -255,7 +254,7 @@ void run_state_power(McEvent event) {
         }
 
         case SP_SUSPEND: {
-            if (event == CLICK || state_basin == SB_INTAKE) {
+            if (event == CLICK || state_basin == SB_FULL) {
                 gotoStatePower(SP_PRE_POWER);
             }
             break;

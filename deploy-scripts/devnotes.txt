@@ -2,9 +2,11 @@
 
 Name    Pin     Wire
 --------------------
-SS      D10     WHT
 MOSI    D11     BLU
 MISO    D12     GRE
 SCK     D13     YEL
 
+RST     RST     WHT
 
+GND     GND     BLK
+VDC     +5V     RED

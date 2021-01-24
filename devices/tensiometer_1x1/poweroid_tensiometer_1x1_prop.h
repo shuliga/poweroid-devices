@@ -13,7 +13,7 @@ static struct Properties {
 
     Property FACTORY[4] = {
 
-            //val      minV       maxV        scale
+            //val             minV       maxV            scale
             {-40L,      -99L,     -25L,       1L},
             {-15L,      -24L,     0L,         1L},
             {36000000L, 3600000L, 180000000L, 3600000L},

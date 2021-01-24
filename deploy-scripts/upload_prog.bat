@@ -18,5 +18,5 @@ IF "%3"=="" (
     SET AVR_PATH=C:\Users\SHL\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino14
 )
 @SET project_path=.
-%avr_path%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud% -Uflash:w:%project_path%\cmake-build-release\%1:i
+%AVR_PATH%\bin\avrdude -C%avr_path%\etc\avrdude.conf -v -p %chip% -cstk500v1 -P%port% -b %baud% -Uflash:w:%project_path%\cmake-build-release\%1:i
 :END
