@@ -34,8 +34,8 @@ static struct Properties {
     }
 
     void factoryReset() {
-        for (int i = 0; i < ARRAY_SIZE(FACTORY); i++) {
-            FACTORY[i].runtime = FACTORY[i].val;
+        for (auto & i : FACTORY) {
+            i.runtime = i.val;
         }
     }
 

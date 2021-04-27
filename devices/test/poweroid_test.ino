@@ -1,27 +1,101 @@
-#include <SoftwareSerial.h>
-#include <Wire.h>
-#include "global.h"
+#include "poweroid_test_prop.h"
 #include "Poweroid10.h"
 
-#define ID "TEST_BT"
+#define ID "PWR_TEST"
 
-TimingState countdown(250);
+TimingState countdown(1000);
 
-static uint8_t current_out = 0;
+Context CTX(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
+Commander CMD(CTX);
+Bt BT(CTX.id);
+
+Pwr PWR(CTX, &CMD, NULL, &BT);
+int8_t counter = 0;
+
+const uint8_t state_count = 0;
+bool changedState[] = {};
+void disarmState(uint8_t i, bool _disarm) {
+}
+bool isDisarmedState(uint8_t i){
+    return false;
+}
+
+RunState *getState(uint8_t i) {
+    return NULL;
+}
+
+void runPowerStates() {
+}
+
+void applyTimings() {
+}
+
+void processSensors() {
+}
+
+void fillOutput() {
+    BANNER.mode = 0;
+    strcpy(BANNER.data.text, PWR.SENS->printDht());
+}
+
 
 void setup() {
-    for(uint8_t i = 0; i < 4; i++){
-        pinMode(INA_PINS[i], );
-        digitalPinToAnalogPin(1)
-    }
-    digitalWrite(INA_PINS[current_out], HIGH);
+    PWR.begin();
+    Serial.println("PWR TEST initiated");
 }
 
 void loop() {
+    PWR.run();
     if(countdown.ping()){
-        digitalWrite(INA_PINS[current_out], LOW);
-        current_out++;
-        current_out == 3 ? 0 : current_out;
-        digitalWrite(INA_PINS[current_out], HIGH);
+        PWR.REL->power(REL_A, false);
+#ifndef MINI
+        PWR.REL->power(REL_B, false);
+#endif
+        INDICATORS.set(IND_1, false);
+        INDICATORS.set(IND_2, false);
+#ifndef MINI
+        INDICATORS.set(IND_3, false);
+#endif
+        switch (counter) {
+            case 0:
+            {
+                PWR.REL->power(REL_A, true);
+                Serial.println("Relay A ON");
+                break;
+            }
+#ifndef MINI
+            case 1:
+            {
+                PWR.REL->power(REL_B, true);
+                Serial.println("Relay B ON");
+                break;
+            }
+#endif
+            case 2:
+            {
+                INDICATORS.set(IND_1, true);
+                Serial.println("Indicator 1 ON");
+                break;
+            }
+            case 3:
+            {
+                INDICATORS.set(IND_2, true);
+                Serial.println("Indicator 2 ON");
+#ifdef MINI
+                counter = -1;
+#endif
+                break;
+            }
+#ifndef MINI
+            case 4:
+            {
+                INDICATORS.set(IND_3, true);
+                Serial.println("Indicator 3 ON");
+                counter = -1;
+                break;
+            }
+#endif
+        }
+        counter++;
     }
 }

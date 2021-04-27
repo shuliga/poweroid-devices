@@ -7,10 +7,10 @@ set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake)
 #set(DEVICE_NAME test)
 #set(DEVICE_NAME timer_button_1x1)
 #set(DEVICE_NAME fan_3x1_dht)
-#set(DEVICE_NAME thermo_1-2x2_dht)
+set(DEVICE_NAME thermo_1-2x2_dht)
 #set(DEVICE_NAME tensiometer_1x1)
 #set(DEVICE_NAME repeater_0x0_ss)
-set(DEVICE_NAME level_controller_1x1_us_t)
+#set(DEVICE_NAME level_controller_1x1_us_t)
 #set(DEVICE_NAME pump_station_3x2)
 
 #########
@@ -18,11 +18,12 @@ set(DEVICE_NAME level_controller_1x1_us_t)
 #
 ### Atmega1284p
 ### Fuses: (E:FC, H:DE, L:FF)
-set(BOARD uno_pro)
+#set(BOARD uno_pro)
+#
 #
 ### Atmega328p
 ### Fuses: (E:FC, H:DC, L:FF)
-#set(BOARD pro)
+set(BOARD pro)
 #
 #########
 
@@ -40,15 +41,16 @@ set(PWR_BOARD_SIZE MINI)
 
 #set(CD_CTRL CONTROLLER_ONLY)
 #set(CD_CTRL NO_CONTROLLER)
-set(CD_CTRL I2C_CONTROLLER)
+#set(CD_CTRL I2C_CONTROLLER)
 
-#set(RAM SAVE_RAM)
-#set(REMOTE DO_NOT_PARSE_REMOTE)
+set(RAM SAVE_RAM)
+set(REMOTE DO_NOT_PARSE_REMOTE)
 #set(TOKEN ALLOW_TOKEN)
 
-set(RTCM RTCM)
+#set(RTCM RTCM)
 set(STATES STATES_ARMED)
 
+#Add this to the compile definitions in order to redefine power pins //  PWR1_PIN=9
 add_compile_definitions(${CD_CTRL} ${PWR_BOARD_SIZE} ${PWR_BOARD_VERSIONS} ${RAM} ${IO_SSERIAL} ${STATES} ${RTCM} ${REMOTE} ${TOKEN} __STDC_LIMIT_MACROS)
 
 set(PROJECT_FOLDER "devices/${DEVICE_NAME}")

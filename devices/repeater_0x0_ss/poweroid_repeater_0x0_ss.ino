@@ -1,7 +1,6 @@
 
 #define ID "PWR-REP-SS"
 
-#include <SoftwareSerial.h>
 #include <Poweroid10.h>
 #include "poweroid_repeater_0x0_ss_state.h"
 #include "poweroid_repeater_0x0_ss_prop.h"
@@ -53,16 +52,6 @@ void processSensors() {
         Serial.write(S_BUFF, len);
         Serial.flush();
     }
-//
-//    if (Serial.available() > 0) {
-//        if (SSerial.availableForWrite() > 0){
-//            SSerial.write(Serial.read());
-//        }
-//    }
-//
-//    if (SSerial.available() > 0) {
-//        Serial.write(SSerial.read());
-//    }
 }
 
 void fillOutput() {

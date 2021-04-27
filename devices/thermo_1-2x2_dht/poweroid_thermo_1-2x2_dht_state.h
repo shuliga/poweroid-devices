@@ -49,20 +49,17 @@ RunState *getState(uint8_t i) {
 void gotoStateMode(StateMode newState) {
     prev_state_mode = state_mode;
     state_mode = newState;
-    changedState[0] = true;
 }
 
 void gotoStateTempHeater(StateTempHeater newState) {
     prev_state_temp_heater = state_temp_heater;
     state_temp_heater = newState;
-    changedState[1] = true;
 }
 
 #ifndef MINI
 void gotoStateTempFloor(StateTempFloor newState) {
     prev_state_temp_floor = state_temp_floor;
     state_temp_floor = newState;
-    changedState[2] = true;
 }
 #endif
 
@@ -87,16 +84,16 @@ bool isDisarmedState(uint8_t i){
 void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
         case 0: {
-            state_mode = _disarm ? SM_AWAY : SM_ECO;
+            gotoStateMode(_disarm ? SM_AWAY : SM_ECO);
             break;
         }
         case 1: {
-            state_temp_heater = _disarm ? SH_DISARM : SH_OFF;
+            gotoStateTempHeater(_disarm ? SH_DISARM : SH_OFF);
             break;
         }
 #ifndef MINI
         case 2: {
-            state_temp_floor = _disarm ? SF_DISARM : SF_OFF;
+            gotoStateTempFloor(_disarm ? SF_DISARM : SF_OFF);
             break;
         }
 #endif

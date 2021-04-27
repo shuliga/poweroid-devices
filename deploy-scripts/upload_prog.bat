@@ -3,6 +3,7 @@
 @SET baud=%4
 @IF "%1"=="" (
  @ECHO Target .hex file name missing
+ @ECHO Parameters: ^<filename.hex^> ^<chip^> ^<port^> ^<baud^>
  GOTO :END
 )
 @IF "%2"=="" (

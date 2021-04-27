@@ -28,7 +28,7 @@ McEvent event[2];
 
 int8_t current_temp;
 int8_t floor_temp;
-int8_t heater_temp;
+int8_t target_heater_temp;
 bool inverse;
 
 void applyTimings() {
@@ -37,8 +37,9 @@ void applyTimings() {
 }
 
 void processSensors() {
-
     if (PWR.SENS->isDhtInstalled()) {
+        PWR.SENS->setTempCorrection(PROPS.FACTORY[7].runtime);
+//        PWR.SENS->setHumidCorrection(PROPS.FACTORY[8].runtime);
         float temp = PWR.SENS->getTemperature();
         current_temp = (!isnan(temp) && temp > -20 && temp < 40) ? PWR.SENS->getInt(temp) : TEMP_FAIL;
     } else {
@@ -59,7 +60,7 @@ void processSensors() {
 }
 
 bool shouldUpdate() {
-    return CTX.propsUpdated || changedState[0] || current_temp == TEMP_FAIL;
+    return CTX.propsUpdated || changedState[0] || changedState[1] || current_temp == TEMP_FAIL;
 }
 
 void fillOutput() {
@@ -77,7 +78,7 @@ void run_state_mode(const McEvent _event[]) {
             }
 
             floor_temp = PROPS.FACTORY[4].runtime;
-            heater_temp = PROPS.FACTORY[4].runtime;
+            target_heater_temp = PROPS.FACTORY[4].runtime;
 
             if (_event[1] == HOLD) {
                 CTX.PERS.storeState(0, false);
@@ -92,7 +93,7 @@ void run_state_mode(const McEvent _event[]) {
             }
 
             floor_temp = PROPS.FACTORY[2].runtime;
-            heater_temp = PROPS.FACTORY[3].runtime;
+            target_heater_temp = PROPS.FACTORY[3].runtime;
 
             if (inverse ? _event[0] == PRESSED : _event[0] == RELEASED) {
                 gotoStateMode(SM_NORMAL);
@@ -109,7 +110,7 @@ void run_state_mode(const McEvent _event[]) {
             }
 
             floor_temp = PROPS.FACTORY[0].runtime;
-            heater_temp = PROPS.FACTORY[1].runtime;
+            target_heater_temp = PROPS.FACTORY[1].runtime;
 
             if (inverse ? _event[0] == RELEASED : _event[0] == PRESSED) {
                 gotoStateMode(SM_ECO);
@@ -123,7 +124,7 @@ void run_state_mode(const McEvent _event[]) {
 }
 
 void run_state_temp_heater() {
-    bool doHeat = current_temp != TEMP_FAIL && current_temp < heater_temp;
+    bool doHeat = current_temp != TEMP_FAIL && current_temp < target_heater_temp;
     switch (state_temp_heater) {
         case SH_OFF: {
             if (timings.heater_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_heater == SH_DISARM))) {

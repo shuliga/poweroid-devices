@@ -11,15 +11,15 @@ typedef struct Timings {
 };
 
 enum StatePower {
-    SP_DISARM = 0, SP_READY = 1, SP_OPEN = 2, SP_OPEN_ALARM = 3, SP_ALARM_SHUT = 4
+    SP_DISARM = 0, SP_READY = 1
 } state_power = SP_READY, prev_state_power = SP_DISARM;
 
 uint8_t const state_count = 1;
 
 bool changedState[1] = {false};
 
-const char *STATE_NAME_BUFF[] = {"Valve"};
-const char *STATE_BUFF[] = {"DISARM", "READY", "OPEN", "OPEN-ALARM", "ALARM-SHUT"};
+const char *STATE_NAME_BUFF[] = {"Repeater"};
+const char *STATE_BUFF[] = {"DISARM", "READY"};
 
 RunState run_state;
 
@@ -54,6 +54,7 @@ void disarmState(uint8_t i, bool _disarm) {
     switch (i) {
         case 0: {
             state_power = _disarm ? SP_DISARM : SP_READY;
+            changedState[i] = prev_state_power != state_power;
             prev_state_power = state_power;
             break;
         }
