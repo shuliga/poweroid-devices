@@ -50,10 +50,29 @@ void gotoStateMode(StateMode newState) {
     prev_state_mode = state_mode;
     state_mode = newState;
 }
+boolean firstStateMode(StateMode firstState) {
+    if (prev_state_mode != firstState) {
+        prev_state_mode = firstState;
+        changedState[0] = true;
+    } else {
+        changedState[0] = false;
+    }
+    return changedState[0];
+}
 
 void gotoStateTempHeater(StateTempHeater newState) {
     prev_state_temp_heater = state_temp_heater;
     state_temp_heater = newState;
+}
+
+boolean firstStateTempHeater(StateTempHeater newState) {
+    if (prev_state_temp_heater != newState) {
+        prev_state_temp_heater = newState;
+        changedState[1] = true;
+    } else {
+        changedState[1] = false;
+    }
+    return changedState[1];
 }
 
 #ifndef MINI
@@ -61,6 +80,18 @@ void gotoStateTempFloor(StateTempFloor newState) {
     prev_state_temp_floor = state_temp_floor;
     state_temp_floor = newState;
 }
+
+boolean firstStateTempFloor(StateTempFloor newState) {
+    if (prev_state_temp_floor != newState) {
+        prev_state_temp_floor = newState;
+        changedState[2] = true;
+    } else {
+        changedState[2] = false;
+    }
+    return changedState[2];
+}
+
+
 #endif
 
 bool isDisarmedState(uint8_t i){

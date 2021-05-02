@@ -71,10 +71,8 @@ void fillOutput() {
 void run_state_mode(const McEvent _event[]) {
     switch (state_mode) {
         case SM_AWAY: {
-            if (prev_state_mode != SM_AWAY) {
-                prev_state_mode = SM_AWAY;
+            if (firstStateMode(SM_AWAY)){
                 CTX.PERS.storeState(0, true);
-                changedState[0] = true;
             }
 
             floor_temp = PROPS.FACTORY[4].runtime;
@@ -87,10 +85,7 @@ void run_state_mode(const McEvent _event[]) {
             break;
         }
         case SM_ECO: {
-            if (prev_state_mode != SM_ECO) {
-                prev_state_mode = SM_ECO;
-                changedState[0] = true;
-            }
+            firstStateMode(SM_ECO);
 
             floor_temp = PROPS.FACTORY[2].runtime;
             target_heater_temp = PROPS.FACTORY[3].runtime;
@@ -104,10 +99,7 @@ void run_state_mode(const McEvent _event[]) {
             break;
         }
         case SM_NORMAL: {
-            if (prev_state_mode != SM_NORMAL) {
-                prev_state_mode = SM_NORMAL;
-                changedState[0] = true;
-            }
+            firstStateMode(SM_NORMAL);
 
             floor_temp = PROPS.FACTORY[0].runtime;
             target_heater_temp = PROPS.FACTORY[1].runtime;
@@ -126,13 +118,19 @@ void run_state_mode(const McEvent _event[]) {
 void run_state_temp_heater() {
     bool doHeat = current_temp != TEMP_FAIL && current_temp < target_heater_temp;
     switch (state_temp_heater) {
+        case SH_DISARM:{
+            firstStateTempHeater(SH_DISARM);
+            break;
+        }
         case SH_OFF: {
+            firstStateTempHeater(SH_OFF);
             if (timings.heater_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_heater == SH_DISARM))) {
                 gotoStateTempHeater(SH_HEAT);
             }
             break;
         }
         case SH_HEAT: {
+            firstStateTempHeater(SH_HEAT);
             if (timings.heater_switch_delay.isTimeAfter(!doHeat) || (shouldUpdate() && !doHeat)) {
                 gotoStateTempHeater(SH_OFF);
             }
@@ -141,17 +139,24 @@ void run_state_temp_heater() {
     }
 }
 
+
 #ifndef MINI
 void run_state_temp_floor() {
     bool doHeat = current_temp != TEMP_FAIL && current_temp < floor_temp;
     switch (state_temp_floor) {
+        case SF_DISARM:{
+            firstStateTempFloor(SF_DISARM);
+            break;
+        }
         case SF_OFF: {
+            firstStateTempFloor(SF_OFF);
             if (timings.floor_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_floor == SF_DISARM))) {
                 gotoStateTempFloor(SF_HEAT);
             }
             break;
         }
         case SF_HEAT: {
+            firstStateTempFloor(SF_HEAT);
             if (timings.floor_switch_delay.isTimeAfter(!doHeat) || (shouldUpdate() && !doHeat)) {
                 gotoStateTempFloor(SF_OFF);
             }
