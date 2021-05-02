@@ -1,5 +1,6 @@
 #include <commons.h>
 #include <context.h>
+#include <states.h>
 #include <timings.h>
 
 typedef struct Timings {
@@ -7,16 +8,17 @@ typedef struct Timings {
 };
 
 enum StateMode {
-    SM_AWAY = 3, SM_ECO = 4, SM_NORMAL = 5
-} state_mode = SM_ECO, prev_state_mode = SM_AWAY;
+    SM_AWAY, SM_ECO, SM_NORMAL
+};
 
 enum StateTempHeater {
-    SH_DISARM = 0, SH_OFF = 1, SH_HEAT = 2
-} state_temp_heater = SH_OFF, prev_state_temp_heater = SH_DISARM;
+    SH_DISARM, SH_OFF, SH_HEAT
+};
 
 enum StateTempFloor {
-    SF_DISARM = 0, SF_OFF = 1, SF_HEAT = 2
+    SF_DISARM, SF_OFF, SF_HEAT
 }
+
 #ifndef MINI
 state_temp_floor = SF_OFF, prev_state_temp_floor = SF_DISARM;
 #else
@@ -26,108 +28,14 @@ state_temp_floor = SF_DISARM, prev_state_temp_floor = SF_OFF;
 const uint8_t state_count = 3;
 bool changedState[state_count] = {false, false, false};
 
-const char *STATE_NAME_BUFF[] = {"Mode", "Heater t.", "Floor t."};
-const char *STATE_BUFF[] = {"DISARM", "OFF", "HEAT", "AWAY", "ECO", "NORM"};
+const char *STATE_MODE[] = {"AWAY", "ECO", "NORM"};
+const char *STATE_HEATER[] = {"DISARM", "OFF", "HEAT"};
 
-RunState run_state;
+StateHolder<StateMode> stateHolderMode(SM_AWAY, SM_ECO, SM_AWAY, "Mode", STATE_MODE);
+StateHolder<StateTempHeater> stateHolderTempHeater(SH_DISARM, SH_OFF, SH_DISARM, "Heater t.", STATE_HEATER);
+StateHolder<StateTempFloor> stateHolderTempFloor(SF_DISARM, SF_OFF, SF_DISARM, "Floor t.", STATE_HEATER);
 
-RunState *getState(uint8_t i) {
-    uint8_t offset = 0;
-    switch (i) {
-        case 0: {offset = state_mode;break;}
-        case 1: {offset = state_temp_heater;break;}
-        case 2: {offset = state_temp_floor;break;}
-        default:;
-    }
-    run_state.idx = i;
-    run_state.name = (char *) STATE_NAME_BUFF[i];
-    run_state.state = (char *) STATE_BUFF[offset];
-    return &run_state;
-}
+StateHolderBase* sb = &stateHolderMode;
 
+static const StateHolderBase* run_states[state_count] = {&stateHolderMode, &stateHolderTempHeater, &stateHolderTempFloor};
 
-void gotoStateMode(StateMode newState) {
-    prev_state_mode = state_mode;
-    state_mode = newState;
-}
-boolean firstStateMode(StateMode firstState) {
-    if (prev_state_mode != firstState) {
-        prev_state_mode = firstState;
-        changedState[0] = true;
-    } else {
-        changedState[0] = false;
-    }
-    return changedState[0];
-}
-
-void gotoStateTempHeater(StateTempHeater newState) {
-    prev_state_temp_heater = state_temp_heater;
-    state_temp_heater = newState;
-}
-
-boolean firstStateTempHeater(StateTempHeater newState) {
-    if (prev_state_temp_heater != newState) {
-        prev_state_temp_heater = newState;
-        changedState[1] = true;
-    } else {
-        changedState[1] = false;
-    }
-    return changedState[1];
-}
-
-#ifndef MINI
-void gotoStateTempFloor(StateTempFloor newState) {
-    prev_state_temp_floor = state_temp_floor;
-    state_temp_floor = newState;
-}
-
-boolean firstStateTempFloor(StateTempFloor newState) {
-    if (prev_state_temp_floor != newState) {
-        prev_state_temp_floor = newState;
-        changedState[2] = true;
-    } else {
-        changedState[2] = false;
-    }
-    return changedState[2];
-}
-
-
-#endif
-
-bool isDisarmedState(uint8_t i){
-    switch (i) {
-        case 0: {
-            return  state_mode ==  SM_AWAY;
-        }
-        case 1: {
-            return  state_temp_heater ==  SH_DISARM;
-        }
-#ifndef MINI
-        case 2: {
-            return  state_temp_floor ==  SF_DISARM;
-        }
-#endif
-        default:
-            return false;
-    }
-}
-
-void disarmState(uint8_t i, bool _disarm) {
-    switch (i) {
-        case 0: {
-            gotoStateMode(_disarm ? SM_AWAY : SM_ECO);
-            break;
-        }
-        case 1: {
-            gotoStateTempHeater(_disarm ? SH_DISARM : SH_OFF);
-            break;
-        }
-#ifndef MINI
-        case 2: {
-            gotoStateTempFloor(_disarm ? SF_DISARM : SF_OFF);
-            break;
-        }
-#endif
-        default:;
-    }
-}
