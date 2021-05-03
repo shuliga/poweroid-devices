@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.3)
+cmake_minimum_required(VERSION 3.19)
 set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
