@@ -124,7 +124,7 @@ void run_state_temp_heater() {
     bool doHeat = current_temp != TEMP_FAIL && current_temp < target_heater_temp;
     switch (stateHolderTempHeater.state) {
         case SH_DISARM:{
-            firstStateTempHeater(SH_DISARM);
+            stateHolderTempHeater.firstState(SH_DISARM);
             break;
         }
         case SH_OFF: {
@@ -150,18 +150,18 @@ void run_state_temp_floor() {
     switch (stateHolderTempFloor.state) {
     switch (state_temp_floor) {
         case SF_DISARM:{
-            firstStateTempFloor(SF_DISARM);
+            stateHolderTempFloor.firstState(SF_DISARM);
             break;
         }
         case SF_OFF: {
-            firstStateTempFloor(SF_OFF);
+            stateHolderTempFloor.firstState(SF_OFF);
             if (timings.floor_switch_delay.isTimeAfter(doHeat) || (doHeat && (shouldUpdate() || prev_state_temp_floor == SF_DISARM))) {
                 gotoStateTempFloor(SF_HEAT);
             }
             break;
         }
         case SF_HEAT: {
-            firstStateTempFloor(SF_HEAT);
+            stateHolderTempFloor.firstState(SF_HEAT);
             if (timings.floor_switch_delay.isTimeAfter(!doHeat) || (shouldUpdate() && !doHeat)) {
                 gotoStateTempFloor(SF_OFF);
             }
