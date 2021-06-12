@@ -6,6 +6,7 @@
 #include "poweroid_timer_button_1x1_state.h"
 #include "poweroid_timer_button_1x1_prop.h"
 #include <MultiClick/MultiClick.h>
+#include <timings.h>
 
 #define IND IND_3
 
@@ -30,6 +31,8 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 
 #endif
 
+TimeSplit toGo;
+
 McEvent event;
 const char * TIME_FMT = "%02d:%02d:%02d";
 
@@ -46,20 +49,16 @@ void processSensors() {
 void fillOutput() {
     BANNER.mode=0;
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
-    uint16_t totalToGo = static_cast<uint16_t>(countDown ? timings.countdown_power.millsToGo() / 1000 : 0);
-    uint8_t hrsToGo = static_cast<uint8_t>(totalToGo / 3600);
-    uint16_t secToGoM = totalToGo - (hrsToGo * 3600);
-    uint8_t minToGo = static_cast<uint8_t>(secToGoM / 60);
-    uint8_t secToGo = static_cast<uint8_t>(secToGoM - (minToGo * 60));
+    splitTime(countDown ? timings.countdown_power.millsToGo() : 0, toGo);
     if (countDown){
-        sprintf(BANNER.data.text, TIME_FMT , hrsToGo, minToGo, secToGo);
+        sprintf(BANNER.multiplexed.text, TIME_FMT , toGo.hrs, toGo.mins, toGo.sec);
     } else {
 #ifdef CONTROLLER_ONLY
         strcpy(BANNER.data.text, NO_INFO_STR);
 #elif defined DATETIME_H
         DATETIME.getTimeString(BANNER.data.text);
 #else
-        strcpy(BANNER.data.text, NO_INFO_STR);
+        strcpy(BANNER.multiplexed.text, NO_INFO_STR);
 #endif
     };
 }

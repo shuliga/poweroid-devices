@@ -11,7 +11,7 @@ static struct Properties {
 
     int8_t DEFAULT_PROPERTY = -1;
 
-    Property FACTORY[11] = {
+    Property FACTORY[12] = {
 
             //val      minV     maxV       scale
             {200L,     50L,     300L,     1L},
@@ -20,6 +20,7 @@ static struct Properties {
             {5000L,  3000L,  30000L,  1000L},
             {7200000L, 3600000L,28800000, 3600000L},
             {15000L,   5000L,   30000L,   1000L},
+            {15L,   0L,   50L,   1},
             {300000L,  60000L,  1800000L,  60000L},
             {12L,  1L,  24L,  1L},
             {00L,  0L,  59L,  1L},
@@ -51,20 +52,23 @@ static struct Properties {
         FACTORY[5].desc = F("Pump alarm");
         FACTORY[5].measure = MEASURE_SEC;
 
-        FACTORY[6].desc = F("Low water check");
-        FACTORY[6].measure = MEASURE_MIN;
+        FACTORY[6].desc = F("Low press. warn.");
+        FACTORY[6].measure = MEASURE_PERCENT;
 
-        FACTORY[7].desc = F("Timer START");
-        FACTORY[7].measure = MEASURE_HOUR;
+        FACTORY[7].desc = F("Low water check");
+        FACTORY[7].measure = MEASURE_MIN;
 
         FACTORY[8].desc = F("Timer START");
-        FACTORY[8].measure = MEASURE_MIN;
+        FACTORY[8].measure = MEASURE_HOUR;
 
-        FACTORY[9].desc = F("Timer STOP");
-        FACTORY[9].measure = MEASURE_HOUR;
+        FACTORY[9].desc = F("Timer START");
+        FACTORY[9].measure = MEASURE_MIN;
 
         FACTORY[10].desc = F("Timer STOP");
-        FACTORY[10].measure = MEASURE_MIN;
+        FACTORY[10].measure = MEASURE_HOUR;
+
+        FACTORY[11].desc = F("Timer STOP");
+        FACTORY[11].measure = MEASURE_MIN;
     }
 
     void factoryReset() {

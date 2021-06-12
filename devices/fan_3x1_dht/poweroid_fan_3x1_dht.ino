@@ -35,7 +35,7 @@ void applyTimings() {
 
 void fillOutput() {
     BANNER.mode = 0;
-    strcpy(BANNER.data.text, PWR.SENS->printDht());
+    strcpy(BANNER.multiplexed.text, PWR.SENS->printDht());
 }
 
 void run_state_light(bool light) {

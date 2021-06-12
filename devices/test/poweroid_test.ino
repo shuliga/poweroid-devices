@@ -1,28 +1,27 @@
+#include <states.h>
+#include <Poweroid10.h>
 #include "poweroid_test_prop.h"
-#include "Poweroid10.h"
 
 #define ID "PWR_TEST"
 
 TimingState countdown(1000);
 
 Context CTX(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
+
 Commander CMD(CTX);
 Bt BT(CTX.id);
 
+#ifndef NO_CONTROLLER
+Controller CTRL(CTX, CMD);
+Pwr PWR(CTX, &CMD, &CTRL, &BT);
+#else
 Pwr PWR(CTX, &CMD, NULL, &BT);
+#endif
+
 int8_t counter = 0;
 
 const uint8_t state_count = 0;
-bool changedState[] = {};
-void disarmState(uint8_t i, bool _disarm) {
-}
-bool isDisarmedState(uint8_t i){
-    return false;
-}
-
-RunState *getState(uint8_t i) {
-    return NULL;
-}
+StateHolderBase* run_states[state_count] = {};
 
 void runPowerStates() {
 }
@@ -56,6 +55,7 @@ void loop() {
 #ifndef MINI
         INDICATORS.set(IND_3, false);
 #endif
+        Serial.println(counter);
         switch (counter) {
             case 0:
             {
@@ -74,6 +74,7 @@ void loop() {
             case 2:
             {
                 INDICATORS.set(IND_1, true);
+                Serial.flush();
                 Serial.println("Indicator 1 ON");
                 break;
             }

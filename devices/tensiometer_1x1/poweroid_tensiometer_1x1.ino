@@ -36,7 +36,7 @@ void processSensors() {
 }
 
 void fillOutput() {
-    if (state_power == SP_ALARM_SHUT) {
+    if (stateHolderPower.state == SP_ALARM_SHUT) {
         BANNER.mode = 0;
         sprintf(BANNER.data.text, "%s", "ALARM");
     } else {
@@ -52,44 +52,51 @@ void fillOutput() {
 }
 
 void runPowerStates() {
-    switch (state_power) {
+    switch (stateHolderPower.state) {
+        case SP_DISARM: {
+            stateHolderPower.firstState(SP_DISARM);
+        }
         case SP_READY: {
+            stateHolderPower.firstState(SP_READY);
             if (pressure < pressure_min) {
-                gotoStatePower(SP_OPEN);
+                stateHolderPower.gotoState(SP_OPEN);
                 timings.fill_time.reset();
             }
             break;
         }
         case SP_OPEN: {
+            stateHolderPower.firstState(SP_OPEN);
             if (timings.fill_time.isTimeAfter(true)) {
                 if (pressure < pressure_min) {
-                    gotoStatePower(SP_OPEN_ALARM);
+                    stateHolderPower.gotoState(SP_OPEN_ALARM);
                     timings.alarm_time.reset();
                 } else {
-                    gotoStatePower(SP_READY);
+                    stateHolderPower.gotoState(SP_READY);
                 }
             } else {
                 if (pressure > pressure_max) {
-                    gotoStatePower(SP_READY);
+                    stateHolderPower.gotoState(SP_READY);
                     timings.alarm_time.reset();
                 }
             }
             break;
         }
         case SP_OPEN_ALARM: {
+            stateHolderPower.firstState(SP_OPEN_ALARM);
             if (pressure >= pressure_min) {
-                gotoStatePower(SP_OPEN);
+                stateHolderPower.gotoState(SP_OPEN);
                 timings.fill_time.reset();
             } else {
                 if (timings.alarm_time.isTimeAfter(true)) {
-                    gotoStatePower(SP_ALARM_SHUT);
+                    stateHolderPower.gotoState(SP_ALARM_SHUT);
                 }
             }
             break;
         }
         case SP_ALARM_SHUT: {
+            stateHolderPower.firstState(SP_ALARM_SHUT);
             if (pressure >= pressure_min) {
-                gotoStatePower(SP_READY);
+                stateHolderPower.gotoState(SP_READY);
             }
             break;
         }
@@ -104,7 +111,7 @@ void loop() {
 
     PWR.run();
 
-    bool power = (state_power == SP_OPEN_ALARM || state_power == SP_OPEN);
+    bool power = (stateHolderPower.state == SP_OPEN_ALARM || stateHolderPower.state == SP_OPEN);
 
     PWR.power(REL_A, power);
 

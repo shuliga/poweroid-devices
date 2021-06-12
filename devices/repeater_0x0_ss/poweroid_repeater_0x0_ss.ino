@@ -56,7 +56,7 @@ void processSensors() {
 
 void fillOutput() {
         BANNER.mode = 0;
-        sprintf(BANNER.data.text, "%u:%u", S_BUFF_LEN, PROPS.FACTORY[0].runtime);
+        sprintf(BANNER.multiplexed.text, "%u:%u", S_BUFF_LEN, PROPS.FACTORY[0].runtime);
 }
 
 void runPowerStates() {

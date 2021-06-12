@@ -31,7 +31,7 @@ Pwr PWR(CTX, &CMD, NULL, &BT);
 McEvent event[2];
 
 int8_t current_temp;
-int8_t floor_temp;
+int8_t target_floor_temp;
 int8_t target_heater_temp;
 bool inverse;
 
@@ -80,7 +80,7 @@ void run_state_mode(const McEvent _event[]) {
                 CTX.PERS.storeState(0, true);
             }
 
-            floor_temp = PROPS.FACTORY[4].runtime;
+            target_floor_temp = PROPS.FACTORY[4].runtime;
             target_heater_temp = PROPS.FACTORY[4].runtime;
 
             if (_event[1] == HOLD) {
@@ -92,7 +92,7 @@ void run_state_mode(const McEvent _event[]) {
         case SM_ECO: {
             stateHolderMode.firstState(SM_ECO);
 
-            floor_temp = PROPS.FACTORY[2].runtime;
+            target_floor_temp = PROPS.FACTORY[2].runtime;
             target_heater_temp = PROPS.FACTORY[3].runtime;
 
             if (inverse ? _event[0] == PRESSED : _event[0] == RELEASED) {
@@ -106,7 +106,7 @@ void run_state_mode(const McEvent _event[]) {
         case SM_NORMAL: {
             stateHolderMode.firstState(SM_NORMAL);
 
-            floor_temp = PROPS.FACTORY[0].runtime;
+            target_floor_temp = PROPS.FACTORY[0].runtime;
             target_heater_temp = PROPS.FACTORY[1].runtime;
 
             if (inverse ? _event[0] == RELEASED : _event[0] == PRESSED) {
