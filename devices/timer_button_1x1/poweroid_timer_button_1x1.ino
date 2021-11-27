@@ -51,14 +51,14 @@ void fillOutput() {
     bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
     splitTime(countDown ? timings.countdown_power.millsToGo() : 0, toGo);
     if (countDown){
-        sprintf(BANNER.multiplexed.text, TIME_FMT , toGo.hrs, toGo.mins, toGo.sec);
+        sprintf(BANNER.data.text, TIME_FMT , toGo.hrs, toGo.mins, toGo.sec);
     } else {
 #ifdef CONTROLLER_ONLY
         strcpy(BANNER.data.text, NO_INFO_STR);
 #elif defined DATETIME_H
         DATETIME.getTimeString(BANNER.data.text);
 #else
-        strcpy(BANNER.multiplexed.text, NO_INFO_STR);
+        strcpy(BANNER.data.text, NO_INFO_STR);
 #endif
     };
 }

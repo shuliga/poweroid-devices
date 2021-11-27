@@ -21,7 +21,7 @@
 
 #define POWER_NO_CUT_MILS 2500L
 
-Timings timings = {0, POWER_NO_CUT_MILS, 0, 0, 0};
+Timings timings = {0, POWER_NO_CUT_MILS, 0, 0, 0, 0};
 
 MultiClick btn = MultiClick(IN3_PIN);
 
@@ -58,6 +58,7 @@ void applyTimings() {
     timings.countdown_pump_switch.interval = (unsigned long) PROPS.FACTORY[4].runtime;
     timings.alarm_pump.interval = (unsigned long) PROPS.FACTORY[5].runtime;
     timings.intake_level_delay.interval = (unsigned long) PROPS.FACTORY[6].runtime;
+    timings.power_timer.interval = (unsigned long) PROPS.FACTORY[8].runtime + PROPS.FACTORY[9].runtime;
 }
 
 void fillOutput() {
@@ -101,7 +102,7 @@ bool testWorkingPressure() {
     return pressure >= PROPS.FACTORY[1].runtime;
 }
 
-bool testPressureMax() {
+bool testPressureOverMax() {
     return pressure >= PROPS.FACTORY[2].runtime;
 }
 
@@ -109,10 +110,10 @@ bool testPressureLow() {
     return pressure < PROPS.FACTORY[1].runtime * (1.0 + PROPS.FACTORY[6].runtime / 100.0);
 }
 
-void run_state_basin(McEvent event) {
+void run_state_basin(McEvent& event) {
     switch (stateHolderBasin.state) {
         case SB_FULL: {
-            stateHolderBasin.firstState(SB_FULL);
+            stateHolderBasin.firstEntry();
             if (!testIntakeLevel()) {
                 stateHolderBasin.gotoState(SB_LOW_WATER);
                 break;
@@ -124,7 +125,7 @@ void run_state_basin(McEvent event) {
             break;
         }
         case SB_LOW_WATER: {
-            if (stateHolderBasin.firstState(SB_LOW_WATER)){
+            if (stateHolderBasin.firstEntry()){
                 timings.intake_level_delay.reset();
             }
             if (timings.intake_level_delay.isTimeAfter(testIntakeLevel()) ||
@@ -135,33 +136,39 @@ void run_state_basin(McEvent event) {
             break;
         }
         case SB_SENSOR_FAILED: {
-            stateHolderBasin.firstState(SB_SENSOR_FAILED);
+            stateHolderBasin.firstEntry();
             if (testIntakeLevel()) {
                 stateHolderBasin.gotoState(SB_FULL);
                 break;
             }
             break;
         }
+        case SB_DISARM: {
+            stateHolderBasin.firstEntry();
+            break;
+        }
         default:;
     }
 }
 
-void run_state_info(McEvent event) {
+void run_state_info(McEvent& event) {
     switch (stateHolderInfo.state) {
         case SI_ALARM: {
-            if (stateHolderInfo.firstState(SI_ALARM)) {
-                strncpy(CUSTOM_HEADER, "(!)", 3);
-                CTX.refreshState = true;
+            if (stateHolderInfo.firstEntry()) {
+                CTX.alarm = true;
+                CTX.systemStatusChanged = true;
             }
             if (event == DOUBLE_CLICK) {
                 stateHolderInfo.gotoState(SI_DISARM);
+                event = NOTHING;
                 break;
             }
             break;
         }
         case SI_WARNING: {
-            if (stateHolderInfo.firstState(SI_WARNING)) {
-//                strncpy(CUSTOM_HEADER, "  ", 3);
+            if (stateHolderInfo.firstEntry()) {
+                CTX.alarm = false;
+                CTX.systemStatusChanged = true;
             }
             if (
                     stateHolderBasin.state == SB_SENSOR_FAILED ||
@@ -175,26 +182,27 @@ void run_state_info(McEvent event) {
                             !(stateHolderPower.state == SP_POWER && testPressureLow())
                     ) {
                 stateHolderInfo.gotoState(SI_DISARM);
+                break;
             }
             break;
         }
         case SI_DISARM: {
-            if (stateHolderInfo.firstState(SI_DISARM)) {
-                strncpy(CUSTOM_HEADER, "   ", 3);
-                CTX.refreshState = true;
+            if (stateHolderInfo.firstEntry()) {
+                CTX.alarm = false;
+                CTX.systemStatusChanged = true;
                 failedState = NULL;
             }
             if (
                     stateHolderBasin.state == SB_SENSOR_FAILED ||
                             stateHolderPower.state == SP_FAILED
                     ) {
-                strcpy(failedState, stateHolderBasin.getState());
+                failedState = const_cast<char*>(stateHolderBasin.getState());
                 stateHolderInfo.gotoState(SI_ALARM);
                 break;
             }
             if (
-                    stateHolderPower.state == SB_LOW_WATER ||
-                    (stateHolderPower.state == SP_POWER && testPressureLow())
+                    stateHolderBasin.state == SB_LOW_WATER ||
+                            (stateHolderPower.state == SP_POWER && testPressureLow())
                     ) {
                 stateHolderInfo.gotoState(SI_WARNING);
                 break;
@@ -205,10 +213,10 @@ void run_state_info(McEvent event) {
     }
 }
 
-void run_state_power(McEvent event) {
+void run_state_power(McEvent& event) {
     switch (stateHolderPower.state) {
         case SP_OFF: {
-            stateHolderPower.firstState(SP_OFF);
+            stateHolderPower.firstEntry();
             if (event == CLICK || stateHolderTimer.state == ST_ENGAGE) {
                 stateHolderPower.gotoState(SP_PRE_POWER);
             }
@@ -216,53 +224,49 @@ void run_state_power(McEvent event) {
         }
 
         case SP_PRE_POWER: {
-            if (stateHolderPower.firstState(SP_PRE_POWER)) {
+            if (stateHolderPower.firstEntry()) {
                 timings.pre_power_timeout.reset();
-            }
+            } else
+            {
+                if (timings.pre_power_timeout.ping()) {
+                    stateHolderPower.gotoState(SP_FAILED);
+                    break;
+                }
 
-            if (event == CLICK) {
-                stateHolderPower.gotoState(SP_OFF);
-                break;
-            }
+                if (event == CLICK) {
+                    stateHolderPower.gotoState(SP_OFF);
+                    break;
+                }
 
-            if (stateHolderBasin.state == SB_LOW_WATER) {
-                stateHolderPower.gotoState(SP_SUSPEND);
-                break;
-            }
+                if (stateHolderBasin.state == SB_LOW_WATER) {
+                    stateHolderPower.gotoState(SP_SUSPEND);
+                    break;
+                }
 
-            if (testWorkingPressure()) {
-                stateHolderPower.gotoState(SP_POWER);
-                break;
+                if (testWorkingPressure()) {
+                    stateHolderPower.gotoState(SP_POWER);
+                    break;
+                }
             }
-
-            if (timings.pre_power_timeout.isTimeAfter(true)) {
-                stateHolderPower.gotoState(SP_FAILED);
-                break;
-            }
-
             break;
         }
 
         case SP_SUSPEND: {
-            stateHolderPower.firstState(SP_SUSPEND);
-            if (event == CLICK || stateHolderBasin.state == SB_FULL) {
-                stateHolderPower.gotoState(SP_PRE_POWER);
+            if (!stateHolderPower.firstEntry()){
+                if (event == CLICK || stateHolderBasin.state == SB_FULL) {
+                    stateHolderPower.gotoState(SP_PRE_POWER);
+                }
             }
             break;
         }
 
         case SP_POWER: {
-
-            if (stateHolderPower.firstState(SP_POWER)) {
-//TODO this prev state seem not appear in this place
-                if (stateHolderPower.prev_state == SP_OFF) {
-                    timings.countdown_pump_switch.reset();
-                }
-
-                timings.power_fail_delay.reset();
+            if (timings.power_fail_delay.isTimeAfter(!stateHolderPower.firstEntry() && !testWorkingPressure())) {
+                stateHolderPower.gotoState(SP_FAILED);
+                break;
             }
 
-            if (event == CLICK) {
+            if (event == CLICK || (stateHolderTimer.wasChanged() && stateHolderTimer.state == ST_STAND_BY)) {
                 stateHolderPower.gotoState(SP_OFF);
                 break;
             }
@@ -272,12 +276,7 @@ void run_state_power(McEvent event) {
                 break;
             }
 
-            if (timings.power_fail_delay.isTimeAfter(!testWorkingPressure())) {
-                stateHolderPower.gotoState(SP_FAILED);
-                break;
-            }
-
-            if (testPressureMax()) {
+            if (testPressureOverMax()) {
                 stateHolderPower.gotoState(SP_DISCHARGE);
                 break;
             }
@@ -285,7 +284,7 @@ void run_state_power(McEvent event) {
         }
 
         case SP_DISCHARGE: {
-            stateHolderPower.firstState(SP_DISCHARGE);
+            stateHolderPower.firstEntry();
             if (event == CLICK) {
                 stateHolderPower.gotoState(SP_POWER);
                 break;
@@ -301,22 +300,27 @@ void run_state_power(McEvent event) {
             break;
         }
         case SP_FAILED: {
-            stateHolderPower.firstState(SP_FAILED);
+            stateHolderPower.firstEntry();
             if (stateHolderInfo.state == SI_DISARM) {
                 stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             break;
         }
+        case SP_DISARM: {
+            stateHolderPower.firstEntry();
+            break;
+        }
     }
 
 }
 
-void run_state_pump(McEvent event) {
+
+void run_state_pump(McEvent& event) {
     switch (stateHolderPump.state) {
 
         case SPM_PUMP_1_ONLY: {
-            stateHolderPump.firstState(SPM_PUMP_2_ONLY);
+            stateHolderPump.firstEntry();
             if (event == HOLD) {
                 stateHolderPump.gotoState(SPM_PUMP_2_ONLY);
             }
@@ -324,7 +328,7 @@ void run_state_pump(McEvent event) {
         }
 
         case SPM_PUMP_2_ONLY: {
-            stateHolderPump.firstState(SPM_PUMP_1_ONLY);
+            stateHolderPump.firstEntry();
             if (event == HOLD) {
                 stateHolderPump.gotoState(SPM_PUMP_1);
             }
@@ -332,11 +336,7 @@ void run_state_pump(McEvent event) {
         }
 
         case SPM_PUMP_1: {
-            if (stateHolderPump.firstState(SPM_PUMP_1)) {
-                timings.countdown_pump_switch.reset();
-            }
-
-            if (event == HOLD || timings.countdown_pump_switch.isTimeAfter(true)) {
+            if (event == HOLD || timings.countdown_pump_switch.isTimeAfter(!stateHolderPump.firstEntry())) {
                 stateHolderPump.gotoState(SPM_PUMP_2);
             }
 
@@ -344,11 +344,7 @@ void run_state_pump(McEvent event) {
         }
 
         case SPM_PUMP_2: {
-            if (stateHolderPump.firstState(SPM_PUMP_2)) {
-                timings.countdown_pump_switch.reset();
-            }
-
-            if (timings.countdown_pump_switch.isTimeAfter(true)) {
+            if (timings.countdown_pump_switch.isTimeAfter(!stateHolderPump.firstEntry())) {
                 stateHolderPump.gotoState(SPM_PUMP_1);
                 break;
             }
@@ -372,34 +368,38 @@ bool isInTimeSpan(uint8_t hrs_start, uint8_t min_start, uint8_t hrs_stop, uint8_
 }
 
 #ifdef RTCM
-void run_state_timer() {
+void run_state_timer(McEvent event) {
     switch (stateHolderTimer.state) {
 
         case ST_STAND_BY: {
-            if (stateHolderTimer.firstState(ST_STAND_BY) || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
-                strncpy(CUSTOM_HEADER, " T ", 3);
+            if (stateHolderTimer.firstEntry() || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
+                CTX.timerEnabled = true;
+                CTX.timerEngaged = false;
+                CTX.systemStatusChanged = true;
             }
-            if (isInTimeSpan(PROPS.FACTORY[8].runtime, PROPS.FACTORY[9].runtime, PROPS.FACTORY[10].runtime,
-                             PROPS.FACTORY[11].runtime, hrs, min)) {
+            if (event == DOUBLE_CLICK) {
                 stateHolderTimer.gotoState(ST_ENGAGE);
             }
             break;
         }
 
         case ST_ENGAGE: {
-            if (stateHolderTimer.firstState(ST_ENGAGE) || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
-                strncpy(CUSTOM_HEADER, ">T<", 3);
+            if (stateHolderTimer.firstEntry() || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
+                CTX.timerEngaged = true;
+                CTX.systemStatusChanged = true;
+                timings.power_timer.reset();
             }
-            if (!isInTimeSpan(PROPS.FACTORY[8].runtime, PROPS.FACTORY[9].runtime, PROPS.FACTORY[10].runtime,
-                              PROPS.FACTORY[11].runtime, hrs, min)) {
+            if (event == CLICK || timings.power_timer.ping()) {
                 stateHolderTimer.gotoState(ST_STAND_BY);
             }
             break;
         }
 
         case ST_DISARM: {
-            if (stateHolderTimer.firstState(ST_DISARM) || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
-                strncpy(CUSTOM_HEADER, "   ", 3);
+            if (stateHolderTimer.firstEntry() || (stateHolderInfo.wasChanged() && stateHolderInfo.state == SI_DISARM)) {
+                CTX.timerEngaged = false;
+                CTX.timerEnabled = false;
+                CTX.systemStatusChanged = true;
             }
 
             break;
@@ -414,7 +414,7 @@ void runPowerStates() {
     run_state_basin(event);
     run_state_info(event);
 #ifdef RTCM
-    run_state_timer();
+    run_state_timer(event);
 #endif
     run_state_pump(event);
     run_state_power(event);
@@ -438,8 +438,8 @@ void loop() {
     PWR.power(REL_A, powerA);
     PWR.power(REL_B, powerB);
 
-    INDICATORS.set(IND_WARN, warning && flash_symm(timerCounter_1Hz));
-    INDICATORS.set(IND_ALARM, alarm && flash_symm(timerCounter_1Hz));
+    INDICATORS.set(IND_WARN, warning && flash_symm(timerCounter_4Hz));
+    INDICATORS.set(IND_ALARM, alarm && flash_symm(timerCounter_4Hz));
 
     if (alarm || warning) {
         INDICATORS.flash(IND_BUTTON, alarm ? flash_symm(timerCounter_4Hz) : flash_symm(timerCounter_1Hz), true);

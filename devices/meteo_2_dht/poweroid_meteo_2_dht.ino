@@ -5,6 +5,8 @@
 
 #define ID "PWR_METEO_2"
 
+#define RAIN_SEN SEN_2
+
 Context CTX(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
@@ -73,7 +75,7 @@ void applyTimings() {
 }
 
 void processSensors() {
-    raining = CTX.SENS.isSensorOn(SEN_2);
+    raining = CTX.SENS.isSensorOn(RAIN_SEN);
     dhtOk = CTX.SENS.isDhtOperating();
 }
 
