@@ -26,14 +26,14 @@ static struct Properties {
 // Using F() macros here
     Properties() {
         factoryReset();
-        FACTORY[0].desc = F("Power (hrs)");
-        FACTORY[0].measure = 2;
+        FACTORY[0].desc = F("Power time");
+        FACTORY[0].measure = 3;
 
-        FACTORY[1].desc = F("Power (min)");
-        FACTORY[1].measure = 3;
+        FACTORY[1].desc = F("Power time");
+        FACTORY[1].measure = 4;
 
-        FACTORY[2].desc = F("Power end (min)");
-        FACTORY[2].measure = 3;
+        FACTORY[2].desc = F("Power ends");
+        FACTORY[2].measure = 4;
     }
 
     void factoryReset() {

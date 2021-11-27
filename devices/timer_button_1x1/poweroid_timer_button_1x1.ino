@@ -18,6 +18,7 @@ unsigned long SBY_MILLS = 0L;
 Context CTX = Context(SIGNATURE, ID, PROPS.FACTORY, PROPS.props_size, PROPS.DEFAULT_PROPERTY);
 
 Commander CMD(CTX);
+
 Bt BT(CTX.id);
 
 #ifndef NO_CONTROLLER
@@ -48,7 +49,7 @@ void processSensors() {
 
 void fillOutput() {
     BANNER.mode=0;
-    bool countDown = state_power != SP_OFF && state_power != SP_DISARM;
+    bool countDown = stateHolderPower.state != SP_OFF && !stateHolderPower.isDisarmed();
     splitTime(countDown ? timings.countdown_power.millsToGo() : 0, toGo);
     if (countDown){
         sprintf(BANNER.data.text, TIME_FMT , toGo.hrs, toGo.mins, toGo.sec);
@@ -64,67 +65,68 @@ void fillOutput() {
 }
 
 void run_state_power(McEvent event) {
-    switch (state_power) {
+    switch (stateHolderPower.state) {
         case SP_OFF: {
-            prev_state_power = SP_OFF;
+            stateHolderPower.firstEntry();
             if (event == HOLD) {
-                state_power = SP_POWER;
+                stateHolderPower.gotoState(SP_POWER);
             }
             break;
         }
         case SP_POWER: {
-            if (prev_state_power == SP_OFF) {
+            if (*stateHolderPower.firstEntry() == SP_OFF) {
                 timings.countdown_power.reset();
             }
-            prev_state_power = SP_POWER;
+
             if (event == HOLD) {
-                state_power = SP_OFF;
+                stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             if (event == CLICK) {
-                state_power = SP_POWER_SBY;
+                stateHolderPower.gotoState(SP_POWER_SBY);
                 break;
             }
             if (!timings.countdown_power.countdown(true, false, false)) {
-                state_power = SP_OFF;
+                stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             if (timings.countdown_power.millsToGo() < SBY_MILLS) {
-                state_power = SP_POWER_END;
+                stateHolderPower.gotoState(SP_POWER_END);
                 break;
             }
             break;
         }
         case SP_POWER_SBY: {
+            stateHolderPower.firstEntry();
             timings.countdown_power.countdown(true, true, false);
             if (event == CLICK) {
-                state_power = prev_state_power;
+                stateHolderPower.gotoState(stateHolderPower.prev_stored_state);
                 break;
             }
             if (event == HOLD) {
-                state_power = SP_OFF;
+                stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             break;
         }
         case SP_POWER_END: {
-            prev_state_power = SP_POWER_END;
+            stateHolderPower.firstEntry();
             if (event == HOLD) {
-                state_power = SP_OFF;
+                stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             if (event == CLICK) {
-                state_power = SP_POWER_SBY;
+                stateHolderPower.gotoState(SP_POWER_SBY);
                 break;
             }
             if (!timings.countdown_power.countdown(true, false, false)) {
-                state_power = SP_OFF;
+                stateHolderPower.gotoState(SP_OFF);
                 break;
             }
             break;
         }
         case SP_DISARM: {
-            prev_state_power = SP_DISARM;
+            stateHolderPower.firstEntry();
             break;
         }
     }
@@ -142,20 +144,20 @@ void loop() {
 
     PWR.run();
 
-    bool power = (state_power == SP_POWER || state_power == SP_POWER_END);
+    bool power = (stateHolderPower.state == SP_POWER || stateHolderPower.state == SP_POWER_END);
 
     PWR.power(REL_A, power);
     PWR.power(REL_B, power);
 
     if (power) {
-        if (state_power == SP_POWER) {
+        if (stateHolderPower.state == SP_POWER) {
             INDICATORS.set(IND, true);
         } else {
             INDICATORS.flash(IND, !flash_accent(timerCounter_1Hz), true);
         }
 
     } else {
-        if (state_power == SP_POWER_SBY) {
+        if (stateHolderPower.state == SP_POWER_SBY) {
             INDICATORS.flash(IND, !flash_accent(timerCounter_4Hz), true);
         } else {
             INDICATORS.set(IND, false);
