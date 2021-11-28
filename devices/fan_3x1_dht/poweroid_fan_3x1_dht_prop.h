@@ -31,7 +31,6 @@ static struct Properties {
 // to save program RAM space
 // Using F() macros here
     Properties() {
-        factoryReset();
         FACTORY[0].desc = F("Fan run time");
         FACTORY[0].measure = 3;
 
@@ -55,12 +54,6 @@ static struct Properties {
 
         FACTORY[7].desc = F("Temperature delay");
         FACTORY[7].measure = 3;
-    }
-
-    void factoryReset() {
-        for (int i = 0; i < ARRAY_SIZE(FACTORY); i++) {
-            FACTORY[i].runtime = FACTORY[i].val;
-        }
     }
 
 } FAN_PROPS;

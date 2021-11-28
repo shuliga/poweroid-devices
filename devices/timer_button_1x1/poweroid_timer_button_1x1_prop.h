@@ -5,8 +5,6 @@
 #include <commons.h>
 #include <timings.h>
 
-#define GET_PROP_NORM(i) PROPS.FACTORY[(i)].runtime / PROPS.FACTORY[(i)].scale
-
 static struct Properties {
 
     int8_t DEFAULT_PROPERTY = -1;
@@ -25,7 +23,6 @@ static struct Properties {
 // to save program RAM space
 // Using F() macros here
     Properties() {
-        factoryReset();
         FACTORY[0].desc = F("Power time");
         FACTORY[0].measure = 3;
 
@@ -34,12 +31,6 @@ static struct Properties {
 
         FACTORY[2].desc = F("Power ends");
         FACTORY[2].measure = 4;
-    }
-
-    void factoryReset() {
-        for (int i = 0; i < ARRAY_SIZE(FACTORY); i++) {
-            FACTORY[i].runtime = FACTORY[i].val;
-        }
     }
 
 } PROPS;
